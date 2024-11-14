@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:book_track/data_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -135,61 +136,85 @@ class _RootAppWidgetState extends State<RootAppWidget> {
   }
 
   Widget sessionUi() {
-    return Column(children: [
-      Text('Resume reading', style: TextStyle(fontSize: 40)),
-      Expanded(
-        child: ListView(children: [
-          ListTile(
-            title: Text('Electronics for Dummies'),
-            subtitle: Text('Gen X hacker'),
-            leading: Icon(Icons.question_mark),
-            trailing: progressIndicator(),
-          ),
-          ListTile(
-            title: Text('Rich Dad FIRE'),
-            subtitle: Text('Robert Kiyosaki'),
-            leading: Icon(Icons.question_mark),
-            trailing: progressIndicator(),
-          ),
-          ListTile(
-            title: Text('Book 3 title'),
-            subtitle: Text('Author 3 Name'),
-            leading: Icon(Icons.question_mark),
-            trailing: progressIndicator(),
-          ),
+    final List<BookProgress> books = [
+      BookProgress(
+        Book(
+          'Electronics for Dummies',
+          'Gen X hacker',
+          2019,
+          BookType.paperback,
+          960,
+          null,
+        ),
+        30,
+        DateTime(2024),
+        ProgressHistory([
+          ProgressEvent(DateTime.now(), 74),
         ]),
       )
-    ]);
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Resume reading',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+        ),
+        Expanded(
+          child: ListView(children: [
+            ListTile(
+              title: Text('Electronics for Dummies'),
+              subtitle: Text('Gen X hacker'),
+              leading: Icon(Icons.question_mark),
+              trailing: progressIndicator(progressPercent: 75),
+            ),
+            ListTile(
+              title: Text('Rich Dad FIRE'),
+              subtitle: Text('Robert Kiyosaki'),
+              leading: Icon(Icons.question_mark),
+              trailing: progressIndicator(progressPercent: 25),
+            ),
+            ListTile(
+              title: Text('Book 3 title'),
+              subtitle: Text('Author 3 Name'),
+              leading: Icon(Icons.question_mark),
+              trailing: progressIndicator(progressPercent: 44),
+            ),
+          ]),
+        )
+      ],
+    );
   }
 
-  Widget progressIndicator() {
+  Widget progressIndicator({required double progressPercent}) {
+    final double width = 70;
     return SizedBox(
-      width: 100,
+      width: width,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Flexible(
             child: Container(
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[700]!),
-                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(4),
               ),
               child: Row(children: [
                 Container(
                   height: 12,
-                  width: 74,
+                  width: width / 100 * progressPercent - 1,
                   color: Colors.green,
                   padding: EdgeInsets.zero,
                 ),
                 Container(
                   height: 12,
-                  width: 24,
+                  width: width / 100 * (100 - progressPercent) - 1,
                   color: Colors.orange,
                 ),
               ]),
             ),
           ),
-          Text('75%'),
+          Text('$progressPercent%'),
         ],
       ),
     );
