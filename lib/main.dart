@@ -78,14 +78,42 @@ class _RootAppWidgetState extends State<RootAppWidget> {
       body: Container(
         padding: const EdgeInsets.all(8),
         color: Color.lerp(Colors.yellow, Colors.grey[100], .98),
-        child: currentUi(),
+        child: switch (_currentBottomBarIdx) {
+          0 => sessionUi(),
+          1 => Text('This screen has yet to be built'),
+          _ => Text('Error happened, unknown UI $_currentBottomBarIdx')
+        },
       ),
-      floatingActionButton: currentFab(),
-      bottomNavigationBar: bottomNav(),
+      floatingActionButton: switch (_currentBottomBarIdx) {
+        0 => addBookFab(context),
+        _ => null
+      },
+      bottomNavigationBar: bottomNavBar(),
     );
   }
 
-  Widget bottomNav() {
+  Widget addBookFab(BuildContext context) {
+    return FloatingActionButton(
+      onPressed: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => AddBookPage()),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add),
+            Text(
+              'Add book',
+              style: TextStyle(fontSize: 8),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget bottomNavBar() {
     return BottomNavigationBar(
       onTap: (idx) => setState(() => _currentBottomBarIdx = idx),
       currentIndex: _currentBottomBarIdx,
@@ -106,43 +134,6 @@ class _RootAppWidgetState extends State<RootAppWidget> {
     );
   }
 
-  Widget? currentFab() {
-    switch (_currentBottomBarIdx) {
-      case 0:
-        return FloatingActionButton(
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => AddBookPage()),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.add),
-                Text(
-                  'Add book',
-                  style: TextStyle(fontSize: 8),
-                )
-              ],
-            ),
-          ),
-        );
-      default:
-        return null;
-    }
-  }
-
-  Widget currentUi() {
-    switch (_currentBottomBarIdx) {
-      case 0:
-        return sessionUi();
-      case 1:
-        return Text('hello');
-      default:
-        return Text('Error happened, unknown UI $_currentBottomBarIdx');
-    }
-  }
-
   Widget sessionUi() {
     return Column(children: [
       Text('Resume reading', style: TextStyle(fontSize: 40)),
@@ -152,50 +143,56 @@ class _RootAppWidgetState extends State<RootAppWidget> {
             title: Text('Electronics for Dummies'),
             subtitle: Text('Gen X hacker'),
             leading: Icon(Icons.question_mark),
+            trailing: progressIndicator(),
           ),
           ListTile(
             title: Text('Rich Dad FIRE'),
             subtitle: Text('Robert Kiyosaki'),
             leading: Icon(Icons.question_mark),
-            trailing: SizedBox(
-              width: 100,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Flexible(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[700]!),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Row(children: [
-                        Container(
-                          height: 12,
-                          width: 74,
-                          color: Colors.green,
-                          padding: EdgeInsets.zero,
-                        ),
-                        Container(
-                          height: 12,
-                          width: 24,
-                          color: Colors.orange,
-                        ),
-                      ]),
-                    ),
-                  ),
-                  Text('75%'),
-                ],
-              ),
-            ),
+            trailing: progressIndicator(),
           ),
           ListTile(
             title: Text('Book 3 title'),
             subtitle: Text('Author 3 Name'),
             leading: Icon(Icons.question_mark),
+            trailing: progressIndicator(),
           ),
         ]),
       )
     ]);
+  }
+
+  Widget progressIndicator() {
+    return SizedBox(
+      width: 100,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Flexible(
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[700]!),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Row(children: [
+                Container(
+                  height: 12,
+                  width: 74,
+                  color: Colors.green,
+                  padding: EdgeInsets.zero,
+                ),
+                Container(
+                  height: 12,
+                  width: 24,
+                  color: Colors.orange,
+                ),
+              ]),
+            ),
+          ),
+          Text('75%'),
+        ],
+      ),
+    );
   }
 }
 
