@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-extension ContextExtension on BuildContext {
+extension BuildContextExtension on BuildContext {
   void showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
@@ -11,4 +11,8 @@ extension ContextExtension on BuildContext {
       ),
     );
   }
+}
+
+extension IterableExtension<T> on Iterable<T> {
+  List<U> mapL<U>(U Function(T) f) => map(f).toList();
 }
