@@ -1,3 +1,4 @@
+import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/pages/add_a_book/add_book_page.dart';
 import 'package:flutter/material.dart';
 
@@ -5,9 +6,7 @@ class AddABookButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton(
-      onPressed: () => Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => AddBookPage()),
-      ),
+      onPressed: () => context.push(AddBookPage()),
       child: Padding(
         padding: const EdgeInsets.only(top: 6),
         child: Column(

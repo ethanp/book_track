@@ -1,15 +1,16 @@
+import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/ui/design.dart';
+import 'package:book_track/ui/pages/search_result_detail/search_result_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AddBookPage extends ConsumerWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp(home: Scaffold(appBar: appBar(), body: body(ref)));
-  }
+  Widget build(BuildContext context, WidgetRef ref) =>
+      Scaffold(appBar: appBar(), body: body(ref));
 
   PreferredSizeWidget appBar() {
     return AppBar(
@@ -66,18 +67,12 @@ class AddBookPage extends ConsumerWidget {
     BookUniverseService.search(controller.text, results);
   }
 
-  Widget searchResults(WidgetRef ref) {
-    final BookSearchResult bookSearchResult =
-        ref.watch(bookSearchResultsProvider);
-    return ListView(
+  Widget searchResults(WidgetRef ref) => ListView(
       shrinkWrap: true,
-      children: bookSearchResult.books.mapL(
-        (r) => ListTile(
-          title: Text(r.title),
-          leading: Text(r.author),
-          subtitle: Text('${r.bookType} ${r.bookLength}'),
-        ),
-      ),
-    );
-  }
+      children: ref.watch(bookSearchResultsProvider).books.mapL((Book r) =>
+          ListTile(
+              title: Text(r.title),
+              leading: Text(r.author),
+              subtitle: Text('${r.bookType} ${r.bookLength}'),
+              onTap: () => ref.context.push(SearchResultDetailPage(r)))));
 }
