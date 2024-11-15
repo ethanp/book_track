@@ -34,12 +34,7 @@ class _LoginPageState extends State<LoginPage> {
         }
       },
       onError: (Object error) {
-        if (mounted) {
-          final String message = error is AuthException
-              ? error.message
-              : 'Unexpected error occurred: $error';
-          context.showSnackBar(message, isError: true);
-        }
+        if (mounted) context.authError(error);
       },
     );
   }
@@ -76,13 +71,7 @@ class _LoginPageState extends State<LoginPage> {
       );
       if (mounted) context.showSnackBar('Login link sent to your email!');
     } catch (error) {
-      if (mounted) {
-        context.showSnackBar(
-            error is AuthException
-                ? error.message
-                : 'Unexpected error occurred',
-            isError: true);
-      }
+      if (mounted) context.authError(error);
     } finally {
       if (mounted) setState(() => _processingSignIn = false);
     }

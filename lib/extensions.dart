@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 extension BuildContextExtension on BuildContext {
   void showSnackBar(String message, {bool isError = false}) {
@@ -10,6 +11,13 @@ extension BuildContextExtension on BuildContext {
             : Theme.of(this).snackBarTheme.backgroundColor,
       ),
     );
+  }
+
+  void authError(Object error) {
+    final String message = error is AuthException
+        ? error.message
+        : 'Unexpected error occurred: $error';
+    showSnackBar(message, isError: true);
   }
 
   void pushReplacementPage(Widget widget) => Navigator.of(this)

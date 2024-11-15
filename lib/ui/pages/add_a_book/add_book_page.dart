@@ -19,8 +19,7 @@ class AddBookPage extends StatelessWidget {
               Flexible(
                 child: Row(
                   children: [
-                    Text('Search',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
+                    Text('Search', style: h2),
                     SizedBox(width: 20),
                     Flexible(
                       child: TextFormField(
