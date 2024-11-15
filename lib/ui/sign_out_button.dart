@@ -1,9 +1,8 @@
 import 'package:book_track/extensions.dart';
 import 'package:book_track/main.dart';
+import 'package:book_track/ui/pages/login/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-import 'login_page.dart';
 
 class SignOutButton extends StatelessWidget {
   @override

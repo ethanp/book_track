@@ -1,6 +1,6 @@
 import 'package:book_track/extensions.dart';
-import 'package:book_track/pages/session_page.dart';
 import 'package:book_track/riverpods.dart';
+import 'package:book_track/ui/pages/session/session_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

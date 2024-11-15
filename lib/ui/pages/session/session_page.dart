@@ -1,12 +1,14 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/services/my_books_service.dart';
-import 'package:book_track/ui/add_a_book_button.dart';
-import 'package:book_track/ui/book_tile.dart';
+import 'package:book_track/ui/design.dart';
 import 'package:book_track/ui/my_bottom_nav_bar.dart';
 import 'package:book_track/ui/sign_out_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'add_a_book_button.dart';
+import 'book_tile.dart';
 
 class SessionPage extends ConsumerWidget {
   @override
@@ -34,7 +36,7 @@ class SessionPage extends ConsumerWidget {
       children: [
         Text(
           'Resume reading',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+          style: h1,
         ),
         Expanded(child: ListView(children: books.mapL(BookTile.new))),
       ],

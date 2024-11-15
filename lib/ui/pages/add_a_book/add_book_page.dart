@@ -1,3 +1,4 @@
+import 'package:book_track/ui/design.dart';
 import 'package:flutter/material.dart';
 
 class AddBookPage extends StatelessWidget {
@@ -9,11 +10,7 @@ class AddBookPage extends StatelessWidget {
       home: Scaffold(
         appBar: AppBar(
           title: Text('Add a book'),
-          backgroundColor: Color.lerp(
-            Colors.lightGreen,
-            Colors.grey[300],
-            0.8,
-          ),
+          backgroundColor: appBarColor,
         ),
         body: Padding(
           padding: const EdgeInsets.all(16),
