@@ -19,11 +19,14 @@ class ProgressView extends StatelessWidget {
     return Column(
       children: [
         Text('History', style: h1),
-        SizedBox(
-          height: 200,
-          child: LineChart(LineChartData(lineBarsData: [
-            LineChartBarData(spots: [FlSpot(0, 0), FlSpot(1, 1)]),
-          ])),
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: SizedBox(
+            height: 200,
+            child: LineChart(LineChartData(lineBarsData: [
+              LineChartBarData(spots: [FlSpot(0, 0), FlSpot(1, 1)]),
+            ])),
+          ),
         ),
         Table(
           children: book.progressHistory.progressEvents.mapL((ev) {

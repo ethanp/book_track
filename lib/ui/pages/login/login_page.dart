@@ -14,7 +14,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool _processingSignIn = false;
-  bool _redirecting = false;
+  bool _redirectingToLoggedInApp = false;
   final TextEditingController _emailController = TextEditingController();
   late final StreamSubscription<AuthState> _authStateSubscription;
 
@@ -27,9 +27,9 @@ class _LoginPageState extends State<LoginPage> {
   void pushLoggedInAppUponLogin() {
     _authStateSubscription = supabase.auth.onAuthStateChange.listen(
       (AuthState data) {
-        if (_redirecting) return;
+        if (_redirectingToLoggedInApp) return;
         if (data.session != null) {
-          _redirecting = true;
+          _redirectingToLoggedInApp = true;
           if (mounted) context.pushReplacementPage(const WholeAppWidget());
         }
       },

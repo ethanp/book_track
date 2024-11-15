@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'progress_view.dart';
+import 'session_timer.dart';
 
 class SessionStartPage extends ConsumerWidget {
   const SessionStartPage(this.book);
@@ -20,10 +21,8 @@ class SessionStartPage extends ConsumerWidget {
       body: Column(
         children: [
           ProgressView(book),
-          ElevatedButton(
-            onPressed: () {},
-            child: Text('Start Session'),
-          ),
+          SizedBox(height: 75),
+          SessionTimer(),
         ],
       ),
     );
