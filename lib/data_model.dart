@@ -3,13 +3,11 @@ import 'dart:typed_data';
 class BookProgress {
   BookProgress(
     this.book,
-    this.percentComplete,
     this.startTime,
     this.progressHistory,
   );
 
   final Book book;
-  final double percentComplete;
   final DateTime startTime;
   final ProgressHistory progressHistory;
 }

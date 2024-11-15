@@ -1,17 +1,27 @@
 import 'dart:async';
 
 import 'package:book_track/data_model.dart';
+import 'package:book_track/extensions.dart';
+import 'package:book_track/riverpods.dart';
+import 'package:book_track/ui/add_book_page.dart';
+import 'package:book_track/ui/login_page.dart';
+import 'package:book_track/ui/my_bottom_nav_bar.dart';
+import 'package:book_track/ui/reading_progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// During development, it may be important to get the generators going via
+/// `dart run build_runner watch` as recommended on the riverpod
+/// getting-started docs: https://riverpod.dev/docs/introduction/getting_started.
 Future<void> main() async {
   await dotenv.load();
   await Supabase.initialize(
     url: dotenv.env['URL']!,
     anonKey: dotenv.env['ANON_KEY']!,
   );
-  runApp(const Outermost());
+  runApp(ProviderScope(child: const Outermost()));
 }
 
 final supabase = Supabase.instance.client;
@@ -23,6 +33,7 @@ class Outermost extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'The app itself',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true),
       home: supabase.auth.currentSession == null
           ? const LoginPage()
@@ -31,65 +42,64 @@ class Outermost extends StatelessWidget {
   }
 }
 
-class RootAppWidget extends StatefulWidget {
-  const RootAppWidget({super.key});
-
+class RootAppWidget extends ConsumerWidget {
   @override
-  State<RootAppWidget> createState() => _RootAppWidgetState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final int curIdx = ref.watch(selectedBottomBarIdxProvider);
+    return switch (curIdx) {
+      0 => RenameWidget(),
+      _ => Scaffold(
+          body: Text('Unimplemented error'),
+          bottomNavigationBar: MyBottomNavBar(),
+        ),
+    };
+  }
 }
 
-class _RootAppWidgetState extends State<RootAppWidget> {
-  int _currentBottomBarIdx = 0;
-
+class RenameWidget extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('= Book = Track ='),
-        backgroundColor: Color.lerp(
-          Colors.lightGreen,
-          Colors.grey[300],
-          0.8,
-        ),
-        actions: [
-          TextButton(
-              onPressed: () async {
-                try {
-                  await supabase.auth.signOut();
-                } on AuthException catch (error) {
-                  if (mounted) {
-                    context.showSnackBar(error.message, isError: true);
-                  }
-                } catch (error) {
-                  if (mounted) {
-                    context.showSnackBar('Unexpected error occurred',
-                        isError: true);
-                  }
-                } finally {
-                  if (mounted) {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const LoginPage()),
-                    );
-                  }
-                }
-              },
-              child: const Text('Sign Out'))
-        ],
+        backgroundColor: Color.lerp(Colors.lightGreen, Colors.grey[300], 0.8),
+        actions: [signOutButton(context)],
       ),
       body: Container(
         padding: const EdgeInsets.all(8),
         color: Color.lerp(Colors.yellow, Colors.grey[100], .98),
-        child: switch (_currentBottomBarIdx) {
-          0 => sessionUi(),
-          1 => Text('This screen has yet to be built'),
-          _ => Text('Error happened, unknown UI $_currentBottomBarIdx')
-        },
+        child: sessionUi(),
       ),
-      floatingActionButton: switch (_currentBottomBarIdx) {
-        0 => addBookFab(context),
-        _ => null
+      floatingActionButton: addBookFab(context),
+      bottomNavigationBar: MyBottomNavBar(),
+    );
+  }
+
+  TextButton signOutButton(BuildContext context) {
+    return TextButton(
+      onPressed: () async {
+        try {
+          await supabase.auth.signOut();
+        } on AuthException catch (error) {
+          if (context.mounted) {
+            context.showSnackBar(error.message, isError: true);
+          }
+        } catch (error) {
+          if (context.mounted) {
+            context.showSnackBar(
+              'Unexpected error occurred: $error',
+              isError: true,
+            );
+          }
+        } finally {
+          if (context.mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const LoginPage()),
+            );
+          }
+        }
       },
-      bottomNavigationBar: bottomNavBar(),
+      child: const Text('Sign Out'),
     );
   }
 
@@ -114,27 +124,6 @@ class _RootAppWidgetState extends State<RootAppWidget> {
     );
   }
 
-  Widget bottomNavBar() {
-    return BottomNavigationBar(
-      onTap: (idx) => setState(() => _currentBottomBarIdx = idx),
-      currentIndex: _currentBottomBarIdx,
-      backgroundColor: Color.lerp(Colors.lightGreen, Colors.grey[100], .92),
-      selectedItemColor: Colors.black,
-      selectedFontSize: 18,
-      selectedLabelStyle: TextStyle(fontWeight: FontWeight.w700),
-      items: [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.book),
-          label: 'Session',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.ssid_chart),
-          label: 'Progress',
-        ),
-      ],
-    );
-  }
-
   Widget sessionUi() {
     final List<BookProgress> books = [
       BookProgress(
@@ -146,12 +135,39 @@ class _RootAppWidgetState extends State<RootAppWidget> {
           960,
           null,
         ),
-        30,
         DateTime(2024),
         ProgressHistory([
           ProgressEvent(DateTime.now(), 74),
         ]),
-      )
+      ),
+      BookProgress(
+        Book(
+          'Rich Dad FIRE',
+          'Robert Kiyosaki',
+          2002,
+          BookType.audiobook,
+          100,
+          null,
+        ),
+        DateTime(2024),
+        ProgressHistory([
+          ProgressEvent(DateTime.now(), 95),
+        ]),
+      ),
+      BookProgress(
+        Book(
+          'Book 3',
+          'Book 3 Author',
+          2042,
+          BookType.paperback,
+          124,
+          null,
+        ),
+        DateTime(2024),
+        ProgressHistory([
+          ProgressEvent(DateTime.now(), 2),
+        ]),
+      ),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,213 +177,23 @@ class _RootAppWidgetState extends State<RootAppWidget> {
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
         ),
         Expanded(
-          child: ListView(children: [
-            ListTile(
-              title: Text('Electronics for Dummies'),
-              subtitle: Text('Gen X hacker'),
-              leading: Icon(Icons.question_mark),
-              trailing: progressIndicator(progressPercent: 75),
-            ),
-            ListTile(
-              title: Text('Rich Dad FIRE'),
-              subtitle: Text('Robert Kiyosaki'),
-              leading: Icon(Icons.question_mark),
-              trailing: progressIndicator(progressPercent: 25),
-            ),
-            ListTile(
-              title: Text('Book 3 title'),
-              subtitle: Text('Author 3 Name'),
-              leading: Icon(Icons.question_mark),
-              trailing: progressIndicator(progressPercent: 44),
-            ),
-          ]),
-        )
-      ],
-    );
-  }
-
-  Widget progressIndicator({required double progressPercent}) {
-    final double width = 70;
-    return SizedBox(
-      width: width,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Flexible(
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Row(children: [
-                Container(
-                  height: 12,
-                  width: width / 100 * progressPercent - 1,
-                  color: Colors.green,
-                  padding: EdgeInsets.zero,
-                ),
-                Container(
-                  height: 12,
-                  width: width / 100 * (100 - progressPercent) - 1,
-                  color: Colors.orange,
-                ),
-              ]),
-            ),
-          ),
-          Text('$progressPercent%'),
-        ],
-      ),
-    );
-  }
-}
-
-extension ContextExtension on BuildContext {
-  void showSnackBar(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError
-            ? Theme.of(this).colorScheme.error
-            : Theme.of(this).snackBarTheme.backgroundColor,
-      ),
-    );
-  }
-}
-
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  bool _isLoading = false;
-  bool _redirecting = false;
-  late final TextEditingController _emailController = TextEditingController();
-  late final StreamSubscription<AuthState> _authStateSubscription;
-
-  Future<void> _signIn() async {
-    try {
-      setState(() {
-        _isLoading = true;
-      });
-      await supabase.auth.signInWithOtp(
-        email: _emailController.text.trim(),
-        emailRedirectTo: 'io.supabase.flutterquickstart://login-callback/',
-      );
-      if (mounted) {
-        context.showSnackBar('Check your email for a login link!');
-
-        _emailController.clear();
-      }
-    } on AuthException catch (error) {
-      if (mounted) context.showSnackBar(error.message, isError: true);
-    } catch (error) {
-      if (mounted) {
-        context.showSnackBar('Unexpected error occurred', isError: true);
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  @override
-  void initState() {
-    _authStateSubscription = supabase.auth.onAuthStateChange.listen(
-      (data) {
-        if (_redirecting) return;
-        final session = data.session;
-        if (session != null) {
-          _redirecting = true;
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const Outermost()),
-          );
-        }
-      },
-      onError: (error) => context.showSnackBar(
-          error is AuthException
-              ? error.message
-              : 'Unexpected error occurred: $error',
-          isError: true),
-    );
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _authStateSubscription.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sign In'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-        children: [
-          const Text('Sign in via the magic link with your email below'),
-          const SizedBox(height: 18),
-          TextFormField(
-            controller: _emailController,
-            decoration: const InputDecoration(labelText: 'Email'),
-          ),
-          const SizedBox(height: 18),
-          ElevatedButton(
-            onPressed: _isLoading ? null : _signIn,
-            child: Text(_isLoading ? 'Sending...' : 'Send Magic Link'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class AddBookPage extends StatelessWidget {
-  final TextEditingController _textEditingController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Add a book'),
-          backgroundColor: Color.lerp(
-            Colors.lightGreen,
-            Colors.grey[300],
-            0.8,
-          ),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Flexible(
-                child: Row(
-                  children: [
-                    Text('Search',
-                        style: TextStyle(fontWeight: FontWeight.w600)),
-                    SizedBox(width: 20),
-                    Flexible(
-                      child: TextFormField(
-                        controller: _textEditingController,
-                      ),
+          child: ListView(
+            children: books
+                .map(
+                  (book) => ListTile(
+                    title: Text(book.book.title),
+                    subtitle: Text(book.book.author),
+                    leading: Icon(Icons.question_mark),
+                    trailing: ReadingProgressIndicator(
+                      progressPercent:
+                          book.progressHistory.progressEvents.last.progress,
                     ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                )
+                .toList(),
           ),
         ),
-      ),
+      ],
     );
   }
 }
