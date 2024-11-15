@@ -1,5 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'data_model.dart';
+
 part 'riverpods.g.dart';
 
 /// During development, it is important to get the generators going via
@@ -33,4 +35,18 @@ class SessionStartTime extends _$SessionStartTime {
   void start() => state = DateTime.now();
   void stop() => state = null;
   void toggle() => state == null ? start() : stop();
+}
+
+@riverpod
+class BookSearchResults extends _$BookSearchResults {
+  @override
+  BookSearchResult build() => BookSearchResult([]);
+
+  void update(BookSearchResult searchResult) => state = searchResult;
+}
+
+class BookSearchResult {
+  BookSearchResult(this.books);
+
+  final List<Book> books;
 }

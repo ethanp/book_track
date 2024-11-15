@@ -1,11 +1,8 @@
 import 'package:book_track/data_model.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MyBooksService {
   static List<BookProgress> all() {
-    // One decent book api option is https://hardcover.app/account/api?referrer_id=15017
-    // The other decent one I've found is https://openlibrary.org/dev/docs/api/books
-    //    Nice thing about this one is it doesn't require any authentication
-    // Google would probably work fine too https://developers.google.com/books/docs/v1/using
     return [
       BookProgress(
         Book(
@@ -51,4 +48,8 @@ class MyBooksService {
       ),
     ];
   }
+}
+
+abstract class BookRepository {
+  List<Book> booksForUser(User user);
 }
