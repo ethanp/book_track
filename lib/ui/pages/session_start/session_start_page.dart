@@ -15,14 +15,13 @@ class SessionStartPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: appBarColor,
+        backgroundColor: ColorPalette.appBarColor,
         title: Text(book.book.title),
       ),
       body: Column(
         children: [
-          ProgressView(book),
-          SizedBox(height: 75),
           SessionTimer(),
+          ProgressView(book),
         ],
       ),
     );

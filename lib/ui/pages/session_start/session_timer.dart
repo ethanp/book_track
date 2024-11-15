@@ -6,8 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:segment_display/segment_display.dart';
 
 class SessionTimer extends ConsumerStatefulWidget {
-  const SessionTimer({super.key});
-
   @override
   ConsumerState createState() => _SessionTimerState();
 }
@@ -16,10 +14,15 @@ class _SessionTimerState extends ConsumerState<SessionTimer> {
   bool get sessionInProgress => ref.watch(sessionStartTimeProvider) != null;
 
   @override
-  Widget build(BuildContext context) => Column(children: [
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Column(children: [
         toggleButton(),
         segmentDisplay(),
-      ]);
+      ]),
+    );
+  }
 
   Widget toggleButton() {
     final SessionStartTime read = ref.read(sessionStartTimeProvider.notifier);

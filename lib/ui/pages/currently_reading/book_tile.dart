@@ -1,7 +1,8 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/ui/pages/session/reading_progress_indicator.dart';
 import 'package:book_track/ui/pages/session_start/session_start_page.dart';
 import 'package:flutter/material.dart';
+
+import 'reading_progress_indicator.dart';
 
 class BookTile extends StatelessWidget {
   const BookTile(this.book);

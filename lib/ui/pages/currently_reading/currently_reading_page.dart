@@ -10,12 +10,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'add_a_book_button.dart';
 import 'book_tile.dart';
 
-class SessionPage extends ConsumerWidget {
+class CurrentlyReadingPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('= Book = Track ='),
+        title: const Text('Currently Reading'),
         backgroundColor: Color.lerp(Colors.lightGreen, Colors.grey[300], 0.8),
         actions: [SignOutButton()],
       ),
@@ -36,7 +36,7 @@ class SessionPage extends ConsumerWidget {
       children: [
         Text(
           'Resume reading',
-          style: h1,
+          style: TextStyles.h1,
         ),
         Expanded(child: ListView(children: books.mapL(BookTile.new))),
       ],
