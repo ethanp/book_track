@@ -12,23 +12,13 @@ class SignOutButton extends StatelessWidget {
       onPressed: () async {
         try {
           await supabase.auth.signOut();
-        } on AuthException catch (error) {
-          if (context.mounted) {
-            context.showSnackBar(error.message, isError: true);
-          }
         } catch (error) {
-          if (context.mounted) {
-            context.showSnackBar(
-              'Unexpected error occurred: $error',
-              isError: true,
-            );
-          }
+          final String message = error is AuthException
+              ? error.message
+              : 'Unexpected error occurred: $error';
+          if (context.mounted) context.showSnackBar(message, isError: true);
         } finally {
-          if (context.mounted) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const LoginPage()),
-            );
-          }
+          if (context.mounted) context.pushReplacementPage(const LoginPage());
         }
       },
       child: const Text('Sign Out'),

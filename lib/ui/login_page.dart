@@ -13,75 +13,41 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool _isLoading = false;
+  bool _processingSignIn = false;
   bool _redirecting = false;
-  late final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   late final StreamSubscription<AuthState> _authStateSubscription;
-
-  Future<void> _signIn() async {
-    try {
-      setState(() {
-        _isLoading = true;
-      });
-      await supabase.auth.signInWithOtp(
-        email: _emailController.text.trim(),
-        emailRedirectTo: 'io.supabase.flutterquickstart://login-callback/',
-      );
-      if (mounted) {
-        context.showSnackBar('Check your email for a login link!');
-
-        _emailController.clear();
-      }
-    } on AuthException catch (error) {
-      if (mounted) context.showSnackBar(error.message, isError: true);
-    } catch (error) {
-      if (mounted) {
-        context.showSnackBar('Unexpected error occurred', isError: true);
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
 
   @override
   void initState() {
-    _authStateSubscription = supabase.auth.onAuthStateChange.listen(
-      (data) {
-        if (_redirecting) return;
-        final session = data.session;
-        if (session != null) {
-          _redirecting = true;
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const Outermost()),
-          );
-        }
-      },
-      onError: (error) => context.showSnackBar(
-          error is AuthException
-              ? error.message
-              : 'Unexpected error occurred: $error',
-          isError: true),
-    );
+    pushLoggedInAppUponLogin();
     super.initState();
   }
 
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _authStateSubscription.cancel();
-    super.dispose();
+  void pushLoggedInAppUponLogin() {
+    _authStateSubscription = supabase.auth.onAuthStateChange.listen(
+      (AuthState data) {
+        if (_redirecting) return;
+        if (data.session != null) {
+          _redirecting = true;
+          if (mounted) context.pushReplacementPage(const WholeAppWidget());
+        }
+      },
+      onError: (Object error) {
+        if (mounted) {
+          final String message = error is AuthException
+              ? error.message
+              : 'Unexpected error occurred: $error';
+          context.showSnackBar(message, isError: true);
+        }
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sign In'),
-      ),
+      appBar: AppBar(title: const Text('Sign In')),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
         children: [
@@ -93,11 +59,39 @@ class _LoginPageState extends State<LoginPage> {
           ),
           const SizedBox(height: 18),
           ElevatedButton(
-            onPressed: _isLoading ? null : _signIn,
-            child: Text(_isLoading ? 'Sending...' : 'Send Magic Link'),
+            onPressed: _processingSignIn ? null : _signIn,
+            child: Text(_processingSignIn ? 'Sending...' : 'Send Magic Link'),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _signIn() async {
+    try {
+      setState(() => _processingSignIn = true);
+      await supabase.auth.signInWithOtp(
+        email: _emailController.text.trim(),
+        emailRedirectTo: 'io.supabase.flutterquickstart://login-callback/',
+      );
+      if (mounted) context.showSnackBar('Login link sent to your email!');
+    } catch (error) {
+      if (mounted) {
+        context.showSnackBar(
+            error is AuthException
+                ? error.message
+                : 'Unexpected error occurred',
+            isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _processingSignIn = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _authStateSubscription.cancel();
+    super.dispose();
   }
 }

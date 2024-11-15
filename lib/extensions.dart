@@ -11,6 +11,9 @@ extension BuildContextExtension on BuildContext {
       ),
     );
   }
+
+  void pushReplacementPage(Widget widget) => Navigator.of(this)
+      .pushReplacement(MaterialPageRoute(builder: (context) => widget));
 }
 
 extension IterableExtension<T> on Iterable<T> {

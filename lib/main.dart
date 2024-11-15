@@ -17,24 +17,24 @@ Future<void> main() async {
     url: dotenv.env['URL']!,
     anonKey: dotenv.env['ANON_KEY']!,
   );
-  runApp(ProviderScope(child: const Outermost()));
+  runApp(ProviderScope(child: const WholeAppWidget()));
 }
 
 final supabase = Supabase.instance.client;
 
-class Outermost extends ConsumerWidget {
-  const Outermost({super.key});
+class WholeAppWidget extends ConsumerWidget {
+  const WholeAppWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final int curIdx = ref.watch(selectedBottomBarIdxProvider);
+    final int selectedIdx = ref.watch(selectedBottomBarIdxProvider);
     return MaterialApp(
       title: 'The app itself',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true),
       home: supabase.auth.currentSession == null
           ? const LoginPage()
-          : MyBottomNavBar.elements[curIdx].page,
+          : MyBottomNavBar.elements[selectedIdx].page,
     );
   }
 }

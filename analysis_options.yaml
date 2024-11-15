@@ -32,5 +32,6 @@ linter:
 analyzer:
   errors:
     use_key_in_widget_constructors: ignore
+    avoid_print: ignore
   plugins:
     - custom_lint

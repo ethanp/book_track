@@ -6,7 +6,7 @@ part 'riverpods.g.dart';
 /// accessible via `<className>Provider`.
 ///
 /// This class is both responsible for initializing the state
-/// (through the [build] method) and exposing ways to modify it (cf [set]).
+/// (through the [build] method) and exposing ways to modify it (cf [update]).
 @riverpod
 class SelectedBottomBarIdx extends _$SelectedBottomBarIdx {
   /// Classes annotated by `@riverpod` **must** define a [build] function,
@@ -18,5 +18,5 @@ class SelectedBottomBarIdx extends _$SelectedBottomBarIdx {
   @override
   int build() => 0;
 
-  void set(int idx) => state = idx;
+  void update(int idx) => state = idx;
 }

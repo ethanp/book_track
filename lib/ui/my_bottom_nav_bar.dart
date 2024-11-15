@@ -14,17 +14,13 @@ class BottomNavBarElement {
 class MyBottomNavBar extends ConsumerWidget {
   static final List<BottomNavBarElement> elements = [
     BottomNavBarElement(
+      page: SessionPage(),
       item: BottomNavigationBarItem(
         icon: Icon(Icons.book),
         label: 'Session',
       ),
-      page: SessionPage(),
     ),
     BottomNavBarElement(
-      item: BottomNavigationBarItem(
-        icon: Icon(Icons.ssid_chart),
-        label: 'Progress',
-      ),
       page: Scaffold(
         appBar: AppBar(
           title: const Text('Progress'),
@@ -33,22 +29,26 @@ class MyBottomNavBar extends ConsumerWidget {
         body: Text('Progress page does not exist yet'),
         bottomNavigationBar: MyBottomNavBar(),
       ),
+      item: BottomNavigationBarItem(
+        icon: Icon(Icons.ssid_chart),
+        label: 'Progress',
+      ),
     ),
   ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final int curIdx = ref.watch(selectedBottomBarIdxProvider);
-    final SelectedBottomBarIdx idxBox =
+    final SelectedBottomBarIdx idxSelector =
         ref.read(selectedBottomBarIdxProvider.notifier);
     return BottomNavigationBar(
-      onTap: (idx) => idxBox.set(idx),
+      onTap: (idx) => idxSelector.update(idx),
       currentIndex: curIdx,
       backgroundColor: Color.lerp(Colors.lightGreen, Colors.grey[100], .92),
       selectedItemColor: Colors.black,
       selectedFontSize: 18,
       selectedLabelStyle: TextStyle(fontWeight: FontWeight.w700),
-      items: elements.mapL((i) => i.item),
+      items: elements.mapL((BottomNavBarElement elem) => elem.item),
     );
   }
 }
