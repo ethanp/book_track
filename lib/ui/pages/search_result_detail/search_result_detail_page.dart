@@ -24,7 +24,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
         padding: const EdgeInsets.all(16),
         child: Column(children: [
           keyValueText('Title: ', widget.book.title),
-          keyValueText('Author: ', widget.book.author),
+          keyValueText('Author: ', widget.book.author ?? 'Author unknown'),
           keyValueText('Year: ', widget.book.yearPublished.toString()),
           // TODO(low priority): add cover art here.
         ]),

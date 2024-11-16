@@ -39,10 +39,10 @@ class Book {
   );
 
   final String title;
-  final String author;
-  final int yearPublished;
-  final BookType bookType;
-  final int bookLength;
+  final String? author;
+  final int? yearPublished;
+  final BookType? bookType;
+  final int? bookLength;
   final ByteData? coverArt;
 }
 

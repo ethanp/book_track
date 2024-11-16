@@ -13,7 +13,7 @@ class BookTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(book.book.title),
-      subtitle: Text(book.book.author),
+      subtitle: Text(book.book.author ?? 'Author unknown'),
       leading: Icon(Icons.question_mark),
       trailing: ReadingProgressIndicator(
         progressPercent: book.progressHistory.progressEvents.last.progress,

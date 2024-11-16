@@ -22,12 +22,14 @@ class AddBookPage extends ConsumerWidget {
   Widget body(WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          bookSearchTitle(),
-          searchBar(ref),
-          searchResults(ref),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            bookSearchTitle(),
+            searchBar(ref),
+            searchResults(ref),
+          ],
+        ),
       ),
     );
   }
@@ -44,14 +46,14 @@ class AddBookPage extends ConsumerWidget {
       builder: (context, controller) => SearchBar(
         controller: controller,
         onTap: () => print('tapped: ${controller.text}'),
-        onSubmitted: (str) => search(controller, ref),
+        onSubmitted: (str) => search(str, ref),
         leading: Padding(
           padding: const EdgeInsets.all(8),
           child: const Icon(Icons.abc),
         ),
         trailing: [
           TextButton(
-            onPressed: () => search(controller, ref),
+            onPressed: () => search(controller.text, ref),
             child: const Icon(Icons.search),
           )
         ],
@@ -60,11 +62,11 @@ class AddBookPage extends ConsumerWidget {
     );
   }
 
-  void search(SearchController controller, WidgetRef ref) {
-    print('searching for: ${controller.text}');
+  void search(String text, WidgetRef ref) {
+    print('searching for: $text');
     final BookSearchResults results =
         ref.read(bookSearchResultsProvider.notifier);
-    BookUniverseService.search(controller.text, results);
+    BookUniverseService.search(text, results);
   }
 
   Widget searchResults(WidgetRef ref) => ListView(
@@ -72,7 +74,7 @@ class AddBookPage extends ConsumerWidget {
       children: ref.watch(bookSearchResultsProvider).books.mapL((Book r) =>
           ListTile(
               title: Text(r.title),
-              leading: Text(r.author),
+              leading: Text(r.author ?? 'N/A'),
               subtitle: Text('${r.bookType} ${r.bookLength}'),
               onTap: () => ref.context.push(SearchResultDetailPage(r)))));
 }
