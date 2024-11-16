@@ -1,6 +1,6 @@
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
-import 'package:book_track/ui/design.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

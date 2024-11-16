@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/ui/my_bottom_nav_bar.dart';
+import 'package:book_track/services/supabase_service.dart';
+import 'package:book_track/ui/common/my_bottom_nav_bar.dart';
 import 'package:book_track/ui/pages/login/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -12,6 +13,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// `dart run build_runner watch` as recommended on the riverpod
 /// getting-started docs: https://riverpod.dev/docs/introduction/getting_started.
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
   await Supabase.initialize(
     url: dotenv.env['URL']!,
@@ -19,8 +21,6 @@ Future<void> main() async {
   );
   runApp(ProviderScope(child: const WholeAppWidget()));
 }
-
-final supabase = Supabase.instance.client;
 
 class WholeAppWidget extends ConsumerWidget {
   const WholeAppWidget({super.key});
@@ -32,7 +32,7 @@ class WholeAppWidget extends ConsumerWidget {
       title: 'The app itself',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true),
-      home: supabase.auth.currentSession == null
+      home: SupabaseService.isLoggedOut
           ? const LoginPage()
           : MyBottomNavBar.elements[selectedIdx].page,
     );

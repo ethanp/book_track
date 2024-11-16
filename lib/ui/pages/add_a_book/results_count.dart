@@ -1,4 +1,4 @@
-import 'package:book_track/ui/design.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/material.dart';
 
 class ResultsCount extends StatelessWidget {

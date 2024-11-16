@@ -1,5 +1,5 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/ui/design.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
