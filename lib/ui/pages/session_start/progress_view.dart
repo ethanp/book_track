@@ -18,7 +18,7 @@ class ProgressView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text('History', style: TextStyles.h1),
+        Text('History', style: TextStyles().h1),
         Padding(
           padding: const EdgeInsets.all(20),
           child: SizedBox(

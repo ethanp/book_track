@@ -15,7 +15,7 @@ class SessionStartPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: ColorPalette.appBarColor,
+        backgroundColor: ColorPalette().appBarColor,
         title: Text(book.book.title),
       ),
       body: Column(

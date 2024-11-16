@@ -36,7 +36,7 @@ class CurrentlyReadingPage extends ConsumerWidget {
       children: [
         Text(
           'Resume reading',
-          style: TextStyles.h1,
+          style: TextStyles().h1,
         ),
         Expanded(child: ListView(children: books.mapL(BookTile.new))),
       ],

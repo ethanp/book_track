@@ -1,11 +1,10 @@
-import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/ui/design.dart';
-import 'package:book_track/ui/pages/search_result_detail/search_result_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'search_results.dart';
 
 class AddBookPage extends ConsumerWidget {
   @override
@@ -15,21 +14,19 @@ class AddBookPage extends ConsumerWidget {
   PreferredSizeWidget appBar() {
     return AppBar(
       title: Text('Add a book'),
-      backgroundColor: ColorPalette.appBarColor,
+      backgroundColor: ColorPalette().appBarColor,
     );
   }
 
   Widget body(WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            bookSearchTitle(),
-            searchBar(ref),
-            searchResults(ref),
-          ],
-        ),
+      child: Column(
+        children: [
+          bookSearchTitle(),
+          searchBar(ref),
+          SearchResults(),
+        ],
       ),
     );
   }
@@ -37,28 +34,31 @@ class AddBookPage extends ConsumerWidget {
   Widget bookSearchTitle() {
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: Text('Book Search', style: TextStyles.h1),
+      child: Text('Book Search', style: TextStyles().h1),
     );
   }
 
   Widget searchBar(WidgetRef ref) {
-    return SearchAnchor(
-      builder: (context, controller) => SearchBar(
-        controller: controller,
-        onTap: () => print('tapped: ${controller.text}'),
-        onSubmitted: (str) => search(str, ref),
-        leading: Padding(
-          padding: const EdgeInsets.all(8),
-          child: const Icon(Icons.abc),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 22),
+      child: SearchAnchor(
+        builder: (context, controller) => SearchBar(
+          controller: controller,
+          onTap: () => print('tapped: ${controller.text}'),
+          onSubmitted: (str) => search(str, ref),
+          leading: Padding(
+            padding: const EdgeInsets.all(8),
+            child: const Icon(Icons.abc),
+          ),
+          trailing: [
+            TextButton(
+              onPressed: () => search(controller.text, ref),
+              child: const Icon(Icons.search),
+            )
+          ],
         ),
-        trailing: [
-          TextButton(
-            onPressed: () => search(controller.text, ref),
-            child: const Icon(Icons.search),
-          )
-        ],
+        suggestionsBuilder: (context, controller) => [],
       ),
-      suggestionsBuilder: (context, controller) => [],
     );
   }
 
@@ -68,13 +68,4 @@ class AddBookPage extends ConsumerWidget {
         ref.read(bookSearchResultsProvider.notifier);
     BookUniverseService.search(text, results);
   }
-
-  Widget searchResults(WidgetRef ref) => ListView(
-      shrinkWrap: true,
-      children: ref.watch(bookSearchResultsProvider).books.mapL((Book r) =>
-          ListTile(
-              title: Text(r.title),
-              leading: Text(r.author ?? 'N/A'),
-              subtitle: Text('${r.bookType} ${r.bookLength}'),
-              onTap: () => ref.context.push(SearchResultDetailPage(r)))));
 }

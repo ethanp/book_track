@@ -18,7 +18,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.book.title),
-        backgroundColor: ColorPalette.appBarColor,
+        backgroundColor: ColorPalette().appBarColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -33,7 +33,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
   }
 
   Widget keyValueText(String key, String value) {
-    final TextStyle black = TextStyles.h2;
+    final TextStyle black = TextStyles().h2;
     final TextStyle bold = black.copyWith(fontWeight: FontWeight.bold);
     final Widget keyWidget = SizedBox(
       width: 60,

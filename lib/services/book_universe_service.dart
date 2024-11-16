@@ -14,6 +14,7 @@ class BookUniverseService {
     if (containing.isEmpty) {
       return results.update(BookSearchResult([]));
     }
+    results.update(null);
     List<Book> books = await bookUniverseRepo.search(containing);
     results.update(BookSearchResult(books));
   }

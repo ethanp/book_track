@@ -40,9 +40,9 @@ class SessionStartTime extends _$SessionStartTime {
 @riverpod
 class BookSearchResults extends _$BookSearchResults {
   @override
-  BookSearchResult build() => BookSearchResult([]);
+  BookSearchResult? build() => BookSearchResult([]);
 
-  void update(BookSearchResult searchResult) => state = searchResult;
+  void update(BookSearchResult? searchResult) => state = searchResult;
 }
 
 class BookSearchResult {
