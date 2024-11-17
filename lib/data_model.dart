@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:book_track/extensions.dart';
+
 class BookProgress {
   BookProgress(
     this.book,
@@ -47,7 +49,7 @@ class Book {
   final int? openLibCoverId;
   final Uint8List? coverArtS;
 
-  String? get bookLengthPgs => bookLength == null ? null : '$bookLength pgs';
+  String? get bookLengthPgs => bookLength.ifExists((l) => '$l pgs');
 }
 
 enum BookType {

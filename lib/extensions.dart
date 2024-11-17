@@ -30,3 +30,7 @@ extension BuildContextExtension on BuildContext {
 extension IterableExtension<T> on Iterable<T> {
   List<U> mapL<U>(U Function(T) f) => map(f).toList();
 }
+
+extension NullableObjectExtensions<T> on T? {
+  U? ifExists<U>(U Function(T) f) => this == null ? null : f(this as T);
+}

@@ -16,7 +16,8 @@ class BookTile extends StatelessWidget {
       subtitle: Text(book.book.author ?? 'Author unknown'),
       leading: Icon(Icons.question_mark),
       trailing: ReadingProgressIndicator(
-        progressPercent: book.progressHistory.progressEvents.last.progress,
+        progressPercent:
+            book.progressHistory.progressEvents.firstOrNull?.progress ?? 0,
       ),
       onTap: () {
         Navigator.of(context)

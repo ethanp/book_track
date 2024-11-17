@@ -37,16 +37,17 @@ class SupabaseAuthService {
 
 class SupabaseBookService {
   static final _bucketClient = _base.storage;
+  static final _coverArtClient = _bucketClient.from('cover_art');
+  static final _booksClient = _base.from('books');
 
   static Future<PostgrestMap> storeBook(Book book) async {
     final PostgrestList preExistResponse = await _fetchPreExisting(book);
     if (preExistResponse.isNotEmpty) return preExistResponse.first;
-    final String? coverStorageLoc = book.coverArtS == null
-        ? null
-        : await _storeCoverArtS(book.openLibCoverId!, book.coverArtS!);
+    final String? coverStorageLoc = await book.coverArtS
+        .ifExists<Future<String>>(
+            (art) => _storeCoverArtS(book.openLibCoverId!, art));
 
-    return await _base
-        .from('books')
+    return await _booksClient
         .insert({
           _SupaBook.titleCol: book.title,
           _SupaBook.authorCol: book.author,
@@ -61,7 +62,7 @@ class SupabaseBookService {
 
   static Future<PostgrestList> _fetchPreExisting(Book book) async {
     PostgrestFilterBuilder<PostgrestList> preExistQuery =
-        _base.from('books').select('id');
+        _booksClient.select('id');
     preExistQuery = preExistQuery.eq('title', book.title);
     if (book.author != null) {
       preExistQuery = preExistQuery.eq('author', book.author!);
@@ -79,8 +80,20 @@ class SupabaseBookService {
     }
   }
 
-  static Future<String> _storeCoverArtS(int coverI, Uint8List data) async =>
-      await _bucketClient.from('cover_art').uploadBinary('s/$coverI.jpg', data);
+  static Future<String> _storeCoverArtS(int coverI, Uint8List data) =>
+      _coverArtClient.uploadBinary('s/$coverI.jpg', data);
+
+  static Future<Uint8List?> getCoverArt(String key) async {
+    try {
+      return await _coverArtClient.download(key);
+    } on StorageException catch (e) {
+      print('issue with the bucket: $e');
+      return null;
+    } catch (e) {
+      print('strange error: $e');
+      return null;
+    }
+  }
 }
 
 class SupabaseLibraryService {
@@ -104,21 +117,25 @@ class SupabaseLibraryService {
     });
   }
 
-  static Future<List<Book>> myBooks() async {
-    var list = await _SupaLibrary.forLoggedInUser();
-    return Future.wait(list.map((e) async {
-      final int bookId = e.bookId;
-      final _SupaBook supaBook = await _SupaBook.byId(bookId);
-      return Book(
+  static Future<List<BookProgress>> myBooks() async {
+    final List<_SupaLibrary> library = await _SupaLibrary.forLoggedInUser();
+    return Future.wait(library.map((myBook) async {
+      final int bookId = myBook.bookId;
+      final _SupaBook supaBook = await _SupaLibrary.bookById(bookId);
+      final Uint8List? cover = await supaBook.coverKey
+          .ifExists<Future<Uint8List?>>(SupabaseBookService.getCoverArt);
+      var book = Book(
         supaBook.title,
         supaBook.author,
         supaBook.yearPublished,
-        null,
-        // TODO book type
+        myBook.format,
         supaBook.length,
         supaBook.coverId,
-        null, // TODO cover art
+        cover,
       );
+      final bookProgress =
+          BookProgress(book, DateTime.now(), ProgressHistory([]));
+      return bookProgress;
     }));
   }
 }
@@ -133,9 +150,8 @@ class _SupaLibrary {
   int get userId => rawData[userIdCol];
   static final String userIdCol = 'user_id';
 
-  BookType? get format => (BookType.values as List<BookType?>).firstWhere(
-      (BookType? v) => v!.name == rawData[formatCol],
-      orElse: () => null);
+  BookType? get format => (rawData[formatCol] as String?).ifExists(
+      (str) => BookType.values.firstWhere((BookType v) => v.name == str));
   static final String formatCol = 'format';
 
   _SupaLibrary(this.rawData);
@@ -149,6 +165,9 @@ class _SupaLibrary {
         .eq('user_id', SupabaseAuthService.loggedInUserId!);
     return rawData.mapL(_SupaLibrary.new);
   }
+
+  static Future<_SupaBook> bookById(int bookId) async =>
+      _SupaBook(await _base.from('books').select().eq('id', bookId).single());
 }
 
 class _SupaBook {
@@ -176,10 +195,4 @@ class _SupaBook {
   _SupaBook(this.rawData);
 
   final PostgrestMap rawData;
-
-  static Future<_SupaBook> byId(int bookId) async {
-    return _SupaBook(
-      await _base.from('books').select().eq('id', bookId).single(),
-    );
-  }
 }

@@ -22,15 +22,16 @@ class ReadingProgressIndicator extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Row(children: [
+                if (progressPercent > 0)
+                  Container(
+                    height: 12,
+                    width: width / 100 * progressPercent - 1,
+                    color: Colors.green,
+                    padding: EdgeInsets.zero,
+                  ),
                 Container(
                   height: 12,
-                  width: width / 100 * progressPercent - 1,
-                  color: Colors.green,
-                  padding: EdgeInsets.zero,
-                ),
-                Container(
-                  height: 12,
-                  width: width / 100 * (100 - progressPercent) - 1,
+                  width: width / 100 * (100 - progressPercent) - 2,
                   color: Colors.orange,
                 ),
               ]),

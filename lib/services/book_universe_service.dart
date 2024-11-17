@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:book_track/data_model.dart';
+import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:http/http.dart' as http;
 
@@ -71,7 +72,7 @@ class OpenLibraryBookUniverseRepository implements BookUniverseRepository {
           final List? authorNames = resultDoc['author_name'];
           return Book(
             resultDoc['title'],
-            authorNames == null ? null : authorNames[0],
+            authorNames.ifExists((n) => n.first),
             resultDoc['first_publish_year'],
             null,
             resultDoc['number_of_pages_median'],
