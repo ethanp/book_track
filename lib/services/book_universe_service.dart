@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:http/http.dart' as http;
 
@@ -67,7 +66,7 @@ class OpenLibraryBookUniverseRepository implements BookUniverseRepository {
     final dynamic bodyJson = jsonDecode(response.body);
     final results = bodyJson['docs'] as List<dynamic>;
     return Future.wait(
-      results.mapL(
+      results.map(
         (resultDoc) async {
           final List? authorNames = resultDoc['author_name'];
           return Book(

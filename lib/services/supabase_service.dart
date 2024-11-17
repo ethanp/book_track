@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:book_track/data_model.dart';
+import 'package:book_track/extensions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -47,13 +48,12 @@ class SupabaseBookService {
     return await _base
         .from('books')
         .insert({
-          'added_at': DateTime.now().toIso8601String(),
-          'title': book.title,
-          'author': book.author,
-          'first_year_published': book.yearFirstPublished,
-          'length': book.bookLength,
-          'openlib_cover_id': book.openLibCoverId,
-          'small_cover_key': coverStorageLoc,
+          _SupaBook.titleCol: book.title,
+          _SupaBook.authorCol: book.author,
+          _SupaBook.yearPublishedCol: book.yearFirstPublished,
+          _SupaBook.lengthCol: book.bookLength,
+          _SupaBook.coverIdCol: book.openLibCoverId,
+          _SupaBook.coverKeyCol: coverStorageLoc,
         })
         .select()
         .single();
@@ -102,5 +102,84 @@ class SupabaseLibraryService {
       'user_id': SupabaseAuthService.loggedInUserId,
       'format': bookType.name,
     });
+  }
+
+  static Future<List<Book>> myBooks() async {
+    var list = await _SupaLibrary.forLoggedInUser();
+    return Future.wait(list.map((e) async {
+      final int bookId = e.bookId;
+      final _SupaBook supaBook = await _SupaBook.byId(bookId);
+      return Book(
+        supaBook.title,
+        supaBook.author,
+        supaBook.yearPublished,
+        null,
+        // TODO book type
+        supaBook.length,
+        supaBook.coverId,
+        null, // TODO cover art
+      );
+    }));
+  }
+}
+
+class _SupaLibrary {
+  DateTime get createdAt => DateTime.parse(rawData[createdAtCol]);
+  static final String createdAtCol = 'created_at';
+
+  int get bookId => rawData[bookIdCol];
+  static final String bookIdCol = 'book_id';
+
+  int get userId => rawData[userIdCol];
+  static final String userIdCol = 'user_id';
+
+  BookType? get format => (BookType.values as List<BookType?>).firstWhere(
+      (BookType? v) => v!.name == rawData[formatCol],
+      orElse: () => null);
+  static final String formatCol = 'format';
+
+  _SupaLibrary(this.rawData);
+
+  final PostgrestMap rawData;
+
+  static Future<List<_SupaLibrary>> forLoggedInUser() async {
+    final PostgrestList rawData = await _base
+        .from('library')
+        .select()
+        .eq('user_id', SupabaseAuthService.loggedInUserId!);
+    return rawData.mapL(_SupaLibrary.new);
+  }
+}
+
+class _SupaBook {
+  DateTime get createdAt => DateTime.parse(rawData[createdAtCol]);
+  static final String createdAtCol = 'created_at';
+
+  String get title => rawData[titleCol];
+  static final String titleCol = 'title';
+
+  String? get author => rawData[authorCol];
+  static final String authorCol = 'author';
+
+  int? get yearPublished => rawData[yearPublishedCol];
+  static final String yearPublishedCol = 'first_year_published';
+
+  int? get length => rawData[lengthCol];
+  static final String lengthCol = 'length';
+
+  int? get coverId => rawData[coverIdCol];
+  static final String coverIdCol = 'openlib_cover_id';
+
+  String? get coverKey => rawData[coverKeyCol];
+  static final String coverKeyCol = 'small_cover_key';
+
+  _SupaBook(this.rawData);
+
+  final PostgrestMap rawData;
+
+  static Future<_SupaBook> byId(int bookId) async {
+    return _SupaBook(
+      await _base.from('books').select().eq('id', bookId).single(),
+    );
   }
 }
