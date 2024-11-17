@@ -125,6 +125,7 @@ class SupabaseLibraryService {
       final Uint8List? cover = await supaBook.coverKey
           .ifExists<Future<Uint8List?>>(SupabaseBookService.getCoverArt);
       var book = Book(
+        supaBook.supaId,
         supaBook.title,
         supaBook.author,
         supaBook.yearPublished,
@@ -171,6 +172,9 @@ class _SupaLibrary {
 }
 
 class _SupaBook {
+  int get supaId => rawData[idCol];
+  static final String idCol = 'id';
+
   DateTime get createdAt => DateTime.parse(rawData[createdAtCol]);
   static final String createdAtCol = 'created_at';
 

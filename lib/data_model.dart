@@ -32,6 +32,7 @@ class ProgressEvent {
 
 class Book {
   Book(
+    this.supaId,
     this.title,
     this.author,
     this.yearFirstPublished,
@@ -41,6 +42,7 @@ class Book {
     this.coverArtS,
   );
 
+  final int? supaId;
   final String title;
   final String? author;
   final int? yearFirstPublished;

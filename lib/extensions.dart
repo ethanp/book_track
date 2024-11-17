@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 extension BuildContextExtension on BuildContext {
   void showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(this).hideCurrentSnackBar();
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -25,6 +26,8 @@ extension BuildContextExtension on BuildContext {
 
   void push(Widget widget) =>
       Navigator.of(this).push(MaterialPageRoute(builder: (context) => widget));
+
+  void pop<T>([T? result]) => Navigator.of(this).pop(result);
 }
 
 extension IterableExtension<T> on Iterable<T> {

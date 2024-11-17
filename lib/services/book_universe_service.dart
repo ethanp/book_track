@@ -32,9 +32,9 @@ class StaticBookUniverseRepository implements BookUniverseRepository {
   @override
   Future<List<Book>> search(String containing) async {
     return [
-      Book('A chicken', 'Donald Duck', 1954, BookType.hardcover, 125, null,
+      Book(1, 'A chicken', 'Donald Duck', 1954, BookType.hardcover, 125, null,
           null),
-      Book('Why buildings fall', 'Tony Archy Text', 1978, BookType.hardcover,
+      Book(2, 'Why buildings fall', 'Tony Archy Text', 1978, BookType.hardcover,
           225, null, null),
     ];
   }
@@ -68,16 +68,17 @@ class OpenLibraryBookUniverseRepository implements BookUniverseRepository {
     final results = bodyJson['docs'] as List<dynamic>;
     return Future.wait(
       results.map(
-        (resultDoc) async {
-          final List? authorNames = resultDoc['author_name'];
+        (openLibBookDoc) async {
+          final List? authorNames = openLibBookDoc['author_name'];
           return Book(
-            resultDoc['title'],
-            authorNames.ifExists((n) => n.first),
-            resultDoc['first_publish_year'],
             null,
-            resultDoc['number_of_pages_median'],
-            resultDoc['cover_i'],
-            await coverBytes(resultDoc['cover_i'], 'S'),
+            openLibBookDoc['title'],
+            authorNames.ifExists((n) => n.first),
+            openLibBookDoc['first_publish_year'],
+            null,
+            openLibBookDoc['number_of_pages_median'],
+            openLibBookDoc['cover_i'],
+            await coverBytes(openLibBookDoc['cover_i'], 'S'),
           );
         },
       ),
