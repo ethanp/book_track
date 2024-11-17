@@ -13,7 +13,6 @@ class MyBooksService {
           960,
           null,
           null,
-          null,
         ),
         DateTime(2024),
         ProgressHistory([
@@ -29,7 +28,6 @@ class MyBooksService {
           100,
           null,
           null,
-          null,
         ),
         DateTime(2024),
         ProgressHistory([
@@ -43,7 +41,6 @@ class MyBooksService {
           2042,
           BookType.paperback,
           124,
-          null,
           null,
           null,
         ),

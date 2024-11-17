@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:book_track/data_model.dart';
+import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,35 +56,62 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
     ]);
   }
 
-  Widget coverArt() => widget.book.coverArtM == null
-      ? coverArtMissingPlaceholder()
-      : Padding(
-          padding: const EdgeInsets.all(20),
-          child: Image.memory(widget.book.coverArtM!),
-        );
+  late final Future<Uint8List?> futureCoverArtMedSize;
 
-  Container coverArtMissingPlaceholder() {
+  @override
+  void initState() {
+    futureCoverArtMedSize = BookUniverseService.getCoverArtSizeM(widget.book);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    futureCoverArtMedSize.ignore();
+    super.dispose();
+  }
+
+  Widget coverArt() {
+    return FutureBuilder(
+      future: futureCoverArtMedSize,
+      builder: (context, snapshot) {
+        // Show loading indicator while waiting for the data
+        // Render the image if data is not null
+        // Show a blank box if the data is null
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return coverArtMissingPlaceholder(loading: true);
+        } else if (snapshot.hasData && snapshot.data != null) {
+          return Image.memory(snapshot.data!);
+        } else {
+          return coverArtMissingPlaceholder(loading: false);
+        }
+      },
+    );
+  }
+
+  Container coverArtMissingPlaceholder({required bool loading}) {
     return Container(
       height: 200,
       width: 150,
       margin: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.black),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Center(
-        child: SizedBox(
-          width: 110,
-          child: Text(
-            'No cover art found',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontStyle: FontStyle.italic,
-              fontWeight: FontWeight.w500,
-              fontSize: 18,
-            ),
-          ),
-        ),
+        child: loading
+            ? CircularProgressIndicator()
+            : SizedBox(
+                width: 110,
+                child: Text(
+                  'No cover art found',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
       ),
     );
   }

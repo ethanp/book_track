@@ -19,6 +19,9 @@ class BookUniverseService {
     List<Book> books = await bookUniverseRepo.search(containing);
     results.update(BookSearchResult(books));
   }
+
+  static Future<Uint8List?> getCoverArtSizeM(Book book) =>
+      bookUniverseRepo.coverBytes(book.openLibCoverId, 'M');
 }
 
 abstract class BookUniverseRepository {
@@ -30,9 +33,9 @@ class StaticBookUniverseRepository implements BookUniverseRepository {
   Future<List<Book>> search(String containing) async {
     return [
       Book('A chicken', 'Donald Duck', 1954, BookType.hardcover, 125, null,
-          null, null),
+          null),
       Book('Why buildings fall', 'Tony Archy Text', 1978, BookType.hardcover,
-          225, null, null, null),
+          225, null, null),
     ];
   }
 }
@@ -73,9 +76,8 @@ class OpenLibraryBookUniverseRepository implements BookUniverseRepository {
             resultDoc['first_publish_year'],
             null,
             resultDoc['number_of_pages_median'],
+            resultDoc['cover_i'],
             await coverBytes(resultDoc['cover_i'], 'S'),
-            await coverBytes(resultDoc['cover_i'], 'M'),
-            await coverBytes(resultDoc['cover_i'], 'L'),
           );
         },
       ),

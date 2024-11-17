@@ -35,9 +35,8 @@ class Book {
     this.yearFirstPublished,
     this.bookType,
     this.bookLength,
+    this.openLibCoverId,
     this.coverArtS,
-    this.coverArtM,
-    this.coverArtL,
   );
 
   final String title;
@@ -45,9 +44,8 @@ class Book {
   final int? yearFirstPublished;
   final BookType? bookType;
   final int? bookLength;
+  final int? openLibCoverId;
   final Uint8List? coverArtS;
-  final Uint8List? coverArtM;
-  final Uint8List? coverArtL;
 
   String? get bookLengthPgs => bookLength == null ? null : '$bookLength pgs';
 }
