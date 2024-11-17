@@ -61,7 +61,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
       onPressed: () async {
         setState(() => _saving = true);
         try {
-          await SupabaseDataService.storeBook(widget.book, bookType);
+          await SupabaseLibraryService.addBook(widget.book, bookType);
         } catch (error) {
           if (mounted) context.showSnackBar('$error\n${error.runtimeType}');
         } finally {
