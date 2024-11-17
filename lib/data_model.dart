@@ -32,18 +32,24 @@ class Book {
   Book(
     this.title,
     this.author,
-    this.yearPublished,
+    this.yearFirstPublished,
     this.bookType,
     this.bookLength,
-    this.coverArt,
+    this.coverArtS,
+    this.coverArtM,
+    this.coverArtL,
   );
 
   final String title;
   final String? author;
-  final int? yearPublished;
+  final int? yearFirstPublished;
   final BookType? bookType;
   final int? bookLength;
-  final ByteData? coverArt;
+  final Uint8List? coverArtS;
+  final Uint8List? coverArtM;
+  final Uint8List? coverArtL;
+
+  String? get bookLengthPgs => bookLength == null ? null : '$bookLength pgs';
 }
 
 enum BookType {

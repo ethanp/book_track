@@ -23,28 +23,85 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(children: [
-          keyValueText('Title: ', widget.book.title),
-          keyValueText('Author: ', widget.book.author ?? 'Author unknown'),
-          keyValueText('Year: ', widget.book.yearPublished.toString()),
-          // TODO(low priority): add cover art here.
+          coverArt(),
+          bookMetadata(),
+          Padding(
+            padding: const EdgeInsets.only(top: 30),
+            child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[300],
+                foregroundColor: Colors.black,
+                elevation: 2,
+              ),
+              child: Text('Add to reading list'),
+            ),
+          ),
         ]),
+      ),
+    );
+  }
+
+  Widget bookMetadata() {
+    return Column(children: [
+      keyValueText('Title: ', widget.book.title),
+      keyValueText('Author: ', widget.book.author ?? 'Author unknown'),
+      keyValueText(
+          'Year First Published: ', widget.book.yearFirstPublished.toString()),
+      if (widget.book.bookLengthPgs != null)
+        keyValueText('Length: ', widget.book.bookLengthPgs!),
+    ]);
+  }
+
+  Widget coverArt() => widget.book.coverArtM == null
+      ? coverArtMissingPlaceholder()
+      : Padding(
+          padding: const EdgeInsets.all(20),
+          child: Image.memory(widget.book.coverArtM!),
+        );
+
+  Container coverArtMissingPlaceholder() {
+    return Container(
+      height: 200,
+      width: 150,
+      margin: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.black),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Center(
+        child: SizedBox(
+          width: 110,
+          child: Text(
+            'No cover art found',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w500,
+              fontSize: 18,
+            ),
+          ),
+        ),
       ),
     );
   }
 
   Widget keyValueText(String key, String value) {
     final TextStyle black = TextStyles().h2;
-    final TextStyle bold = black.copyWith(fontWeight: FontWeight.bold);
+    final TextStyle bold = black.copyWith(fontWeight: FontWeight.w800);
     final Widget keyWidget = SizedBox(
-      width: 60,
+      width: 90,
       child: Text(key, style: bold, maxLines: 3, textAlign: TextAlign.right),
     );
     final Widget valueWidget = SizedBox(
       width: 200,
       child: Text(value, style: black, maxLines: 3),
     );
-    return Row(
-      children: [keyWidget, SizedBox(width: 30), valueWidget],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [keyWidget, SizedBox(width: 16), valueWidget],
+      ),
     );
   }
 }

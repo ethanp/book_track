@@ -32,38 +32,45 @@ class SearchResults extends ConsumerWidget {
   }
 
   Widget item(Book book, WidgetRef ref) {
-    final String subtitle = bookTypeAndLength(book);
+    final String subtitle =
+        [book.bookType, book.bookLengthPgs].where((v) => v != null).join(' ');
     return Container(
       margin: const EdgeInsets.all(1),
       child: InkWell(
         child: Material(
           elevation: .3,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Text(book.title,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-              Text(
-                book.author ?? 'No author listed',
-                style: TextStyle(
-                  fontStyle: FontStyle.italic,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[800],
-                ),
+              SizedBox(
+                width: 50,
+                child: book.coverArtS == null
+                    ? null
+                    : Image.memory(book.coverArtS!),
               ),
-              if (subtitle.isNotEmpty)
-                Text(subtitle, style: TextStyle(fontWeight: FontWeight.w400)),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(book.title,
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                  Text(
+                    book.author ?? 'No author listed',
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                  if (subtitle.isNotEmpty)
+                    Text(subtitle,
+                        style: TextStyle(fontWeight: FontWeight.w400)),
+                ],
+              ),
             ],
           ),
         ),
         onTap: () => ref.context.push(SearchResultDetailPage(book)),
       ),
     );
-  }
-
-  String bookTypeAndLength(Book book) {
-    final bookLength =
-        book.bookLength == null ? null : ('${book.bookLength}pgs');
-    return [book.bookType, bookLength].where((s) => s != null).join(' ');
   }
 }

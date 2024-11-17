@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
@@ -28,9 +29,10 @@ class StaticBookUniverseRepository implements BookUniverseRepository {
   @override
   Future<List<Book>> search(String containing) async {
     return [
-      Book('A chicken', 'Donald Duck', 1954, BookType.hardcover, 125, null),
+      Book('A chicken', 'Donald Duck', 1954, BookType.hardcover, 125, null,
+          null, null),
       Book('Why buildings fall', 'Tony Archy Text', 1978, BookType.hardcover,
-          225, null),
+          225, null, null, null),
     ];
   }
 }
@@ -41,11 +43,18 @@ class StaticBookUniverseRepository implements BookUniverseRepository {
 ///    I'm starting with this one for now.
 /// Google would probably work fine too https://developers.google.com/books/docs/v1/using
 class OpenLibraryBookUniverseRepository implements BookUniverseRepository {
-  final Uri apiUrl = Uri.parse('https://openlibrary.org/search.json');
+  static final Uri apiUrl = Uri.parse('https://openlibrary.org/search.json');
+
+  static Uri coverUrl(int coverId, String size) =>
+      Uri.parse('https://covers.openlibrary.org/b/id/$coverId-$size.jpg');
 
   @override
   Future<List<Book>> search(String containing) async {
-    final Uri url = apiUrl.replace(queryParameters: {'q': safe(containing)});
+    String safe(String str) => str.replaceAll(r'\S', '+');
+    final Uri url = apiUrl.replace(queryParameters: {
+      'q': safe(containing),
+      'limit': '20',
+    });
     print('apiUrl: $url');
     final http.Response response = await http.get(url);
     if (response.statusCode != 200) {
@@ -54,20 +63,28 @@ class OpenLibraryBookUniverseRepository implements BookUniverseRepository {
     }
     final dynamic bodyJson = jsonDecode(response.body);
     final results = bodyJson['docs'] as List<dynamic>;
-    return results.mapL(
-      (resultDoc) {
-        List? authorName = resultDoc['author_name'];
-        return Book(
-          resultDoc['title'],
-          authorName == null ? null : authorName[0],
-          resultDoc['first_publish_year'],
-          null,
-          resultDoc['number_of_pages_median'],
-          null,
-        );
-      },
+    return Future.wait(
+      results.mapL(
+        (resultDoc) async {
+          final List? authorNames = resultDoc['author_name'];
+          return Book(
+            resultDoc['title'],
+            authorNames == null ? null : authorNames[0],
+            resultDoc['first_publish_year'],
+            null,
+            resultDoc['number_of_pages_median'],
+            await coverBytes(resultDoc['cover_i'], 'S'),
+            await coverBytes(resultDoc['cover_i'], 'M'),
+            await coverBytes(resultDoc['cover_i'], 'L'),
+          );
+        },
+      ),
     );
   }
 
-  String safe(String str) => str.replaceAll(r'\S', '+');
+  Future<Uint8List?> coverBytes(int? coverId, String size) async {
+    if (coverId == null) return null;
+    final http.Response response = await http.get(coverUrl(coverId, size));
+    return response.bodyBytes;
+  }
 }
