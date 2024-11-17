@@ -18,6 +18,7 @@ class SearchResultDetailPage extends ConsumerStatefulWidget {
 }
 
 class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
+  bool _saving = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,10 +41,12 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: BookType.values.mapL(typeButton),
-                  ),
+                  child: _saving
+                      ? CircularProgressIndicator()
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: BookType.values.mapL(typeButton),
+                        ),
                 ),
               ],
             ),
@@ -55,7 +58,16 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
 
   Widget typeButton(BookType bookType) {
     return ElevatedButton(
-      onPressed: () => SupabaseDataService.storeBook(widget.book, bookType),
+      onPressed: () async {
+        setState(() => _saving = true);
+        try {
+          await SupabaseDataService.storeBook(widget.book, bookType);
+        } catch (error) {
+          if (mounted) context.showSnackBar('$error\n${error.runtimeType}');
+        } finally {
+          setState(() => _saving = false);
+        }
+      },
       style: ElevatedButton.styleFrom(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         padding: EdgeInsets.symmetric(horizontal: 8),
@@ -63,7 +75,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
         backgroundColor: switch (bookType) {
           BookType.audiobook => Colors.orange[400],
           BookType.eBook => Colors.blue[400],
-          BookType.paperback => Colors.brown[200],
+          BookType.paperback => Colors.red[300],
           BookType.hardcover => Colors.green[200],
         },
       ),

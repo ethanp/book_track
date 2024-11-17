@@ -11,6 +11,8 @@ class SupabaseAuthService {
 
   static bool get isLoggedOut => _authClient.currentSession == null;
 
+  static String? get loggedInUserId => _authClient.currentSession?.user.id;
+
   static bool get isLoggedIn => !isLoggedOut;
 
   static Future<void> signOut() => _authClient.signOut();
@@ -43,13 +45,14 @@ class SupabaseDataService {
         ? null
         : await storeCoverArtS(book.openLibCoverId!, book.coverArtS!);
 
-    return await _base.from('book').insert({
+    return await _base.from('books').insert({
+      'added_at': DateTime.now().toIso8601String(),
       'title': book.title,
       'author': book.author,
       'first_year_published': book.yearFirstPublished,
-      'book_type': bookType,
-      'book_length': book.bookLength,
-      'open_lib_cover_id': book.openLibCoverId,
+      'type': bookType.name,
+      'length': book.bookLength,
+      'openlib_cover_id': book.openLibCoverId,
       'small_cover_key': coverStorageLoc,
     });
   }

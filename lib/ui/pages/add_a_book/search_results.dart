@@ -20,7 +20,7 @@ class SearchResults extends ConsumerWidget {
     return Expanded(
       child: Column(
         children: [
-          ResultsCount(shownCount: 100, fullCount: 888),
+          ResultsCount(shownCount: 10, fullCount: 888),
           Expanded(
             child: ListView(
               children: searchResult.books.mapL((book) => item(book, ref)),
@@ -40,7 +40,7 @@ class SearchResults extends ConsumerWidget {
           child: Row(
             children: [
               coverArt(book),
-              bookInfo(book),
+              Flexible(child: bookInfo(book)),
             ],
           ),
         ),
@@ -61,6 +61,7 @@ class SearchResults extends ConsumerWidget {
         [book.bookType, book.bookLengthPgs].where((v) => v != null).join(' ');
     final title = Text(
       book.title,
+      maxLines: 3,
       style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w700,

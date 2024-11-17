@@ -56,7 +56,7 @@ class OpenLibraryBookUniverseRepository implements BookUniverseRepository {
     String safe(String str) => str.replaceAll(r'\S', '+');
     final Uri url = apiUrl.replace(queryParameters: {
       'q': safe(containing),
-      'limit': '20',
+      'limit': '10',
     });
     print('apiUrl: $url');
     final http.Response response = await http.get(url);
