@@ -30,11 +30,9 @@ class ProgressView extends StatelessWidget {
         ),
         Table(
           children: book.progressHistory.progressEvents.mapL((ev) {
-            final String date = dateFormatter.format(ev.dateTime);
-            final String time = timeFormatter.format(ev.dateTime);
             return TableRow(children: [
-              Text(date),
-              Text(time),
+              Text(dateFormatter.format(ev.dateTime)),
+              Text(timeFormatter.format(ev.dateTime)),
               Text('${ev.progress}%'),
             ]);
           }),

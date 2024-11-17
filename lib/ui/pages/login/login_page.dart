@@ -32,10 +32,10 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void pushLoggedInAppUponLogin() {
-    _authStateSubscription = SupabaseService.onAuthStateChange(
+    _authStateSubscription = SupabaseAuthService.onAuthStateChange(
       onEvent: (AuthState data) {
         if (_redirectingToLoggedInApp) return;
-        if (SupabaseService.isLoggedIn) {
+        if (SupabaseAuthService.isLoggedIn) {
           _redirectingToLoggedInApp = true;
           if (mounted) context.pushReplacementPage(const WholeAppWidget());
         }
@@ -83,7 +83,8 @@ class _LoginPageState extends State<LoginPage> {
       setState(() => _processingSignIn = true);
       final emailInput = _emailController.text.trim();
       final passwordInput = _passwordController.text.trim();
-      final f = _signUpMode ? SupabaseService.signUp : SupabaseService.signIn;
+      final f =
+          _signUpMode ? SupabaseAuthService.signUp : SupabaseAuthService.signIn;
       await f(emailInput, passwordInput);
       if (mounted) context.showSnackBar('Success');
     } catch (error) {

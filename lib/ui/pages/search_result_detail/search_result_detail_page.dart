@@ -1,7 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:book_track/data_model.dart';
+import 'package:book_track/extensions.dart';
 import 'package:book_track/services/book_universe_service.dart';
+import 'package:book_track/services/supabase_service.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,18 +32,42 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
           bookMetadata(),
           Padding(
             padding: const EdgeInsets.only(top: 30),
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[300],
-                foregroundColor: Colors.black,
-                elevation: 2,
-              ),
-              child: Text('Add to reading list'),
+            child: Column(
+              children: [
+                Text(
+                  "I'm reading this in",
+                  style: TextStyles().h1,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: BookType.values.mapL(typeButton),
+                  ),
+                ),
+              ],
             ),
           ),
         ]),
       ),
+    );
+  }
+
+  Widget typeButton(BookType bookType) {
+    return ElevatedButton(
+      onPressed: () => SupabaseDataService.storeBook(widget.book, bookType),
+      style: ElevatedButton.styleFrom(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: EdgeInsets.symmetric(horizontal: 8),
+        foregroundColor: Colors.black,
+        backgroundColor: switch (bookType) {
+          BookType.audiobook => Colors.orange[400],
+          BookType.eBook => Colors.blue[400],
+          BookType.paperback => Colors.brown[200],
+          BookType.hardcover => Colors.green[200],
+        },
+      ),
+      child: Text(bookType.name),
     );
   }
 

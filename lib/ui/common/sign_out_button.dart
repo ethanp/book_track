@@ -9,7 +9,7 @@ class SignOutButton extends StatelessWidget {
     return TextButton(
       onPressed: () async {
         try {
-          await SupabaseService.signOut();
+          await SupabaseAuthService.signOut();
         } catch (error) {
           if (context.mounted) context.authError(error);
         } finally {

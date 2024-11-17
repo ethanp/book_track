@@ -32,7 +32,7 @@ class WholeAppWidget extends ConsumerWidget {
       title: 'The app itself',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(useMaterial3: true),
-      home: SupabaseService.isLoggedOut
+      home: SupabaseAuthService.isLoggedOut
           ? const LoginPage()
           : MyBottomNavBar.elements[selectedIdx].page,
     );
