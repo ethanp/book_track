@@ -29,6 +29,9 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
       body: Container(
         padding: const EdgeInsets.all(8),
         color: Color.lerp(Colors.yellow, Colors.grey[100], .98),
+        // TODO add a line chart with all the currently-reading books.
+        // TODO add a line chart of the progress across all books in
+        //  the past year (and varying and customizable periods)
         child: sessionUi(),
       ),
       floatingActionButton: AddABookButton(),

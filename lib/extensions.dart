@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -32,8 +34,23 @@ extension BuildContextExtension on BuildContext {
 
 extension IterableExtension<T> on Iterable<T> {
   List<U> mapL<U>(U Function(T) f) => map(f).toList();
+
+  Iterable<ElemAndIndex<T>> get zipWithIndex {
+    int i = 0;
+    return map((e) => ElemAndIndex(elem: e, idx: i++));
+  }
+}
+
+class ElemAndIndex<T> {
+  const ElemAndIndex({required this.elem, required this.idx});
+  final T elem;
+  final int idx;
 }
 
 extension NullableObjectExtensions<T> on T? {
   U? ifExists<U>(U Function(T) f) => this == null ? null : f(this as T);
+}
+
+extension NumExtension on num {
+  double get deg2rad => this * math.pi / 180;
 }
