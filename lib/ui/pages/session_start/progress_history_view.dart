@@ -38,32 +38,39 @@ class ProgressHistoryView extends StatelessWidget {
     );
   }
 
+  static final double horizontalInterval = 25;
+
   Widget flLineChart(List<ProgressEvent> progressEvents) {
     final Iterable<DateTime> eventTimes = progressEvents.map((e) => e.dateTime);
-    final DateTime earliestEvent = eventTimes.min;
-    final DateTime latestEvent = eventTimes.max;
-    final Duration timespan = latestEvent.difference(earliestEvent);
-    final bool labelInDaysNotHours = timespan > Duration(days: 2);
+    final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
     return Padding(
       padding: const EdgeInsets.all(20),
       child: LineChart(
         LineChartData(
           minY: 0,
           maxY: 100,
-          minX: earliestEvent.millisecondsSinceEpoch.toDouble(),
-          maxX: latestEvent.millisecondsSinceEpoch.toDouble(),
-          titlesData: labelAxes(labelInDaysNotHours),
+          minX: timespan.beginning.millisecondsSinceEpoch.toDouble(),
+          maxX: timespan.end.millisecondsSinceEpoch.toDouble(),
+          gridData: FlGridData(
+              horizontalInterval: horizontalInterval,
+              verticalInterval: verticalInterval(timespan)),
+          titlesData: labelAxes(timespan),
           lineBarsData: plotLines(progressEvents),
         ),
       ),
     );
   }
 
-  FlTitlesData labelAxes(bool labelInDaysNotHours) {
+  static double? verticalInterval(TimeSpan timespan) =>
+      timespan.duration > Duration(hours: 10)
+          ? null
+          : Duration(minutes: 30).inMilliseconds.toDouble();
+
+  FlTitlesData labelAxes(TimeSpan timespan) {
     return FlTitlesData(
       leftTitles: percentageAxisTitles(shiftTitle: Offset(20, -10)),
       rightTitles: percentageAxisTitles(shiftTitle: Offset(15, -2)),
-      bottomTitles: dateAxisTitles(labelInDaysNotHours),
+      bottomTitles: dateAxisTitles(timespan),
       topTitles: noAxisTitles,
     );
   }
@@ -94,7 +101,7 @@ class ProgressHistoryView extends StatelessWidget {
     return AxisTitles(
       axisNameWidget: transform(shift: shiftTitle, child: Text('Percentage')),
       sideTitles: SideTitles(
-        interval: 25,
+        interval: horizontalInterval,
         showTitles: true,
         getTitlesWidget: (double value, TitleMeta meta) =>
             Text(value.floor().toString()),
@@ -102,28 +109,30 @@ class ProgressHistoryView extends StatelessWidget {
     );
   }
 
-  static AxisTitles dateAxisTitles(bool labelInDaysNotHours) {
+  static AxisTitles dateAxisTitles(TimeSpan timespan) {
     return AxisTitles(
       axisNameWidget: dateAxisName(),
-      sideTitles: dateAxisSideTitles(labelInDaysNotHours),
+      sideTitles: dateAxisSideTitles(timespan),
     );
   }
 
-  static SideTitles dateAxisSideTitles(bool labelInDaysNotHours) {
+  static SideTitles dateAxisSideTitles(TimeSpan timespan) {
     return SideTitles(
       showTitles: true,
+      interval: verticalInterval(timespan),
       getTitlesWidget: (double value, TitleMeta meta) {
         return transform(
           shift: Offset(18, 13),
           angleDegrees: 35,
-          child: dateText(value, labelInDaysNotHours),
+          child: dateText(value, timespan),
         );
       },
     );
   }
 
-  static Text dateText(double value, bool labelInDaysNotHours) {
-    final formatter = labelInDaysNotHours ? dateFormatter : timeFormatter;
+  static Text dateText(double value, TimeSpan timespan) {
+    final formatter =
+        timespan.duration > Duration(days: 2) ? dateFormatter : timeFormatter;
     final dateTime = DateTime.fromMillisecondsSinceEpoch(value.floor());
     final dateString = formatter.format(dateTime);
     return Text(dateString, style: TextStyle(letterSpacing: -.4, fontSize: 11));
@@ -171,4 +180,15 @@ class ProgressHistoryView extends StatelessWidget {
     return [date1, date2, date3].zipWithIndex.mapL(
         (e) => ProgressEvent(e.elem, 10 * e.idx, ProgressEventFormat.percent));
   }
+}
+
+class TimeSpan {
+  TimeSpan({
+    required this.beginning,
+    required this.end,
+  }) : duration = beginning.difference(end);
+
+  final DateTime beginning;
+  final DateTime end;
+  final Duration duration;
 }
