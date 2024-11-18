@@ -22,6 +22,13 @@ class ProgressView extends StatelessWidget {
         // TODO enable this real code instead of the fake crap.
         // book.progressHistory.progressEvents;
         fakeProgress();
+
+    final Iterable<DateTime> eventTimes = progressEvents.map((e) => e.dateTime);
+    final DateTime earliestEvent = eventTimes.min;
+    final DateTime latestEvent = eventTimes.max;
+    final Duration timespan = latestEvent.difference(earliestEvent);
+    final bool labelInDaysNotHours = timespan > Duration(days: 2);
+
     return Column(
       children: [
         Text('History', style: TextStyles().h1),
@@ -32,10 +39,12 @@ class ProgressView extends StatelessWidget {
             child: LineChart(LineChartData(
               minY: 0,
               maxY: 100,
+              minX: earliestEvent.millisecondsSinceEpoch.toDouble(),
+              maxX: latestEvent.millisecondsSinceEpoch.toDouble(),
               titlesData: FlTitlesData(
                 leftTitles: percentageAxisTitles(shiftTitle: Offset(20, -10)),
                 rightTitles: percentageAxisTitles(shiftTitle: Offset(15, -2)),
-                bottomTitles: dateAxisTitles(),
+                bottomTitles: dateAxisTitles(labelInDaysNotHours),
                 topTitles: noAxisTitles,
               ),
               lineBarsData: [
@@ -69,38 +78,31 @@ class ProgressView extends StatelessWidget {
     );
   }
 
-  static AxisTitles dateAxisTitles() {
+  static AxisTitles dateAxisTitles(bool labelInDaysNotHours) {
     return AxisTitles(
       axisNameWidget: dateAxisName(),
-      sideTitles: dateAxisSideTitles(),
+      sideTitles: dateAxisSideTitles(labelInDaysNotHours),
     );
   }
 
-  static SideTitles dateAxisSideTitles() {
+  static SideTitles dateAxisSideTitles(bool labelInDaysNotHours) {
     return SideTitles(
       showTitles: true,
       getTitlesWidget: (double value, TitleMeta meta) {
         return transform(
           shift: Offset(18, 13),
           angleDegrees: 35,
-          child: dateText(value),
+          child: dateText(value, labelInDaysNotHours),
         );
       },
     );
   }
 
-  static Text dateText(double value) {
-    return Text(
-      dateFormatter.format(
-        DateTime.fromMillisecondsSinceEpoch(
-          value.floor(),
-        ),
-      ),
-      style: TextStyle(
-        letterSpacing: -.4,
-        fontSize: 11,
-      ),
-    );
+  static Text dateText(double value, bool labelInDaysNotHours) {
+    final formatter = labelInDaysNotHours ? dateFormatter : timeFormatter;
+    final dateTime = DateTime.fromMillisecondsSinceEpoch(value.floor());
+    final dateString = formatter.format(dateTime);
+    return Text(dateString, style: TextStyle(letterSpacing: -.4, fontSize: 11));
   }
 
   static Widget dateAxisName() {

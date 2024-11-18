@@ -39,10 +39,40 @@ extension IterableExtension<T> on Iterable<T> {
     int i = 0;
     return map((e) => ElemAndIndex(elem: e, idx: i++));
   }
+
+  T minBy<U extends Comparable<U>>(U Function(T) fun) =>
+      reduce((prev, curr) => fun(prev) < fun(curr) ? prev : curr);
+
+  T maxBy<U extends Comparable<U>>(U Function(T) fun) =>
+      reduce((prev, curr) => fun(prev) < fun(curr) ? curr : prev);
+}
+
+extension ComparableExtension<T extends Comparable<T>> on T {
+  operator <(T other) => compareTo(other) < 0;
+
+  T min(T other) => this < other ? this : other;
+}
+
+extension ComparableIterableExtension<T extends Comparable<T>> on Iterable<T> {
+  T get min => minBy((t) => t);
+
+  T get max => maxBy((t) => t);
+}
+
+/// We need this for [min] and [max] to work on [double] and [int], which
+/// don't extend Comparable<T>, they extend num which extends Comparable<num>.
+extension ComparableIterableNumExtension<T extends num> on Iterable<T> {
+  T get min => minBy<num>((t) => t);
+
+  T get max => maxBy<num>((t) => t);
 }
 
 class ElemAndIndex<T> {
-  const ElemAndIndex({required this.elem, required this.idx});
+  const ElemAndIndex({
+    required this.elem,
+    required this.idx,
+  });
+
   final T elem;
   final int idx;
 }
