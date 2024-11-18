@@ -85,3 +85,10 @@ extension NullableObjectExtensions<T> on T? {
 extension NumExtension on num {
   double get deg2rad => this * math.pi / 180;
 }
+
+extension DateTimeExtension on DateTime {
+  bool sameDayAs(DateTime other) =>
+      year == other.year && month == other.month && day == other.day;
+
+  bool get isToday => sameDayAs(DateTime.now());
+}

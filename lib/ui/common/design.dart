@@ -10,7 +10,7 @@ class TextStyles {
   final h1 = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.w700,
-    color: Colors.black,
+    color: Colors.grey[900],
   );
   final h2 = TextStyle(
     fontWeight: FontWeight.w500,

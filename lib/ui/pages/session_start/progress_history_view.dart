@@ -24,16 +24,7 @@ class ProgressHistoryView extends StatelessWidget {
     return Column(
       children: [
         Text('History', style: TextStyles().h1),
-        SizedBox(height: 250, child: flLineChart(progressEvents)),
-        Table(
-          children: progressEvents.mapL((ev) {
-            return TableRow(children: [
-              Text(dateFormatter.format(ev.dateTime)),
-              Text(timeFormatter.format(ev.dateTime)),
-              Text('${ev.progress}%'),
-            ]);
-          }),
-        ),
+        SizedBox(height: 300, child: flLineChart(progressEvents)),
       ],
     );
   }
@@ -118,10 +109,7 @@ class ProgressHistoryView extends StatelessWidget {
     return AxisTitles(
       axisNameWidget: transform(
         shift: Offset(20, 0),
-        child: Text(
-          'Date',
-          style: TextStyles().bottomAxisLabel,
-        ),
+        child: Text('Date', style: TextStyles().bottomAxisLabel),
       ),
       sideTitles: dateAxisSideTitles(timespan),
       axisNameSize: 24,

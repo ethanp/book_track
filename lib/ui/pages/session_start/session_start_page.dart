@@ -39,7 +39,7 @@ class SessionStartPage extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 120),
       child: ElevatedButton(
-        onPressed: () => context.push(SessionTimerPage()),
+        onPressed: () => context.push(SessionTimerPage(book)),
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
           shape:

@@ -1,17 +1,25 @@
 import 'dart:async';
 
+import 'package:book_track/data_model.dart';
+import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:segment_display/segment_display.dart';
 
 class SessionTimerPage extends ConsumerStatefulWidget {
+  const SessionTimerPage(this.book);
+  final BookProgress book;
+
   @override
   ConsumerState createState() => _SessionTimerState();
 }
 
 class _SessionTimerState extends ConsumerState<SessionTimerPage> {
+  static final dateFormatter = DateFormat('MMM d, y');
+  static final timeFormatter = DateFormat('h:mma');
   bool get sessionInProgress => ref.watch(sessionStartTimeProvider) != null;
 
   @override
@@ -24,29 +32,38 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 80),
+          padding: const EdgeInsets.only(top: 40),
           child: Column(children: [
-            toggleButton(),
-            SizedBox(height: 50),
             segmentDisplay(),
+            SizedBox(height: 30),
+            toggleButtons(),
+            SizedBox(height: 80),
+            sessionsToday(),
           ]),
         ),
       ),
     );
   }
 
-  Widget toggleButton() {
+  Widget toggleButtons() {
     final SessionStartTime read = ref.read(sessionStartTimeProvider.notifier);
     return sessionInProgress
-        ? toggleSessionButton(
-            onPressed: () => read.stop(),
-            backgroundColor: Colors.orange,
-            text: 'Stop Session',
-          )
+        ? Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+            toggleSessionButton(
+              onPressed: () => read.stop(),
+              backgroundColor: Colors.orange,
+              text: 'End Session',
+            ),
+            toggleSessionButton(
+              onPressed: () => read.stop(),
+              backgroundColor: Colors.red,
+              text: 'Cancel Session',
+            ),
+          ])
         : toggleSessionButton(
             onPressed: () => read.start(),
             backgroundColor: Colors.lightGreen,
-            text: 'Start Session',
+            text: 'Begin Session',
           );
   }
 
@@ -63,7 +80,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: Colors.black,
-          fixedSize: Size(250, 80),
+          fixedSize: Size(170, 80),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
           elevation: 4,
@@ -135,5 +152,37 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
     final duration = DateTime.now().difference(currStartTime!);
     String padded(int i) => i.toString().padLeft(2, '0');
     return '${padded(duration.inMinutes)}:${padded(duration.inSeconds % 60)}';
+  }
+
+  Widget sessionsToday() {
+    final List<ProgressEvent> progressEvents =
+        widget.book.progressHistory.progressEvents;
+    var progressToday = progressEvents.where((e) => e.dateTime.isToday);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      child: Card(
+        color: Colors.blueGrey[100],
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          height: 200,
+          width: double.infinity,
+          child: Column(children: [
+            Text('Sessions today:', style: TextStyles().h1),
+            if (progressToday.isEmpty)
+              Text('None', style: TextStyles().h2)
+            else
+              Table(
+                children: progressToday.mapL((ev) {
+                  return TableRow(children: [
+                    Text(dateFormatter.format(ev.dateTime)),
+                    Text(timeFormatter.format(ev.dateTime)),
+                    Text('${ev.progress}%'),
+                  ]);
+                }),
+              ),
+          ]),
+        ),
+      ),
+    );
   }
 }
