@@ -19,26 +19,12 @@ class UpdateFormatSelector extends StatelessWidget {
         SegmentedButton<ProgressEventFormat>(
           showSelectedIcon: false,
           style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.resolveWith(
-              (states) => states.contains(WidgetState.selected)
-                  ? Colors.blue
-                  : Colors.grey[200],
-            ),
-            foregroundColor: WidgetStateProperty.resolveWith(
-              (states) => states.contains(WidgetState.selected)
-                  ? Colors.white
-                  : Colors.black,
-            ),
+            backgroundColor: ifSelected(Colors.blue, otw: Colors.grey[200]),
+            foregroundColor: ifSelected(Colors.white, otw: Colors.black),
             visualDensity: VisualDensity.comfortable,
           ),
           selected: {currentlySelectedFormat},
-          segments: {
-            ProgressEventFormat.percent: '%',
-            ProgressEventFormat.pageNum: 'pages',
-            ProgressEventFormat.minutes: 'elapsed time',
-          }.entries.mapL((a) => ButtonSegment(
-              value: a.key,
-              label: Text(a.value, style: TextStyle(fontSize: 12)))),
+          segments: segments(),
           // Because multi-selection is disabled by default for the
           // SegmentedButton, the `selection` argument will *only* contain
           // the newly selected segment (weird API, I know).
@@ -47,4 +33,20 @@ class UpdateFormatSelector extends StatelessWidget {
       ],
     );
   }
+
+  static WidgetStateProperty<Color?> ifSelected(
+    Color? blue, {
+    required Color? otw,
+  }) =>
+      WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected) ? blue : otw,
+      );
+
+  static List<ButtonSegment<ProgressEventFormat>> segments() => {
+        ProgressEventFormat.percent: '%',
+        ProgressEventFormat.pageNum: 'pages',
+        ProgressEventFormat.minutes: 'elapsed time',
+      }.entries.mapL((format) => ButtonSegment(
+          value: format.key,
+          label: Text(format.value, style: TextStyle(fontSize: 12))));
 }
