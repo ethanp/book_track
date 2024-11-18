@@ -4,6 +4,8 @@ import 'package:book_track/services/supabase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'update_format_selector.dart';
+
 class UpdateProgressDialog extends ConsumerStatefulWidget {
   const UpdateProgressDialog(this.book);
 
@@ -15,6 +17,8 @@ class UpdateProgressDialog extends ConsumerStatefulWidget {
 
 class _UpdateProgressDialogState extends ConsumerState<UpdateProgressDialog> {
   late final TextEditingController textEditingController;
+  ProgressEventFormat _selectedProgressEventFormat =
+      ProgressEventFormat.percent;
 
   @override
   void initState() {
@@ -36,7 +40,15 @@ class _UpdateProgressDialogState extends ConsumerState<UpdateProgressDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('New progress on "${widget.book.book.title}"'),
-          TextFormField(controller: textEditingController),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 30),
+            child: TextFormField(controller: textEditingController),
+          ),
+          UpdateFormatSelector(
+            currentlySelectedFormat: _selectedProgressEventFormat,
+            onSelected: (selected) =>
+                setState(() => _selectedProgressEventFormat = selected),
+          ),
         ],
       ),
       actions: [
