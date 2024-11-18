@@ -6,9 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class ProgressView extends StatelessWidget {
-  const ProgressView(
-    this.book,
-  );
+  const ProgressView(this.book);
 
   final BookProgress book;
   static final dateFormatter = DateFormat('MMM d, y');
@@ -23,36 +21,10 @@ class ProgressView extends StatelessWidget {
         // book.progressHistory.progressEvents;
         fakeProgress();
 
-    final Iterable<DateTime> eventTimes = progressEvents.map((e) => e.dateTime);
-    final DateTime earliestEvent = eventTimes.min;
-    final DateTime latestEvent = eventTimes.max;
-    final Duration timespan = latestEvent.difference(earliestEvent);
-    final bool labelInDaysNotHours = timespan > Duration(days: 2);
-
     return Column(
       children: [
         Text('History', style: TextStyles().h1),
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: SizedBox(
-            height: 200,
-            child: LineChart(LineChartData(
-              minY: 0,
-              maxY: 100,
-              minX: earliestEvent.millisecondsSinceEpoch.toDouble(),
-              maxX: latestEvent.millisecondsSinceEpoch.toDouble(),
-              titlesData: FlTitlesData(
-                leftTitles: percentageAxisTitles(shiftTitle: Offset(20, -10)),
-                rightTitles: percentageAxisTitles(shiftTitle: Offset(15, -2)),
-                bottomTitles: dateAxisTitles(labelInDaysNotHours),
-                topTitles: noAxisTitles,
-              ),
-              lineBarsData: [
-                LineChartBarData(spots: progressEvents.mapL(eventToSpot)),
-              ],
-            )),
-          ),
-        ),
+        SizedBox(height: 250, child: flLineChart(progressEvents)),
         Table(
           children: progressEvents.mapL((ev) {
             return TableRow(children: [
@@ -63,6 +35,58 @@ class ProgressView extends StatelessWidget {
           }),
         ),
       ],
+    );
+  }
+
+  Widget flLineChart(List<ProgressEvent> progressEvents) {
+    final Iterable<DateTime> eventTimes = progressEvents.map((e) => e.dateTime);
+    final DateTime earliestEvent = eventTimes.min;
+    final DateTime latestEvent = eventTimes.max;
+    final Duration timespan = latestEvent.difference(earliestEvent);
+    final bool labelInDaysNotHours = timespan > Duration(days: 2);
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: LineChart(
+        LineChartData(
+          minY: 0,
+          maxY: 100,
+          minX: earliestEvent.millisecondsSinceEpoch.toDouble(),
+          maxX: latestEvent.millisecondsSinceEpoch.toDouble(),
+          titlesData: labelAxes(labelInDaysNotHours),
+          lineBarsData: plotLines(progressEvents),
+        ),
+      ),
+    );
+  }
+
+  FlTitlesData labelAxes(bool labelInDaysNotHours) {
+    return FlTitlesData(
+      leftTitles: percentageAxisTitles(shiftTitle: Offset(20, -10)),
+      rightTitles: percentageAxisTitles(shiftTitle: Offset(15, -2)),
+      bottomTitles: dateAxisTitles(labelInDaysNotHours),
+      topTitles: noAxisTitles,
+    );
+  }
+
+  List<LineChartBarData> plotLines(List<ProgressEvent> progressEvents) {
+    final readingProgressLine = LineChartBarData(
+      spots: progressEvents.mapL(eventToSpot),
+      belowBarData: gradientFill(),
+    );
+    return [readingProgressLine];
+  }
+
+  static BarAreaData gradientFill() {
+    return BarAreaData(
+      show: true,
+      gradient: LinearGradient(
+        colors: [
+          Colors.blue.withOpacity(1),
+          Colors.blue.withOpacity(.2),
+        ],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ),
     );
   }
 

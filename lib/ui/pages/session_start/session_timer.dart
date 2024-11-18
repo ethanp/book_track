@@ -15,6 +15,7 @@ class _SessionTimerState extends ConsumerState<SessionTimer> {
 
   @override
   Widget build(BuildContext context) {
+    updateTimer();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 40),
       child: Column(children: [
@@ -28,12 +29,18 @@ class _SessionTimerState extends ConsumerState<SessionTimer> {
     final SessionStartTime read = ref.read(sessionStartTimeProvider.notifier);
     return sessionInProgress
         ? ElevatedButton(
-            onPressed: () => read.stop(),
+            onPressed: () {
+              read.stop();
+              repaint();
+            },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
             child: Text('Stop Session'),
           )
         : ElevatedButton(
-            onPressed: () => read.start(),
+            onPressed: () {
+              read.start();
+              repaint();
+            },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.lightGreen),
             child: Text('Start Session'),
           );
@@ -41,7 +48,6 @@ class _SessionTimerState extends ConsumerState<SessionTimer> {
 
   Widget segmentDisplay() {
     final DateTime? currStartTime = ref.read(sessionStartTimeProvider);
-    reloadEverySecond();
     final Color? backgroundColor =
         sessionInProgress ? Colors.lightGreen[200] : Colors.blueGrey[100];
     Widget border({required Widget child}) {
@@ -70,13 +76,30 @@ class _SessionTimerState extends ConsumerState<SessionTimer> {
     return border(child: clockFace);
   }
 
-  void reloadEverySecond() {
+  Timer? _timer;
+
+  int timerNum = 0;
+
+  void updateTimer() {
     if (sessionInProgress) {
-      Timer.periodic(
-        Duration(seconds: 1),
-        (_) => setState(() {}),
-      );
+      _timer ??= repaintEverySecond();
+    } else {
+      _timer?.cancel();
+      _timer = null;
     }
+  }
+
+  Timer repaintEverySecond() => Timer.periodic(Duration(seconds: 1), repaint);
+
+  void repaint([dynamic _]) {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    print('canceling timer upon dispose');
+    _timer?.cancel();
+    super.dispose();
   }
 
   String duration(DateTime? currStartTime) {
