@@ -155,7 +155,7 @@ class _SupaLibrary {
       (str) => BookType.values.firstWhere((BookType v) => v.name == str));
   static final String formatCol = 'format';
 
-  _SupaLibrary(this.rawData);
+  const _SupaLibrary(this.rawData);
 
   final PostgrestMap rawData;
 
@@ -196,7 +196,37 @@ class _SupaBook {
   String? get coverKey => rawData[coverKeyCol];
   static final String coverKeyCol = 'small_cover_key';
 
-  _SupaBook(this.rawData);
+  const _SupaBook(this.rawData);
 
   final PostgrestMap rawData;
+}
+
+class _SupaProgress {
+  const _SupaProgress(this.rawData);
+
+  final PostgrestMap rawData;
+
+  int get libraryBookId => rawData[libraryBookIdCol];
+  static final String libraryBookIdCol = 'library_book_id';
+
+  int get userId => rawData[userIdCol];
+  static final String userIdCol = 'user_id';
+
+  ProgressEventFormat get format =>
+      ProgressEventFormat.map[rawData[formatCol]]!;
+  static final String formatCol = 'format';
+}
+
+class SupabaseProgressService {
+  static final SupabaseQueryBuilder _progressClient =
+      _base.from('progress_events');
+
+  static Future<void> updateProgress(
+      BookProgress book, int userInput, ProgressEventFormat format) async {
+    return await _progressClient.insert({
+      _SupaProgress.libraryBookIdCol: book.book.supaId,
+      _SupaProgress.userIdCol: SupabaseAuthService.loggedInUserId,
+      _SupaProgress.formatCol: format.name,
+    });
+  }
 }

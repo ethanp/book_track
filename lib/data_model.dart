@@ -24,10 +24,20 @@ class ProgressEvent {
   ProgressEvent(
     this.dateTime,
     this.progress,
+    this.format,
   );
 
   final DateTime dateTime;
   final int progress;
+  final ProgressEventFormat format;
+}
+
+enum ProgressEventFormat {
+  pageNum,
+  percent,
+  minutes;
+
+  static final map = {for (final v in ProgressEventFormat.values) v.name: v};
 }
 
 class Book {
