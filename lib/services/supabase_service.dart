@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final SupabaseClient _base = Supabase.instance.client;
@@ -85,9 +86,13 @@ class SupabaseBookService {
 
   static Future<Uint8List?> getCoverArt(String key) async {
     try {
-      return await _coverArtClient.download(key);
+      final formattedKey = key.replaceAll('cover_art/', '');
+      return await _coverArtClient.download(formattedKey);
     } on StorageException catch (e) {
-      print('issue with the bucket: $e');
+      print('issue with the bucket: $e, $key');
+      return null;
+    } on ClientException catch (e) {
+      print('http issue $e $key');
       return null;
     } catch (e) {
       print('strange error: $e');

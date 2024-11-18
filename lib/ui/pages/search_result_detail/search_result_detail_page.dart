@@ -98,8 +98,9 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
 
   @override
   void initState() {
-    futureCoverArtMedSize = BookUniverseService.getCoverArtSizeM(widget.book);
     super.initState();
+    futureCoverArtMedSize =
+        BookUniverseService.downloadMedSizeCover(widget.book);
   }
 
   @override

@@ -21,7 +21,10 @@ class BookTile extends StatelessWidget {
       child: ListTile(
         title: Text(book.book.title),
         subtitle: Text(book.book.author ?? 'Author unknown'),
-        leading: Icon(Icons.question_mark),
+        leading: book.book.coverArtS.ifExists(
+          Image.memory,
+          otherwise: Icon(Icons.question_mark),
+        ),
         trailing: ReadingProgressIndicator(progressPercent: latestProgress),
         onTap: () => context.push(SessionStartPage(book)),
       ),

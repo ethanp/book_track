@@ -78,7 +78,8 @@ class ElemAndIndex<T> {
 }
 
 extension NullableObjectExtensions<T> on T? {
-  U? ifExists<U>(U Function(T) f) => this == null ? null : f(this as T);
+  U? ifExists<U>(U Function(T) f, {U? otherwise}) =>
+      this == null ? otherwise : f(this as T);
 }
 
 extension NumExtension on num {

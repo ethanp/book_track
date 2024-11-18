@@ -7,7 +7,6 @@ import 'package:book_track/riverpods.dart';
 import 'package:http/http.dart' as http;
 
 class BookUniverseService {
-  // static final bookUniverseRepo = StaticBookUniverseRepository();
   static final bookUniverseRepo = OpenLibraryBookUniverseRepository();
 
   static Future<void> search(
@@ -20,24 +19,8 @@ class BookUniverseService {
     results.update(BookSearchResult(books));
   }
 
-  static Future<Uint8List?> getCoverArtSizeM(Book book) =>
+  static Future<Uint8List?> downloadMedSizeCover(Book book) =>
       bookUniverseRepo.coverBytes(book.openLibCoverId, 'M');
-}
-
-abstract class BookUniverseRepository {
-  Future<List<Book>> search(String containing);
-}
-
-class StaticBookUniverseRepository implements BookUniverseRepository {
-  @override
-  Future<List<Book>> search(String containing) async {
-    return [
-      Book(1, 'A chicken', 'Donald Duck', 1954, BookType.hardcover, 125, null,
-          null),
-      Book(2, 'Why buildings fall', 'Tony Archy Text', 1978, BookType.hardcover,
-          225, null, null),
-    ];
-  }
 }
 
 /// One decent book api option is https://hardcover.app/account/api?referrer_id=15017
@@ -45,13 +28,12 @@ class StaticBookUniverseRepository implements BookUniverseRepository {
 ///    Nice thing about this one is it doesn't require any authentication.
 ///    I'm starting with this one for now.
 /// Google would probably work fine too https://developers.google.com/books/docs/v1/using
-class OpenLibraryBookUniverseRepository implements BookUniverseRepository {
+class OpenLibraryBookUniverseRepository {
   static final Uri apiUrl = Uri.parse('https://openlibrary.org/search.json');
 
   static Uri coverUrl(int coverId, String size) =>
       Uri.parse('https://covers.openlibrary.org/b/id/$coverId-$size.jpg');
 
-  @override
   Future<List<Book>> search(String containing) async {
     String safe(String str) => str.replaceAll(r'\S', '+');
     final Uri url = apiUrl.replace(queryParameters: {
