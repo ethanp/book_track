@@ -1,50 +1,78 @@
 import 'dart:async';
 
 import 'package:book_track/riverpods.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:segment_display/segment_display.dart';
 
-class SessionTimer extends ConsumerStatefulWidget {
+class SessionTimerPage extends ConsumerStatefulWidget {
   @override
   ConsumerState createState() => _SessionTimerState();
 }
 
-class _SessionTimerState extends ConsumerState<SessionTimer> {
+class _SessionTimerState extends ConsumerState<SessionTimerPage> {
   bool get sessionInProgress => ref.watch(sessionStartTimeProvider) != null;
 
   @override
   Widget build(BuildContext context) {
     updateTimer();
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 40),
-      child: Column(children: [
-        toggleButton(),
-        segmentDisplay(),
-      ]),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: ColorPalette().appBarColor,
+        title: Text('Session'),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 80),
+          child: Column(children: [
+            toggleButton(),
+            SizedBox(height: 50),
+            segmentDisplay(),
+          ]),
+        ),
+      ),
     );
   }
 
   Widget toggleButton() {
     final SessionStartTime read = ref.read(sessionStartTimeProvider.notifier);
     return sessionInProgress
-        ? ElevatedButton(
-            onPressed: () {
-              read.stop();
-              repaint();
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-            child: Text('Stop Session'),
+        ? toggleSessionButton(
+            onPressed: () => read.stop(),
+            backgroundColor: Colors.orange,
+            text: 'Stop Session',
           )
-        : ElevatedButton(
-            onPressed: () {
-              read.start();
-              repaint();
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.lightGreen),
-            child: Text('Start Session'),
+        : toggleSessionButton(
+            onPressed: () => read.start(),
+            backgroundColor: Colors.lightGreen,
+            text: 'Start Session',
           );
   }
+
+  Widget toggleSessionButton({
+    required void Function() onPressed,
+    required Color backgroundColor,
+    required String text,
+  }) =>
+      ElevatedButton(
+        onPressed: () {
+          onPressed();
+          repaint();
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          foregroundColor: Colors.black,
+          fixedSize: Size(250, 80),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          elevation: 4,
+        ),
+        child: Text(
+          text,
+          style: TextStyles().h1,
+        ),
+      );
 
   Widget segmentDisplay() {
     final DateTime? currStartTime = ref.read(sessionStartTimeProvider);

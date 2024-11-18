@@ -5,10 +5,10 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class ProgressView extends StatelessWidget {
-  const ProgressView(this.book);
+class ProgressHistoryView extends StatelessWidget {
+  const ProgressHistoryView(this.bookProgress);
 
-  final BookProgress book;
+  final BookProgress bookProgress;
   static final dateFormatter = DateFormat('MMM d, y');
   static final timeFormatter = DateFormat('h:mma');
   static const noAxisTitles =
