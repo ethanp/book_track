@@ -17,6 +17,15 @@ class TextStyles {
     color: Colors.black,
   );
 
+  final bottomAxisLabel = TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+  );
+  final sideAxisLabel = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+  );
+
   get h2Skinny => h2.copyWith(fontWeight: FontWeight.w300);
   get h2Fat => h2.copyWith(fontWeight: FontWeight.w600);
 }

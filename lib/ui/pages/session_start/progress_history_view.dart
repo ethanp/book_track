@@ -44,7 +44,7 @@ class ProgressHistoryView extends StatelessWidget {
     final Iterable<DateTime> eventTimes = progressEvents.map((e) => e.dateTime);
     final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.only(right: 24, bottom: 12, left: 4, top: 8),
       child: LineChart(
         LineChartData(
           minY: 0,
@@ -69,7 +69,7 @@ class ProgressHistoryView extends StatelessWidget {
   FlTitlesData labelAxes(TimeSpan timespan) {
     return FlTitlesData(
       leftTitles: percentageAxisTitles(shiftTitle: Offset(20, -10)),
-      rightTitles: percentageAxisTitles(shiftTitle: Offset(15, -2)),
+      rightTitles: noAxisTitles,
       bottomTitles: dateAxisTitles(timespan),
       topTitles: noAxisTitles,
     );
@@ -99,30 +99,43 @@ class ProgressHistoryView extends StatelessWidget {
 
   static AxisTitles percentageAxisTitles({required Offset shiftTitle}) {
     return AxisTitles(
-      axisNameWidget: transform(shift: shiftTitle, child: Text('Percentage')),
+      axisNameWidget: transform(
+        shift: shiftTitle,
+        child: Text('Percentage', style: TextStyles().sideAxisLabel),
+      ),
       sideTitles: SideTitles(
         interval: horizontalInterval,
+        reservedSize: 30,
         showTitles: true,
         getTitlesWidget: (double value, TitleMeta meta) =>
             Text(value.floor().toString()),
       ),
+      axisNameSize: 22,
     );
   }
 
   static AxisTitles dateAxisTitles(TimeSpan timespan) {
     return AxisTitles(
-      axisNameWidget: dateAxisName(),
+      axisNameWidget: transform(
+        shift: Offset(20, 0),
+        child: Text(
+          'Date',
+          style: TextStyles().bottomAxisLabel,
+        ),
+      ),
       sideTitles: dateAxisSideTitles(timespan),
+      axisNameSize: 24,
     );
   }
 
   static SideTitles dateAxisSideTitles(TimeSpan timespan) {
     return SideTitles(
       showTitles: true,
+      reservedSize: 36,
       interval: verticalInterval(timespan),
       getTitlesWidget: (double value, TitleMeta meta) {
         return transform(
-          shift: Offset(18, 13),
+          shift: Offset(8, 0),
           angleDegrees: 35,
           child: dateText(value, timespan),
         );
@@ -139,14 +152,11 @@ class ProgressHistoryView extends StatelessWidget {
   }
 
   static Widget dateAxisName() {
-    return transform(
-      shift: Offset(0, 20),
-      child: Text(
-        'Date',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
+    return Text(
+      'Date',
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
       ),
     );
   }
