@@ -4,6 +4,7 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:book_track/ui/pages/currently_reading/update_progress_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -11,6 +12,7 @@ import 'package:segment_display/segment_display.dart';
 
 class SessionTimerPage extends ConsumerStatefulWidget {
   const SessionTimerPage(this.book);
+
   final BookProgress book;
 
   @override
@@ -20,6 +22,7 @@ class SessionTimerPage extends ConsumerStatefulWidget {
 class _SessionTimerState extends ConsumerState<SessionTimerPage> {
   static final dateFormatter = DateFormat('MMM d, y');
   static final timeFormatter = DateFormat('h:mma');
+
   bool get sessionInProgress => ref.watch(sessionStartTimeProvider) != null;
 
   @override
@@ -46,25 +49,50 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
   }
 
   Widget toggleButtons() {
+    return !sessionInProgress
+        ? beginSessionButton()
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [endSessionButton(), cancelSessionButton()]);
+  }
+
+  Widget beginSessionButton() {
     final SessionStartTime read = ref.read(sessionStartTimeProvider.notifier);
-    return sessionInProgress
-        ? Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            toggleSessionButton(
-              onPressed: () => read.stop(),
-              backgroundColor: Colors.orange,
-              text: 'End Session',
-            ),
-            toggleSessionButton(
-              onPressed: () => read.stop(),
-              backgroundColor: Colors.red,
-              text: 'Cancel Session',
-            ),
-          ])
-        : toggleSessionButton(
-            onPressed: () => read.start(),
-            backgroundColor: Colors.lightGreen,
-            text: 'Begin Session',
-          );
+    return toggleSessionButton(
+      onPressed: () => read.start(),
+      backgroundColor: Colors.lightGreen,
+      text: 'Begin Session',
+    );
+  }
+
+  Widget endSessionButton() {
+    final SessionStartTime read = ref.read(sessionStartTimeProvider.notifier);
+    final DateTime? startTime = ref.read(sessionStartTimeProvider);
+
+    return toggleSessionButton(
+      onPressed: () async {
+        read.stop();
+        await showDialog(
+          context: context,
+          builder: (context) => UpdateProgressDialog(
+            book: widget.book,
+            startTime: startTime,
+            endTime: DateTime.now(),
+          ),
+        );
+      },
+      backgroundColor: Colors.orange,
+      text: 'End Session',
+    );
+  }
+
+  Widget cancelSessionButton() {
+    final SessionStartTime read = ref.read(sessionStartTimeProvider.notifier);
+    return toggleSessionButton(
+      onPressed: () => read.stop(),
+      backgroundColor: Colors.red,
+      text: 'Cancel Session',
+    );
   }
 
   Widget toggleSessionButton({
@@ -81,14 +109,12 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
           backgroundColor: backgroundColor,
           foregroundColor: Colors.black,
           fixedSize: Size(170, 80),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
           elevation: 4,
         ),
-        child: Text(
-          text,
-          style: TextStyles().h1,
-        ),
+        child: Text(text, style: TextStyles().h1),
       );
 
   Widget segmentDisplay() {
@@ -142,7 +168,6 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
 
   @override
   void dispose() {
-    print('canceling timer upon dispose');
     _timer?.cancel();
     super.dispose();
   }
@@ -157,7 +182,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
   Widget sessionsToday() {
     final List<ProgressEvent> progressEvents =
         widget.book.progressHistory.progressEvents;
-    var progressToday = progressEvents.where((e) => e.dateTime.isToday);
+    var progressToday = progressEvents.where((e) => e.end.isToday);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Card(
@@ -174,8 +199,8 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
               Table(
                 children: progressToday.mapL((ev) {
                   return TableRow(children: [
-                    Text(dateFormatter.format(ev.dateTime)),
-                    Text(timeFormatter.format(ev.dateTime)),
+                    Text(dateFormatter.format(ev.end)),
+                    Text(timeFormatter.format(ev.end)),
                     Text('${ev.progress}%'),
                   ]);
                 }),

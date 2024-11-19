@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:book_track/extensions.dart';
 
 class BookProgress {
-  BookProgress(
+  const BookProgress(
     this.book,
     this.startTime,
     this.progressHistory,
@@ -15,20 +15,22 @@ class BookProgress {
 }
 
 class ProgressHistory {
-  ProgressHistory(this.progressEvents);
+  const ProgressHistory(this.progressEvents);
 
   final List<ProgressEvent> progressEvents;
 }
 
 class ProgressEvent {
-  ProgressEvent(
-    this.dateTime,
-    this.progress,
-    this.format,
-  );
+  const ProgressEvent({
+    required this.end,
+    required this.progress,
+    required this.format,
+    this.start,
+  });
 
-  final DateTime dateTime;
   final int progress;
+  final DateTime? start;
+  final DateTime end;
   final ProgressEventFormat format;
 }
 
@@ -41,7 +43,7 @@ enum ProgressEventFormat {
 }
 
 class Book {
-  Book(
+  const Book(
     this.supaId,
     this.title,
     this.author,

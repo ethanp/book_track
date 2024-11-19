@@ -63,13 +63,12 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Resume reading',
-                  style: TextStyles().h1,
-                ),
+                Text('Resume reading', style: TextStyles().h1),
                 Expanded(
-                    child:
-                        ListView(children: snapshot.data!.mapL(BookTile.new))),
+                  child: ListView(
+                    children: snapshot.data!.mapL(BookTile.new),
+                  ),
+                ),
               ],
             );
           } else {

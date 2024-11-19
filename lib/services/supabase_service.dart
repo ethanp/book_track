@@ -107,18 +107,18 @@ class SupabaseLibraryService {
     final PostgrestList preExistQuery = await _base
         .from('library')
         .select('id')
-        .eq('book_id', storedBook['id'])
-        .eq('user_id', SupabaseAuthService.loggedInUserId!)
-        .eq('format', bookType.name)
+        .eq(_SupaLibrary.bookIdCol, storedBook['id'])
+        .eq(_SupaLibrary.userIdCol, SupabaseAuthService.loggedInUserId!)
+        .eq(_SupaLibrary.formatCol, bookType.name)
         .limit(1);
     if (preExistQuery.isNotEmpty) {
       print('library item already exists, not adding.');
       return;
     }
     return await _base.from('library').insert({
-      'book_id': storedBook['id'],
-      'user_id': SupabaseAuthService.loggedInUserId,
-      'format': bookType.name,
+      _SupaLibrary.bookIdCol: storedBook['id'],
+      _SupaLibrary.userIdCol: SupabaseAuthService.loggedInUserId,
+      _SupaLibrary.formatCol: bookType.name,
     });
   }
 
@@ -129,19 +129,22 @@ class SupabaseLibraryService {
       final _SupaBook supaBook = await _SupaLibrary.bookById(bookId);
       final Uint8List? cover = await supaBook.coverKey
           .ifExists<Future<Uint8List?>>(SupabaseBookService.getCoverArt);
-      var book = Book(
-        supaBook.supaId,
-        supaBook.title,
-        supaBook.author,
-        supaBook.yearPublished,
-        myBook.format,
-        supaBook.length,
-        supaBook.coverId,
-        cover,
+      final ProgressHistory progressHistory =
+          await SupabaseProgressService.history(bookId);
+      return BookProgress(
+        Book(
+          supaBook.supaId,
+          supaBook.title,
+          supaBook.author,
+          supaBook.yearPublished,
+          myBook.format,
+          supaBook.length,
+          supaBook.coverId,
+          cover,
+        ),
+        supaBook.createdAt,
+        progressHistory,
       );
-      final bookProgress =
-          BookProgress(book, DateTime.now(), ProgressHistory([]));
-      return bookProgress;
     }));
   }
 }
@@ -211,6 +214,9 @@ class _SupaProgress {
 
   final PostgrestMap rawData;
 
+  DateTime get createdAt => DateTime.parse(rawData[createdAtCol]);
+  static final String createdAtCol = 'created_at';
+
   int get libraryBookId => rawData[libraryBookIdCol];
   static final String libraryBookIdCol = 'library_book_id';
 
@@ -220,18 +226,61 @@ class _SupaProgress {
   ProgressEventFormat get format =>
       ProgressEventFormat.map[rawData[formatCol]]!;
   static final String formatCol = 'format';
+
+  int get progress => rawData[progressCol];
+  static final String progressCol = 'progress';
+
+  DateTime? get start => parseDateCol(rawData[startCol]);
+  static final String startCol = 'start';
+
+  DateTime? get end => parseDateCol(rawData[endCol]);
+  static final String endCol = 'end';
+
+  DateTime get endSafe => end ?? createdAt;
 }
 
 class SupabaseProgressService {
   static final SupabaseQueryBuilder _progressClient =
       _base.from('progress_events');
 
-  static Future<void> updateProgress(
-      BookProgress book, int userInput, ProgressEventFormat format) async {
-    return await _progressClient.insert({
+  static Future<void> updateProgress({
+    required BookProgress book,
+    required int userInput,
+    required ProgressEventFormat format,
+    DateTime? start,
+    DateTime? end,
+  }) async {
+    final progressUpdate = {
       _SupaProgress.libraryBookIdCol: book.book.supaId,
       _SupaProgress.userIdCol: SupabaseAuthService.loggedInUserId,
       _SupaProgress.formatCol: format.name,
-    });
+      _SupaProgress.progressCol: userInput,
+      _SupaProgress.startCol: start?.toIso8601String(),
+      _SupaProgress.endCol: end?.toIso8601String(),
+    };
+    print('inserting progress update $progressUpdate');
+    return await _progressClient.insert(progressUpdate);
+  }
+
+  static Future<ProgressHistory> history(int bookId) async {
+    final queryResults = await _progressClient
+        .select()
+        .eq(_SupaProgress.libraryBookIdCol, bookId)
+        .eq(_SupaProgress.userIdCol, SupabaseAuthService.loggedInUserId!);
+    return ProgressHistory(
+      queryResults.map(_SupaProgress.new).mapL(
+        (supaProgress) {
+          return ProgressEvent(
+            end: supaProgress.endSafe,
+            progress: supaProgress.progress,
+            format: supaProgress.format,
+            start: supaProgress.start,
+          );
+        },
+      ),
+    );
   }
 }
+
+DateTime? parseDateCol(dynamic value) =>
+    (value as String?).ifExists(DateTime.parse);

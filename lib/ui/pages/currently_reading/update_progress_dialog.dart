@@ -7,9 +7,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'update_format_selector.dart';
 
 class UpdateProgressDialog extends ConsumerStatefulWidget {
-  const UpdateProgressDialog(this.book);
+  const UpdateProgressDialog({
+    required this.book,
+    this.startTime,
+    this.endTime,
+  });
 
   final BookProgress book;
+  final DateTime? startTime;
+  final DateTime? endTime;
 
   @override
   ConsumerState createState() => _UpdateProgressDialogState();
@@ -17,6 +23,8 @@ class UpdateProgressDialog extends ConsumerStatefulWidget {
 
 class _UpdateProgressDialogState extends ConsumerState<UpdateProgressDialog> {
   late final TextEditingController textEditingController;
+  // TODO Ideally it would initialize this by considering whatever the user
+  //  selected the last time.
   ProgressEventFormat _selectedProgressEventFormat =
       ProgressEventFormat.percent;
 
@@ -63,12 +71,13 @@ class _UpdateProgressDialogState extends ConsumerState<UpdateProgressDialog> {
               context.pop();
               return;
             }
-            // TODO this should be selected during the dialog.
-            //  Ideally it would auto-select based on library book format as
-            //   as considering what ever the user selected the last time.
-            final userFormat = ProgressEventFormat.percent;
             await SupabaseProgressService.updateProgress(
-                widget.book, userInput, userFormat);
+              book: widget.book,
+              userInput: userInput,
+              format: _selectedProgressEventFormat,
+              start: widget.startTime,
+              end: widget.endTime,
+            );
             if (context.mounted) {
               context.showSnackBar('updated to: $userInput');
               context.pop();

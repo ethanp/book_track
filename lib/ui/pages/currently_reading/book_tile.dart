@@ -34,7 +34,7 @@ class BookTile extends StatelessWidget {
   Future<bool> _presentUpdateProgressDialog(BuildContext context) async {
     await showDialog(
       context: context,
-      builder: (context) => UpdateProgressDialog(book),
+      builder: (context) => UpdateProgressDialog(book: book),
     );
     return false; // <- This means *don't* remove the book from the ListView.
   }

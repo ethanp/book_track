@@ -17,14 +17,15 @@ class ProgressHistoryView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<ProgressEvent> progressEvents =
-        // TODO enable this real code instead of the fake crap.
-        // book.progressHistory.progressEvents;
-        fakeProgress();
+        bookProgress.progressHistory.progressEvents;
 
     return Column(
       children: [
         Text('History', style: TextStyles().h1),
-        SizedBox(height: 300, child: flLineChart(progressEvents)),
+        if (progressEvents.isEmpty)
+          Text('No progress updates yet')
+        else
+          SizedBox(height: 300, child: flLineChart(progressEvents)),
       ],
     );
   }
@@ -32,7 +33,7 @@ class ProgressHistoryView extends StatelessWidget {
   static final double horizontalInterval = 25;
 
   Widget flLineChart(List<ProgressEvent> progressEvents) {
-    final Iterable<DateTime> eventTimes = progressEvents.map((e) => e.dateTime);
+    final Iterable<DateTime> eventTimes = progressEvents.map((e) => e.end);
     final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
     return Padding(
       padding: const EdgeInsets.only(right: 24, bottom: 12, left: 4, top: 8),
@@ -151,7 +152,7 @@ class ProgressHistoryView extends StatelessWidget {
 
   static FlSpot eventToSpot(ProgressEvent p) {
     return FlSpot(
-      p.dateTime.millisecondsSinceEpoch.toDouble(),
+      p.end.millisecondsSinceEpoch.toDouble(),
       p.progress.toDouble(),
     );
   }
@@ -172,11 +173,17 @@ class ProgressHistoryView extends StatelessWidget {
   }
 
   static List<ProgressEvent> fakeProgress() {
-    final date1 = DateTime(2024, 1, 1, 0, 0);
-    final date2 = DateTime(2024, 1, 1, 1, 10);
-    final date3 = DateTime(2024, 1, 1, 3, 20);
-    return [date1, date2, date3].zipWithIndex.mapL(
-        (e) => ProgressEvent(e.elem, 10 * e.idx, ProgressEventFormat.percent));
+    return [
+      DateTime(2024, 1, 1, 0, 0),
+      DateTime(2024, 1, 1, 1, 10),
+      DateTime(2024, 1, 1, 3, 20),
+    ].zipWithIndex.mapL(
+          (e) => ProgressEvent(
+            end: e.elem,
+            progress: 10 * e.idx,
+            format: ProgressEventFormat.percent,
+          ),
+        );
   }
 }
 
