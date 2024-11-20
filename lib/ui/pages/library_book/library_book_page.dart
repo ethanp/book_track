@@ -20,38 +20,69 @@ class LibraryBookPage extends ConsumerWidget {
         backgroundColor: ColorPalette().appBarColor,
         title: Text(libraryBook.book.title),
       ),
-      body: Column(
+      body: SafeArea(
+        child: Column(
+          children: [
+            BookPropertiesEditor(libraryBook),
+            buttons(context),
+            historyChart(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget historyChart() {
+    return Card(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      color: Colors.grey[100],
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: ProgressHistoryView(libraryBook),
+      ),
+    );
+  }
+
+  Widget buttons(BuildContext context) {
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          BookPropertiesEditor(libraryBook),
-          Card(
-            margin: EdgeInsets.all(16),
-            color: Colors.grey[100],
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: ProgressHistoryView(libraryBook),
-            ),
+          outlinedButton(
+            text: 'Update progress',
+            backgroundColor: Colors.pink[100]!.withOpacity(0.5),
+            onPressed: () =>
+                // TODO show the update progress modal.
+                context.push(SessionTimerPage(libraryBook)),
           ),
-          startSessionButton(context)
+          outlinedButton(
+            text: '🧑‍🎓 Start session',
+            backgroundColor: Colors.blue[100]!.withOpacity(0.5),
+            onPressed: () => context.push(SessionTimerPage(libraryBook)),
+          ),
         ],
       ),
     );
   }
 
-  Widget startSessionButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 40),
-      child: ElevatedButton(
-        onPressed: () => context.push(SessionTimerPage(libraryBook)),
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          backgroundColor: Colors.green[100],
-          elevation: 4,
+  Widget outlinedButton({
+    required String text,
+    required VoidCallback onPressed,
+    required Color backgroundColor,
+  }) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
         ),
-        child: Text('🧑‍🎓 Start session', style: TextStyles().h1),
+        visualDensity: VisualDensity.compact,
+        side: BorderSide(width: 1.5),
+        backgroundColor: backgroundColor,
+        elevation: 4,
       ),
+      child: Text(text, style: TextStyles().h1),
     );
   }
 }

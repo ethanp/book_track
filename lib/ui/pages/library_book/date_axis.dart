@@ -52,13 +52,13 @@ class DateAxis {
         return transform(
           shift: Offset(8, 0),
           angleDegrees: 35,
-          child: dateText(value, timespan),
+          child: dateText(value),
         );
       },
     );
   }
 
-  static Text dateText(double value, TimeSpan timespan) {
+  Widget dateText(double value) {
     final formatter =
         timespan.duration > Duration(days: 2) ? dateFormatter : timeFormatter;
     final dateTime = DateTime.fromMillisecondsSinceEpoch(value.floor());

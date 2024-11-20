@@ -56,7 +56,6 @@ class ProgressHistoryView extends StatelessWidget {
   static double? verticalInterval(TimeSpan timespan) {
     final Duration? intervalDuration =
         timespan.duration < Duration(hours: 10) ? null : Duration(minutes: 30);
-    print('vertical interval $intervalDuration');
     return intervalDuration?.inMilliseconds.toDouble();
   }
 
