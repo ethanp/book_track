@@ -44,8 +44,9 @@ class LibraryBookPage extends ConsumerWidget {
         onPressed: () => context.push(SessionTimerPage(libraryBook)),
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           backgroundColor: Colors.green[100],
           elevation: 4,
         ),

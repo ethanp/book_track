@@ -63,10 +63,10 @@ class SupabaseBookService {
   static Future<PostgrestList> _fetchPreExisting(OpenLibraryBook book) async {
     PostgrestFilterBuilder<PostgrestList> preExistQuery = _booksClient
         .select('id')
-        .eq('title', book.title)
-        .eq('author', book.firstAuthor);
+        .eq(_SupaBook.titleCol, book.title)
+        .eq(_SupaBook.authorCol, book.firstAuthor);
     book.openLibCoverId.ifExists(
-        (id) => preExistQuery = preExistQuery.eq('openlib_cover_id', id));
+        (id) => preExistQuery = preExistQuery.eq(_SupaBook.coverIdCol, id));
     try {
       final PostgrestList preExistResponse = await preExistQuery.limit(1);
       return preExistResponse;
@@ -99,22 +99,27 @@ class SupabaseBookService {
 class SupabaseLibraryService {
   static Future<void> addBook(OpenLibraryBook book, BookFormat bookType) async {
     final PostgrestMap storedBook = await SupabaseBookService.storeBook(book);
-    final PostgrestList preExistQuery = await _base
-        .from('library')
-        .select('id')
-        .eq(_SupaLibrary.bookIdCol, storedBook['id'])
-        .eq(_SupaLibrary.userIdCol, SupabaseAuthService.loggedInUserId!)
-        .eq(_SupaLibrary.formatCol, bookType.name)
-        .limit(1);
-    if (preExistQuery.isNotEmpty) {
+    if (await alreadyExists(storedBook, bookType)) {
       print('library item already exists, not adding.');
       return;
     }
     return await _base.from('library').insert({
-      _SupaLibrary.bookIdCol: storedBook['id'],
+      _SupaLibrary.bookIdCol: storedBook[_SupaBook.idCol],
       _SupaLibrary.userIdCol: SupabaseAuthService.loggedInUserId,
       _SupaLibrary.formatCol: bookType.name,
     });
+  }
+
+  static Future<bool> alreadyExists(
+      PostgrestMap storedBook, BookFormat bookType) async {
+    final PostgrestList preExistQuery = await _base
+        .from('library')
+        .select('id')
+        .eq(_SupaLibrary.bookIdCol, storedBook[_SupaBook.idCol])
+        .eq(_SupaLibrary.userIdCol, SupabaseAuthService.loggedInUserId!)
+        .eq(_SupaLibrary.formatCol, bookType.name)
+        .limit(1);
+    return preExistQuery.isNotEmpty;
   }
 
   static Future<List<LibraryBook>> myBooks() async {
@@ -192,8 +197,8 @@ class _SupaLibrary {
     return rawData.mapL(_SupaLibrary.new);
   }
 
-  static Future<_SupaBook> bookById(int bookId) async =>
-      _SupaBook(await _base.from('books').select().eq('id', bookId).single());
+  static Future<_SupaBook> bookById(int bookId) async => _SupaBook(
+      await _base.from('books').select().eq(_SupaBook.idCol, bookId).single());
 }
 
 class _SupaBook {
