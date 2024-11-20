@@ -4,10 +4,11 @@ import 'package:book_track/services/supabase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'grey_box_text_field.dart';
 import 'update_format_selector.dart';
 
-class UpdateProgressDialog extends ConsumerStatefulWidget {
-  const UpdateProgressDialog({
+class UpdateProgressDialogPage extends ConsumerStatefulWidget {
+  const UpdateProgressDialogPage({
     required this.book,
     this.startTime,
     this.endTime,
@@ -21,23 +22,19 @@ class UpdateProgressDialog extends ConsumerStatefulWidget {
   ConsumerState createState() => _UpdateProgressDialogState();
 }
 
-class _UpdateProgressDialogState extends ConsumerState<UpdateProgressDialog> {
-  late final TextEditingController textEditingController;
-  // TODO Ideally it would initialize this by considering whatever the user
-  //  selected the last time.
+class _UpdateProgressDialogState
+    extends ConsumerState<UpdateProgressDialogPage> {
+  String _textFieldInput = '';
+
   ProgressEventFormat _selectedProgressEventFormat =
       ProgressEventFormat.percent;
 
   @override
   void initState() {
     super.initState();
-    textEditingController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    textEditingController.dispose();
-    super.dispose();
+    widget.book.progressHistory.progressEvents.lastOrNull?.format.ifExists(
+        (lastSelectedFormat) =>
+            _selectedProgressEventFormat = lastSelectedFormat);
   }
 
   @override
@@ -48,10 +45,11 @@ class _UpdateProgressDialogState extends ConsumerState<UpdateProgressDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('New progress on "${widget.book.book.title}"'),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 30),
-            child: TextFormField(controller: textEditingController),
-          ),
+          finishedBookButton(),
+          GreyBoxTextField(textChanged: (newText) {
+            print('newText: $newText');
+            _textFieldInput = newText;
+          }),
           UpdateFormatSelector(
             currentlySelectedFormat: _selectedProgressEventFormat,
             onSelected: (selected) =>
@@ -63,10 +61,10 @@ class _UpdateProgressDialogState extends ConsumerState<UpdateProgressDialog> {
         TextButton(onPressed: () => context.pop(), child: Text('Cancel')),
         TextButton(
           onPressed: () async {
-            int? userInput = int.tryParse(textEditingController.text);
+            int? userInput = int.tryParse(_textFieldInput);
             if (userInput == null) {
               context.showSnackBar(
-                'invalid number: ${textEditingController.text}',
+                'invalid number: $_textFieldInput',
               );
               context.pop();
               return;
@@ -86,6 +84,22 @@ class _UpdateProgressDialogState extends ConsumerState<UpdateProgressDialog> {
           child: Text('Submit'),
         ),
       ],
+    );
+  }
+
+  Widget finishedBookButton() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: ElevatedButton(
+        // TODO implement
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.green[300],
+          foregroundColor: Colors.purple[900],
+          elevation: 3,
+        ),
+        child: Text('I finished the book'),
+      ),
     );
   }
 }

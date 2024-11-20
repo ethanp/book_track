@@ -48,14 +48,14 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
             Text('Update format: ', style: TextStyles().h2),
             DropdownMenu(
               textAlign: TextAlign.center,
-              onSelected: (choice) {
-                setState(() => _format = choice);
-                SupabaseLibraryService.updateFormat(widget.libraryBook, choice);
+              onSelected: (selectedFormat) {
+                setState(() => _format = selectedFormat);
+                SupabaseLibraryService.updateFormat(
+                    widget.libraryBook, selectedFormat);
                 ref.invalidate(userLibraryProvider);
               },
               initialSelection: _format,
               dropdownMenuEntries: formatOptions.mapL((format) {
-                print('setting label as $_format');
                 return DropdownMenuEntry(
                   value: format,
                   label: _format?.name ?? 'No Format',

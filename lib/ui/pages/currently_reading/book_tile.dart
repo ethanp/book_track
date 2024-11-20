@@ -3,8 +3,8 @@ import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:flutter/material.dart';
 
+import '../update_progress_dialog/update_progress_dialog_page.dart';
 import 'reading_progress_indicator.dart';
-import 'update_progress_dialog.dart';
 
 class BookTile extends StatelessWidget {
   const BookTile(this.book);
@@ -18,6 +18,13 @@ class BookTile extends StatelessWidget {
     return Dismissible(
       key: Key(book.book.supaId.toString()),
       confirmDismiss: (direction) => _presentUpdateProgressDialog(context),
+      background: Container(
+        color: Colors.green,
+        child: Text(
+          'Add progress',
+          style: TextStyle(color: Colors.grey[100], fontSize: 18),
+        ),
+      ),
       child: ListTile(
         title: Text(book.book.title),
         subtitle: Text(book.book.author ?? 'Author unknown'),
@@ -34,7 +41,7 @@ class BookTile extends StatelessWidget {
   Future<bool> _presentUpdateProgressDialog(BuildContext context) async {
     await showDialog(
       context: context,
-      builder: (context) => UpdateProgressDialog(book: book),
+      builder: (context) => UpdateProgressDialogPage(book: book),
     );
     return false; // <- This means *don't* remove the book from the ListView.
   }

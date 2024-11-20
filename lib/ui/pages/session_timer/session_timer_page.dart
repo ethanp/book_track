@@ -4,7 +4,7 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:book_track/ui/pages/currently_reading/update_progress_dialog.dart';
+import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -74,7 +74,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
         read.stop();
         await showDialog(
           context: context,
-          builder: (context) => UpdateProgressDialog(
+          builder: (context) => UpdateProgressDialogPage(
             book: widget.book,
             startTime: startTime,
             endTime: DateTime.now(),
@@ -108,13 +108,13 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
           foregroundColor: Colors.black,
-          fixedSize: Size(170, 80),
+          fixedSize: Size(170, 88),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
           elevation: 4,
         ),
-        child: Text(text, style: TextStyles().h1),
+        child: Text(text, style: TextStyles().h2, textAlign: TextAlign.center),
       );
 
   Widget segmentDisplay() {
