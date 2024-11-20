@@ -13,7 +13,7 @@ class UpdateProgressDialog extends ConsumerStatefulWidget {
     this.endTime,
   });
 
-  final BookProgress book;
+  final LibraryBook book;
   final DateTime? startTime;
   final DateTime? endTime;
 

@@ -1,6 +1,6 @@
-import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
+import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/ui/pages/search_result_detail/search_result_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,7 +31,7 @@ class SearchResults extends ConsumerWidget {
     );
   }
 
-  Widget item(Book book, WidgetRef ref) {
+  Widget item(OpenLibraryBook book, WidgetRef ref) {
     return Container(
       margin: const EdgeInsets.all(1),
       child: InkWell(
@@ -49,16 +49,14 @@ class SearchResults extends ConsumerWidget {
     );
   }
 
-  Widget coverArt(Book book) {
+  Widget coverArt(OpenLibraryBook book) {
     return SizedBox(
       width: 50,
       child: book.coverArtS.ifExists(Image.memory),
     );
   }
 
-  Widget bookInfo(Book book) {
-    final String subtitle =
-        [book.bookType, book.bookLengthPgs].where((v) => v != null).join(' ');
+  Widget bookInfo(OpenLibraryBook book) {
     final title = Text(
       book.title,
       maxLines: 3,
@@ -68,25 +66,16 @@ class SearchResults extends ConsumerWidget {
       ),
     );
     final author = Text(
-      book.author ?? 'No author listed',
+      book.firstAuthor,
       style: TextStyle(
         fontStyle: FontStyle.italic,
         fontWeight: FontWeight.w500,
         color: Colors.grey[800],
       ),
     );
-    final otherInfo = [
-      if (subtitle.isNotEmpty)
-        Text(
-          subtitle,
-          style: TextStyle(
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [title, author, ...otherInfo],
+      children: [title, author],
     );
   }
 }

@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:http/http.dart' as http;
 
@@ -15,11 +13,11 @@ class BookUniverseService {
       return results.update(BookSearchResult([]));
     }
     results.update(null);
-    List<Book> books = await bookUniverseRepo.search(containing);
+    List<OpenLibraryBook> books = await bookUniverseRepo.search(containing);
     results.update(BookSearchResult(books));
   }
 
-  static Future<Uint8List?> downloadMedSizeCover(Book book) =>
+  static Future<Uint8List?> downloadMedSizeCover(OpenLibraryBook book) =>
       bookUniverseRepo.coverBytes(book.openLibCoverId, 'M');
 }
 
@@ -34,7 +32,7 @@ class OpenLibraryBookUniverseRepository {
   static Uri coverUrl(int coverId, String size) =>
       Uri.parse('https://covers.openlibrary.org/b/id/$coverId-$size.jpg');
 
-  Future<List<Book>> search(String containing) async {
+  Future<List<OpenLibraryBook>> search(String containing) async {
     String safe(String str) => str.replaceAll(r'\S', '+');
     final Uri url = apiUrl.replace(queryParameters: {
       'q': safe(containing),
@@ -51,13 +49,11 @@ class OpenLibraryBookUniverseRepository {
     return Future.wait(
       results.map(
         (openLibBookDoc) async {
-          final List? authorNames = openLibBookDoc['author_name'];
-          return Book(
-            null,
+          final List authorNames = openLibBookDoc['author_name'];
+          return OpenLibraryBook(
             openLibBookDoc['title'],
-            authorNames.ifExists((n) => n.first),
+            authorNames.first,
             openLibBookDoc['first_publish_year'],
-            null,
             openLibBookDoc['number_of_pages_median'],
             openLibBookDoc['cover_i'],
             await coverBytes(openLibBookDoc['cover_i'], 'S'),
@@ -72,4 +68,22 @@ class OpenLibraryBookUniverseRepository {
     final http.Response response = await http.get(coverUrl(coverId, size));
     return response.bodyBytes;
   }
+}
+
+class OpenLibraryBook {
+  const OpenLibraryBook(
+    this.title,
+    this.firstAuthor,
+    this.yearFirstPublished,
+    this.numPagesMedian,
+    this.openLibCoverId,
+    this.coverArtS,
+  );
+
+  final String title;
+  final String firstAuthor;
+  final int? yearFirstPublished;
+  final int? numPagesMedian;
+  final int? openLibCoverId;
+  final Uint8List? coverArtS;
 }

@@ -13,6 +13,7 @@ class TextStyles {
     color: Colors.grey[900],
   );
   final h2 = TextStyle(
+    fontSize: 20,
     fontWeight: FontWeight.w500,
     color: Colors.black,
   );

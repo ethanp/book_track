@@ -1,6 +1,5 @@
-import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
-import 'package:book_track/services/supabase_service.dart';
+import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/my_bottom_nav_bar.dart';
 import 'package:book_track/ui/common/sign_out_button.dart';
@@ -39,41 +38,21 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
     );
   }
 
-  late final Future<List<BookProgress>> myBooks;
-
-  @override
-  void initState() {
-    super.initState();
-    myBooks = SupabaseLibraryService.myBooks();
-  }
-
-  @override
-  void dispose() {
-    myBooks.ignore();
-    super.dispose();
-  }
-
   Widget sessionUi() {
-    return FutureBuilder(
-        future: myBooks,
-        builder: (context, AsyncSnapshot<List<BookProgress>> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Text('Loading your library...', style: TextStyles().h1);
-          } else if (snapshot.hasData && snapshot.data != null) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Resume reading', style: TextStyles().h1),
-                Expanded(
-                  child: ListView(
-                    children: snapshot.data!.mapL(BookTile.new),
-                  ),
-                ),
-              ],
-            );
-          } else {
-            return Text('Could not load your library', style: TextStyles().h1);
-          }
-        });
+    var userLibraryAsyncValue = ref.watch(userLibraryProvider);
+    return userLibraryAsyncValue.when(
+      loading: () => Text('Loading your library...', style: TextStyles().h1),
+      error: (err, stack) => Text(
+        'Error loading your library $err $stack',
+        style: TextStyles().h1,
+      ),
+      data: (items) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Resume reading', style: TextStyles().h1),
+          Expanded(child: ListView(children: items.mapL(BookTile.new))),
+        ],
+      ),
+    );
   }
 }

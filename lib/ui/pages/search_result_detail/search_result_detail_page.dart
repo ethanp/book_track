@@ -11,7 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class SearchResultDetailPage extends ConsumerStatefulWidget {
   const SearchResultDetailPage(this.book);
 
-  final Book book;
+  final OpenLibraryBook book;
 
   @override
   ConsumerState createState() => _SearchResultDetailPage();
@@ -45,7 +45,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
                       ? CircularProgressIndicator()
                       : Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: BookType.values.mapL(typeButton),
+                          children: BookFormat.values.mapL(typeButton),
                         ),
                 ),
               ],
@@ -56,7 +56,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
     );
   }
 
-  Widget typeButton(BookType bookType) {
+  Widget typeButton(BookFormat bookType) {
     return ElevatedButton(
       onPressed: () async {
         setState(() => _saving = true);
@@ -73,10 +73,10 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
         padding: EdgeInsets.symmetric(horizontal: 8),
         foregroundColor: Colors.black,
         backgroundColor: switch (bookType) {
-          BookType.audiobook => Colors.orange[400],
-          BookType.eBook => Colors.blue[400],
-          BookType.paperback => Colors.red[300],
-          BookType.hardcover => Colors.green[200],
+          BookFormat.audiobook => Colors.orange[400],
+          BookFormat.eBook => Colors.blue[400],
+          BookFormat.paperback => Colors.red[300],
+          BookFormat.hardcover => Colors.green[200],
         },
       ),
       child: Text(bookType.name),
@@ -86,11 +86,11 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
   Widget bookMetadata() {
     return Column(children: [
       keyValueText('Title: ', widget.book.title),
-      keyValueText('Author: ', widget.book.author ?? 'Author unknown'),
+      keyValueText('Author: ', widget.book.firstAuthor),
       keyValueText(
           'Year First Published: ', widget.book.yearFirstPublished.toString()),
-      if (widget.book.bookLengthPgs != null)
-        keyValueText('Length: ', widget.book.bookLengthPgs!),
+      if (widget.book.numPagesMedian != null)
+        keyValueText('Length: ', widget.book.numPagesMedian!.toString()),
     ]);
   }
 

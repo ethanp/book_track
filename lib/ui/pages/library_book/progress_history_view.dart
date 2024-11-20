@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 class ProgressHistoryView extends StatelessWidget {
   const ProgressHistoryView(this.bookProgress);
 
-  final BookProgress bookProgress;
+  final LibraryBook bookProgress;
   static final dateFormatter = DateFormat('MMM d, y');
   static final timeFormatter = DateFormat('h:mma');
   static const noAxisTitles =

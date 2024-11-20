@@ -13,7 +13,7 @@ import 'package:segment_display/segment_display.dart';
 class SessionTimerPage extends ConsumerStatefulWidget {
   const SessionTimerPage(this.book);
 
-  final BookProgress book;
+  final LibraryBook book;
 
   @override
   ConsumerState createState() => _SessionTimerState();

@@ -1,6 +1,8 @@
+import 'package:book_track/data_model.dart';
+import 'package:book_track/services/book_universe_service.dart';
+import 'package:book_track/services/supabase_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'data_model.dart';
 
 part 'riverpods.g.dart';
 
@@ -50,5 +52,12 @@ class BookSearchResults extends _$BookSearchResults {
 class BookSearchResult {
   BookSearchResult(this.books);
 
-  final List<Book> books;
+  final List<OpenLibraryBook> books;
+}
+
+@riverpod
+Future<List<LibraryBook>> userLibrary(Ref ref) async {
+  final results = await SupabaseLibraryService.myBooks();
+  print('fetched ${results.length} books in library');
+  return results;
 }

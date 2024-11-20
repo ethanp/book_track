@@ -1,6 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
-import 'package:book_track/ui/pages/session_start/session_start_page.dart';
+import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:flutter/material.dart';
 
 import 'reading_progress_indicator.dart';
@@ -9,7 +9,7 @@ import 'update_progress_dialog.dart';
 class BookTile extends StatelessWidget {
   const BookTile(this.book);
 
-  final BookProgress book;
+  final LibraryBook book;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class BookTile extends StatelessWidget {
           otherwise: Icon(Icons.question_mark),
         ),
         trailing: ReadingProgressIndicator(progressPercent: latestProgress),
-        onTap: () => context.push(SessionStartPage(book)),
+        onTap: () => context.push(LibraryBookPage(book)),
       ),
     );
   }

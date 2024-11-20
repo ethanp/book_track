@@ -2,16 +2,24 @@ import 'dart:typed_data';
 
 import 'package:book_track/extensions.dart';
 
-class BookProgress {
-  const BookProgress(
+class LibraryBook {
+  const LibraryBook(
+    this.supaId,
     this.book,
     this.startTime,
     this.progressHistory,
+    this.bookFormat,
+    this.bookLength,
   );
 
+  final int supaId;
   final Book book;
   final DateTime startTime;
   final ProgressHistory progressHistory;
+  final BookFormat? bookFormat;
+  final int? bookLength;
+
+  String? get bookLengthPgs => bookLength.ifExists((l) => '$l pgs');
 }
 
 class ProgressHistory {
@@ -48,8 +56,6 @@ class Book {
     this.title,
     this.author,
     this.yearFirstPublished,
-    this.bookType,
-    this.bookLength,
     this.openLibCoverId,
     this.coverArtS,
   );
@@ -58,15 +64,11 @@ class Book {
   final String title;
   final String? author;
   final int? yearFirstPublished;
-  final BookType? bookType;
-  final int? bookLength;
   final int? openLibCoverId;
   final Uint8List? coverArtS;
-
-  String? get bookLengthPgs => bookLength.ifExists((l) => '$l pgs');
 }
 
-enum BookType {
+enum BookFormat {
   audiobook,
   eBook,
   paperback,
