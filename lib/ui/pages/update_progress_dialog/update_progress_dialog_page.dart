@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -69,7 +70,7 @@ class _UpdateProgressDialogState
               context.pop();
               return;
             }
-            await SupabaseProgressService.updateProgress(
+            final future = SupabaseProgressService.updateProgress(
               book: widget.book,
               userInput: userInput,
               format: _selectedProgressEventFormat,
@@ -77,9 +78,16 @@ class _UpdateProgressDialogState
               end: widget.endTime,
             );
             if (context.mounted) {
-              context.showSnackBar('updated to: $userInput');
+              context.showSnackBar('updating to: $userInput');
               context.pop();
             }
+            future.then((void _) {
+              if (context.mounted) {
+                print('update completed');
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ref.invalidate(userLibraryProvider);
+              }
+            });
           },
           child: Text('Submit'),
         ),

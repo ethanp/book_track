@@ -25,7 +25,7 @@ class ReadingProgressIndicator extends StatelessWidget {
                 if (progressPercent > 0)
                   Container(
                     height: 12,
-                    width: width / 100 * progressPercent - 1,
+                    width: width / 100 * (progressPercent + 1) - 1,
                     color: Colors.green,
                     padding: EdgeInsets.zero,
                   ),
