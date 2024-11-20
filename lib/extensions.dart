@@ -3,6 +3,21 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+Widget transform({
+  Offset? shift,
+  double? angleDegrees,
+  required Widget child,
+}) {
+  Widget ret = child;
+  if (shift != null) {
+    ret = Transform.translate(offset: shift, child: ret);
+  }
+  if (angleDegrees != null) {
+    ret = Transform.rotate(angle: angleDegrees.deg2rad, child: ret);
+  }
+  return ret;
+}
+
 extension BuildContextExtension on BuildContext {
   void showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(this).hideCurrentSnackBar();

@@ -44,26 +44,29 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
         ),
         Padding(
           padding: const EdgeInsets.all(12),
-          child: Row(children: [
-            Text('Update format: ', style: TextStyles().h2),
-            DropdownMenu(
-              textAlign: TextAlign.center,
-              onSelected: (selectedFormat) {
-                setState(() => _format = selectedFormat);
-                SupabaseLibraryService.updateFormat(
-                    widget.libraryBook, selectedFormat);
-                ref.invalidate(userLibraryProvider);
-              },
-              initialSelection: _format,
-              dropdownMenuEntries: formatOptions.mapL((format) {
-                return DropdownMenuEntry(
-                  value: format,
-                  label: _format?.name ?? 'No Format',
-                  labelWidget: Text(format?.name ?? 'unknown'),
-                );
-              }),
-            ),
-          ]),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text('Book format: ', style: TextStyles().h2),
+              DropdownMenu(
+                textAlign: TextAlign.center,
+                onSelected: (selectedFormat) {
+                  setState(() => _format = selectedFormat);
+                  SupabaseLibraryService.updateFormat(
+                      widget.libraryBook, selectedFormat);
+                  ref.invalidate(userLibraryProvider);
+                },
+                initialSelection: _format,
+                dropdownMenuEntries: formatOptions.mapL((format) {
+                  return DropdownMenuEntry(
+                    value: format,
+                    label: _format?.name ?? 'No Format',
+                    labelWidget: Text(format?.name ?? 'unknown'),
+                  );
+                }),
+              ),
+            ],
+          ),
         ),
       ],
     );

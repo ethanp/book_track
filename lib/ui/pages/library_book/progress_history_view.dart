@@ -3,14 +3,14 @@ import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+
+import 'date_axis.dart';
+import 'timespan.dart';
 
 class ProgressHistoryView extends StatelessWidget {
   const ProgressHistoryView(this.bookProgress);
 
   final LibraryBook bookProgress;
-  static final dateFormatter = DateFormat('MMM d, y');
-  static final timeFormatter = DateFormat('h:mma');
   static const noAxisTitles =
       AxisTitles(sideTitles: SideTitles(showTitles: false));
 
@@ -53,16 +53,19 @@ class ProgressHistoryView extends StatelessWidget {
     );
   }
 
-  static double? verticalInterval(TimeSpan timespan) =>
-      timespan.duration > Duration(hours: 10)
-          ? null
-          : Duration(minutes: 30).inMilliseconds.toDouble();
+  static double? verticalInterval(TimeSpan timespan) {
+    final Duration? intervalDuration =
+        timespan.duration < Duration(hours: 10) ? null : Duration(minutes: 30);
+    print('vertical interval $intervalDuration');
+    return intervalDuration?.inMilliseconds.toDouble();
+  }
 
-  FlTitlesData labelAxes(TimeSpan timespan) {
+  static FlTitlesData labelAxes(TimeSpan timespan) {
     return FlTitlesData(
       leftTitles: percentageAxisTitles(shiftTitle: Offset(20, -10)),
       rightTitles: noAxisTitles,
-      bottomTitles: dateAxisTitles(timespan),
+      bottomTitles:
+          DateAxis(timespan, verticalInterval(timespan)).dateAxisTitles(),
       topTitles: noAxisTitles,
     );
   }
@@ -106,70 +109,11 @@ class ProgressHistoryView extends StatelessWidget {
     );
   }
 
-  static AxisTitles dateAxisTitles(TimeSpan timespan) {
-    return AxisTitles(
-      axisNameWidget: transform(
-        shift: Offset(20, 0),
-        child: Text('Date', style: TextStyles().bottomAxisLabel),
-      ),
-      sideTitles: dateAxisSideTitles(timespan),
-      axisNameSize: 24,
-    );
-  }
-
-  static SideTitles dateAxisSideTitles(TimeSpan timespan) {
-    return SideTitles(
-      showTitles: true,
-      reservedSize: 36,
-      interval: verticalInterval(timespan),
-      getTitlesWidget: (double value, TitleMeta meta) {
-        return transform(
-          shift: Offset(8, 0),
-          angleDegrees: 35,
-          child: dateText(value, timespan),
-        );
-      },
-    );
-  }
-
-  static Text dateText(double value, TimeSpan timespan) {
-    final formatter =
-        timespan.duration > Duration(days: 2) ? dateFormatter : timeFormatter;
-    final dateTime = DateTime.fromMillisecondsSinceEpoch(value.floor());
-    final dateString = formatter.format(dateTime);
-    return Text(dateString, style: TextStyle(letterSpacing: -.4, fontSize: 11));
-  }
-
-  static Widget dateAxisName() {
-    return Text(
-      'Date',
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-      ),
-    );
-  }
-
   static FlSpot eventToSpot(ProgressEvent p) {
     return FlSpot(
       p.end.millisecondsSinceEpoch.toDouble(),
       p.progress.toDouble(),
     );
-  }
-
-  static Widget transform({
-    Offset? shift,
-    double? angleDegrees,
-    required Widget child,
-  }) {
-    Widget ret = child;
-    if (shift != null) {
-      ret = Transform.translate(offset: shift, child: ret);
-    }
-    if (angleDegrees != null) {
-      ret = Transform.rotate(angle: angleDegrees.deg2rad, child: ret);
-    }
-    return ret;
   }
 
   static List<ProgressEvent> fakeProgress() {
@@ -185,15 +129,4 @@ class ProgressHistoryView extends StatelessWidget {
           ),
         );
   }
-}
-
-class TimeSpan {
-  TimeSpan({
-    required this.beginning,
-    required this.end,
-  }) : duration = beginning.difference(end);
-
-  final DateTime beginning;
-  final DateTime end;
-  final Duration duration;
 }
