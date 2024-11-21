@@ -6,10 +6,12 @@ class UpdateFormatSelector extends StatelessWidget {
   const UpdateFormatSelector({
     required this.currentlySelectedFormat,
     required this.onSelected,
+    required this.book,
   });
 
   final ProgressEventFormat currentlySelectedFormat;
   final void Function(ProgressEventFormat) onSelected;
+  final LibraryBook book;
 
   @override
   Widget build(BuildContext context) {
@@ -42,10 +44,12 @@ class UpdateFormatSelector extends StatelessWidget {
         (states) => states.contains(WidgetState.selected) ? blue : otw,
       );
 
-  static List<ButtonSegment<ProgressEventFormat>> segments() => {
+  List<ButtonSegment<ProgressEventFormat>> segments() => {
         ProgressEventFormat.percent: '%',
-        ProgressEventFormat.pageNum: 'pages',
-        ProgressEventFormat.minutes: 'elapsed time',
+        if (book.bookFormat == BookFormat.audiobook)
+          ProgressEventFormat.minutes: 'audio minutes'
+        else
+          ProgressEventFormat.pageNum: 'pages',
       }.entries.mapL((format) => ButtonSegment(
           value: format.key,
           label: Text(format.value, style: TextStyle(fontSize: 12))));

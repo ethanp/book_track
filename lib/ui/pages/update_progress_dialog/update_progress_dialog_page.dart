@@ -2,6 +2,7 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_service.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,12 +13,12 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
   const UpdateProgressDialogPage({
     required this.book,
     this.startTime,
-    this.endTime,
+    this.initialEndTime,
   });
 
   final LibraryBook book;
   final DateTime? startTime;
-  final DateTime? endTime;
+  final DateTime? initialEndTime;
 
   @override
   ConsumerState createState() => _UpdateProgressDialogState();
@@ -29,6 +30,7 @@ class _UpdateProgressDialogState
 
   ProgressEventFormat _selectedProgressEventFormat =
       ProgressEventFormat.percent;
+  DateTime _selectedEndTime = DateTime.now();
 
   @override
   void initState() {
@@ -36,74 +38,112 @@ class _UpdateProgressDialogState
     widget.book.progressHistory.progressEvents.lastOrNull?.format.ifExists(
         (lastSelectedFormat) =>
             _selectedProgressEventFormat = lastSelectedFormat);
+    widget.initialEndTime.ifExists((endTime) => _selectedEndTime = endTime);
   }
 
   @override
   Widget build(BuildContext context) {
+    final String title = widget.book.book.title;
+    final String format = widget.book.bookFormat?.name ?? '';
     return AlertDialog(
       title: Text('Update Progress'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('New progress on "${widget.book.book.title}"'),
+          Text('Book: "$title" ($format)'),
           finishedBookButton(),
-          GreyBoxTextField(textChanged: (newText) {
-            print('newText: $newText');
-            _textFieldInput = newText;
-          }),
-          UpdateFormatSelector(
-            currentlySelectedFormat: _selectedProgressEventFormat,
-            onSelected: (selected) =>
-                setState(() => _selectedProgressEventFormat = selected),
-          ),
+          GreyBoxTextField(textChanged: (input) => _textFieldInput = input),
+          updateFormatSelector(),
+          SizedBox(height: 15),
+          endTimePicker(),
         ],
       ),
-      actions: [
-        TextButton(onPressed: () => context.pop(), child: Text('Cancel')),
-        TextButton(
-          onPressed: () async {
-            int? userInput = int.tryParse(_textFieldInput);
-            if (userInput == null) {
-              context.showSnackBar(
-                'invalid number: $_textFieldInput',
-              );
-              context.pop();
-              return;
-            }
-            final future = SupabaseProgressService.updateProgress(
-              book: widget.book,
-              userInput: userInput,
-              format: _selectedProgressEventFormat,
-              start: widget.startTime,
-              end: widget.endTime,
-            );
-            if (context.mounted) {
-              context.showSnackBar('updating to: $userInput');
-              context.pop();
-            }
-            future.then((void _) {
-              if (context.mounted) {
-                print('update completed');
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                ref.invalidate(userLibraryProvider);
-              }
-            });
-          },
-          child: Text('Submit'),
+      actions: submitAndCancel(),
+    );
+  }
+
+  Widget updateFormatSelector() {
+    return UpdateFormatSelector(
+      currentlySelectedFormat: _selectedProgressEventFormat,
+      onSelected: (selected) =>
+          setState(() => _selectedProgressEventFormat = selected),
+      book: widget.book,
+    );
+  }
+
+  Widget endTimePicker() {
+    return Column(
+      children: [
+        Text('Set progress update\'s timestamp:'),
+        // Flutter doesn’t allow direct styling of CupertinoDatePicker text,
+        // but you can just scale the whole widget.
+        Transform.scale(
+          scale: .78,
+          child: SizedBox(
+            height: 110,
+            child: CupertinoDatePicker(
+              mode: CupertinoDatePickerMode.time,
+              minimumDate: widget.startTime,
+              maximumDate: widget.startTime?.add(const Duration(hours: 12)),
+              initialDateTime: DateTime.now(),
+              onDateTimeChanged: (DateTime newDateTime) =>
+                  setState(() => _selectedEndTime = newDateTime),
+            ),
+          ),
         ),
       ],
     );
   }
 
+  List<Widget> submitAndCancel() {
+    return [
+      OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.deepOrangeAccent[100]!.withOpacity(.22),
+          foregroundColor: Colors.blueGrey[900],
+        ),
+        onPressed: context.pop,
+        child: Text('Cancel'),
+      ),
+      OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.green[100]!.withOpacity(.5),
+          foregroundColor: Colors.blueGrey[900],
+        ),
+        onPressed: _submit,
+        child: Text('Submit'),
+      ),
+    ];
+  }
+
+  void _submit() {
+    final int? userInput = int.tryParse(_textFieldInput);
+    if (userInput == null) {
+      // TODO(ui) this should be a form validation instead.
+      context.showSnackBar('invalid number: $_textFieldInput');
+      context.pop();
+      return;
+    }
+    SupabaseProgressService.updateProgress(
+      book: widget.book,
+      userInput: userInput,
+      format: _selectedProgressEventFormat,
+      start: widget.startTime,
+      end: _selectedEndTime,
+    ).then((void _) => ref.invalidate(userLibraryProvider));
+    context.showSnackBar('updating to: $userInput');
+    context.pop();
+  }
+
   Widget finishedBookButton() {
     return Padding(
       padding: const EdgeInsets.only(top: 16),
-      child: ElevatedButton(
-        // TODO implement
+      child: OutlinedButton(
+        // TODO(feature) implement
         onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green[300],
-          foregroundColor: Colors.purple[900],
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.green[300]!.withOpacity(.7),
+          foregroundColor: Colors.blueGrey[900],
           elevation: 3,
         ),
         child: Text('I finished the book'),

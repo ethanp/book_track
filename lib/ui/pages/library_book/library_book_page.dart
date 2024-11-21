@@ -4,6 +4,7 @@ import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/session_timer/session_timer_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -77,7 +78,7 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
             text: 'Update progress',
             backgroundColor: Colors.pink[100]!.withOpacity(0.5),
             onPressed: () async {
-              await showDialog(
+              await showCupertinoDialog(
                 context: context,
                 builder: (context) =>
                     UpdateProgressDialogPage(book: _libraryBook),

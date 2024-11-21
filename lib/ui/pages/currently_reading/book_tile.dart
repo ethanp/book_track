@@ -1,6 +1,7 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../update_progress_dialog/update_progress_dialog_page.dart';
@@ -39,7 +40,7 @@ class BookTile extends StatelessWidget {
   }
 
   Future<bool> _presentUpdateProgressDialog(BuildContext context) async {
-    await showDialog(
+    await showCupertinoDialog(
       context: context,
       builder: (context) => UpdateProgressDialogPage(book: book),
     );

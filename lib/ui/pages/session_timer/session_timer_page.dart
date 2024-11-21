@@ -5,6 +5,7 @@ import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -72,12 +73,12 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
     return toggleSessionButton(
       onPressed: () async {
         read.stop();
-        await showDialog(
+        await showCupertinoDialog(
           context: context,
           builder: (context) => UpdateProgressDialogPage(
             book: widget.book,
             startTime: startTime,
-            endTime: DateTime.now(),
+            initialEndTime: DateTime.now(),
           ),
         );
       },

@@ -3,12 +3,8 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/timespan.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class DateAxis {
-  static final dateFormatter = DateFormat('MMM d, y');
-  static final timeFormatter = DateFormat('h:mma');
-
   const DateAxis(this.timespan, this.verticalInterval);
 
   final TimeSpan timespan;
