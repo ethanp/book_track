@@ -26,32 +26,34 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
       navigationBar: CupertinoNavigationBar(
         middle: Text(widget.book.title),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          coverArt(),
-          bookMetadata(),
-          Padding(
-            padding: const EdgeInsets.only(top: 30),
-            child: Column(
-              children: [
-                Text(
-                  "I'm reading this in",
-                  style: TextStyles().h1,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: _saving
-                      ? CircularProgressIndicator()
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: BookFormat.values.mapL(typeButton),
-                        ),
-                ),
-              ],
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(children: [
+            coverArt(),
+            bookMetadata(),
+            Padding(
+              padding: const EdgeInsets.only(top: 30),
+              child: Column(
+                children: [
+                  Text(
+                    "I'm reading this in",
+                    style: TextStyles().h1,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: _saving
+                        ? CircularProgressIndicator()
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: BookFormat.values.mapL(typeButton),
+                          ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ]),
+          ]),
+        ),
       ),
     );
   }
@@ -110,20 +112,23 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
   }
 
   Widget coverArt() {
-    return FutureBuilder(
-      future: futureCoverArtMedSize,
-      builder: (context, snapshot) {
-        // Show loading indicator while waiting for the data
-        // Render the image if data is not null
-        // Show a blank box if the data is null
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return coverArtMissingPlaceholder(loading: true);
-        } else if (snapshot.hasData && snapshot.data != null) {
-          return Image.memory(snapshot.data!);
-        } else {
-          return coverArtMissingPlaceholder(loading: false);
-        }
-      },
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: FutureBuilder(
+        future: futureCoverArtMedSize,
+        builder: (context, snapshot) {
+          // Show loading indicator while waiting for the data
+          // Render the image if data is not null
+          // Show a blank box if the data is null
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return coverArtMissingPlaceholder(loading: true);
+          } else if (snapshot.hasData && snapshot.data != null) {
+            return Image.memory(snapshot.data!);
+          } else {
+            return coverArtMissingPlaceholder(loading: false);
+          }
+        },
+      ),
     );
   }
 

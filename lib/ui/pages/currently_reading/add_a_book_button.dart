@@ -1,11 +1,12 @@
 import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/pages/add_a_book/add_book_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AddABookButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return FloatingActionButton(
+    return CupertinoButton(
       onPressed: () => context.push(AddBookPage()),
       child: Padding(
         padding: const EdgeInsets.only(top: 6),
@@ -15,7 +16,7 @@ class AddABookButton extends StatelessWidget {
             Icon(Icons.add),
             Text(
               'Add book',
-              style: TextStyle(fontSize: 8),
+              style: TextStyle(fontSize: 14),
             )
           ],
         ),

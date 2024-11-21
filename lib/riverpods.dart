@@ -44,15 +44,22 @@ class SessionStartTime extends _$SessionStartTime {
 @riverpod
 class BookSearchResults extends _$BookSearchResults {
   @override
-  BookSearchResult? build() => BookSearchResult([]);
+  BookSearchResult? build() => BookSearchResult.empty;
 
   void update(BookSearchResult? searchResult) => state = searchResult;
 }
 
 class BookSearchResult {
-  BookSearchResult(this.books);
+  const BookSearchResult({
+    required this.books,
+    required this.fullResultCount,
+  });
 
   final List<OpenLibraryBook> books;
+  final int fullResultCount;
+
+  static BookSearchResult get empty =>
+      BookSearchResult(books: [], fullResultCount: 0);
 }
 
 @riverpod

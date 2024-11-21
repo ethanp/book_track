@@ -1,11 +1,11 @@
+import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/material.dart';
 
 class ResultsCount extends StatelessWidget {
-  const ResultsCount({
-    required this.shownCount,
-    required this.fullCount,
-  });
+  ResultsCount(BookSearchResult searchResult)
+      : shownCount = searchResult.books.length,
+        fullCount = searchResult.fullResultCount;
 
   final int shownCount;
   final int fullCount;

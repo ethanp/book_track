@@ -44,9 +44,14 @@ class _GreyBoxTextFieldState extends ConsumerState<GreyBoxTextField> {
               : CupertinoColors.systemGrey5,
           borderRadius: BorderRadius.circular(8),
           border: _focusNode.hasFocus
-              ? Border.all(color: CupertinoColors.systemGrey, width: 1.5)
+              ? Border.all(
+                  color: CupertinoColors.systemGrey,
+                  width: 1.5,
+                )
               : Border.all(
-                  color: CupertinoColors.white.withOpacity(0), width: 0),
+                  color: CupertinoColors.white.withOpacity(0),
+                  width: 0,
+                ),
         ),
       ),
     );

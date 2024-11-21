@@ -2,6 +2,7 @@ import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/ui/pages/search_result_detail/search_result_detail_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,7 +21,7 @@ class SearchResults extends ConsumerWidget {
     return Expanded(
       child: Column(
         children: [
-          ResultsCount(shownCount: 10, fullCount: 888),
+          ResultsCount(searchResult),
           Expanded(
             child: ListView(
               children: searchResult.books.mapL((book) => item(book, ref)),
@@ -34,17 +35,33 @@ class SearchResults extends ConsumerWidget {
   Widget item(OpenLibraryBook book, WidgetRef ref) {
     return Container(
       margin: const EdgeInsets.all(1),
-      child: InkWell(
-        child: Material(
-          elevation: .3,
-          child: Row(
-            children: [
-              coverArt(book),
-              Flexible(child: bookInfo(book)),
-            ],
-          ),
-        ),
+      child: CupertinoListTile(
+        leading: coverArt(book),
+        title: title(book),
+        subtitle: author(book),
         onTap: () => ref.context.push(SearchResultDetailPage(book)),
+      ),
+    );
+  }
+
+  Widget author(OpenLibraryBook book) {
+    return Text(
+      book.firstAuthor,
+      style: TextStyle(
+        fontStyle: FontStyle.italic,
+        fontWeight: FontWeight.w500,
+        color: Colors.grey[800],
+      ),
+    );
+  }
+
+  Widget title(OpenLibraryBook book) {
+    return Text(
+      book.title,
+      maxLines: 3,
+      style: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
       ),
     );
   }
@@ -53,29 +70,6 @@ class SearchResults extends ConsumerWidget {
     return SizedBox(
       width: 50,
       child: book.coverArtS.ifExists(Image.memory),
-    );
-  }
-
-  Widget bookInfo(OpenLibraryBook book) {
-    final title = Text(
-      book.title,
-      maxLines: 3,
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w700,
-      ),
-    );
-    final author = Text(
-      book.firstAuthor,
-      style: TextStyle(
-        fontStyle: FontStyle.italic,
-        fontWeight: FontWeight.w500,
-        color: Colors.grey[800],
-      ),
-    );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [title, author],
     );
   }
 }

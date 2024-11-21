@@ -27,21 +27,23 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
       ),
       // TODO use the CupertinoNavigationBar up top? Ask chatGpt.
       // bottomNavigationBar: MyBottomNavBar(),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              color: Color.lerp(Colors.yellow, Colors.grey[100], .98),
-              // TODO(feature) add a line chart with all the currently-reading books.
-              // TODO(feature) add a line chart of the progress across all books in
-              //   the past year (and varying and customizable periods).
-              child: sessionUi(),
+      child: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                color: Color.lerp(Colors.yellow, Colors.grey[100], .98),
+                // TODO(feature) add a line chart with all the currently-reading books.
+                // TODO(feature) add a line chart of the progress across all books in
+                //   the past year (and varying and customizable periods).
+                child: sessionUi(),
+              ),
             ),
-          ),
-          AddABookButton(),
-        ],
+            AddABookButton(),
+          ],
+        ),
       ),
     );
   }

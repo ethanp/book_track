@@ -38,7 +38,6 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
         .whenData((items) => setState(() {
               bool isShownBook(LibraryBook i) =>
                   i.supaId == widget.libraryBook.supaId;
-
               _libraryBook = items.where(isShownBook).first;
             }));
     // TODO(optimize) Is this guy necessary? Probably not?

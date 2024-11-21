@@ -8,12 +8,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'search_results.dart';
 
 class AddBookPage extends ConsumerWidget {
+  final TextEditingController _controller = TextEditingController();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) => CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         middle: Text('Add a book'),
       ),
-      child: body(ref));
+      child: SafeArea(child: body(ref)));
 
   PreferredSizeWidget appBar() {
     return AppBar(
@@ -44,24 +46,13 @@ class AddBookPage extends ConsumerWidget {
 
   Widget searchBar(WidgetRef ref) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 22),
-      child: SearchAnchor(
-        builder: (context, controller) => SearchBar(
-          controller: controller,
-          onTap: () => print('tapped: ${controller.text}'),
-          onSubmitted: (str) => search(str, ref),
-          leading: Padding(
-            padding: const EdgeInsets.all(8),
-            child: const Icon(Icons.abc),
-          ),
-          trailing: [
-            TextButton(
-              onPressed: () => search(controller.text, ref),
-              child: const Icon(Icons.search),
-            )
-          ],
-        ),
-        suggestionsBuilder: (context, controller) => [],
+      padding: const EdgeInsets.symmetric(vertical: 22),
+      child: CupertinoSearchTextField(
+        controller: _controller,
+        placeholder: 'Book title...',
+        onSubmitted: (str) => search(str, ref),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        style: TextStyle(color: CupertinoColors.black),
       ),
     );
   }

@@ -16,7 +16,13 @@ class SignOutButton extends StatelessWidget {
           if (context.mounted) context.pushReplacementPage(const LoginPage());
         }
       },
-      child: const Text('Sign Out'),
+      child: Text(
+        'Sign Out',
+        style: TextStyle(
+          fontWeight: FontWeight.w400,
+          fontSize: 15,
+        ),
+      ),
     );
   }
 }

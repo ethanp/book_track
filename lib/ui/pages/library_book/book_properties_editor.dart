@@ -24,15 +24,22 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    List<BookFormat?> formatOptions = List.from(BookFormat.values);
-    formatOptions.add(null);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
     ref.watch(userLibraryProvider).whenData((items) => setState(() {
           bool isShownBook(LibraryBook book) =>
               book.supaId == widget.libraryBook.supaId;
+          print('sourcing stored format');
           final LibraryBook shownBook = items.where(isShownBook).first;
           _format = shownBook.bookFormat;
         }));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<BookFormat?> formatOptions = List.from(BookFormat.values);
+    formatOptions.add(null);
     return Column(
       children: [
         Padding(

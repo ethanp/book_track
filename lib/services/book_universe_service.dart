@@ -10,11 +10,9 @@ class BookUniverseService {
   static Future<void> search(
       String containing, BookSearchResults results) async {
     if (containing.isEmpty) {
-      return results.update(BookSearchResult([]));
+      return results.update(BookSearchResult.empty);
     }
-    results.update(null);
-    List<OpenLibraryBook> books = await bookUniverseRepo.search(containing);
-    results.update(BookSearchResult(books));
+    results.update(await bookUniverseRepo.search(containing));
   }
 
   static Future<Uint8List?> downloadMedSizeCover(OpenLibraryBook book) =>
@@ -32,7 +30,7 @@ class OpenLibraryBookUniverseRepository {
   static Uri coverUrl(int coverId, String size) =>
       Uri.parse('https://covers.openlibrary.org/b/id/$coverId-$size.jpg');
 
-  Future<List<OpenLibraryBook>> search(String containing) async {
+  Future<BookSearchResult> search(String containing) async {
     String safe(String str) => str.replaceAll(r'\S', '+');
     final Uri url = apiUrl.replace(queryParameters: {
       'q': safe(containing),
@@ -42,29 +40,33 @@ class OpenLibraryBookUniverseRepository {
     final http.Response response = await http.get(url);
     if (response.statusCode != 200) {
       print('search error: $response');
-      return [];
+      return BookSearchResult.empty;
     }
     final dynamic bodyJson = jsonDecode(response.body);
     final results = bodyJson['docs'] as List<dynamic>;
-    return Future.wait(
-      results.map(
-        (openLibBookDoc) async {
-          final List authorNames = openLibBookDoc['author_name'];
-          return OpenLibraryBook(
-            openLibBookDoc['title'],
-            authorNames.first,
-            openLibBookDoc['first_publish_year'],
-            openLibBookDoc['number_of_pages_median'],
-            openLibBookDoc['cover_i'],
-            await coverBytes(openLibBookDoc['cover_i'], 'S'),
-          );
-        },
+    return BookSearchResult(
+      fullResultCount: bodyJson['numFound'] ?? -777,
+      books: await Future.wait(
+        results.map(
+          (openLibBookDoc) async {
+            final List? authorNames = openLibBookDoc['author_name'];
+            return OpenLibraryBook(
+              openLibBookDoc['title'],
+              authorNames?.first ?? 'Unknown',
+              openLibBookDoc['first_publish_year'],
+              openLibBookDoc['number_of_pages_median'],
+              openLibBookDoc['cover_i'],
+              await coverBytes(openLibBookDoc['cover_i'], 'S'),
+            );
+          },
+        ),
       ),
     );
   }
 
   Future<Uint8List?> coverBytes(int? coverId, String size) async {
     if (coverId == null) return null;
+    print('getting cover $coverId');
     final http.Response response = await http.get(coverUrl(coverId, size));
     return response.bodyBytes;
   }

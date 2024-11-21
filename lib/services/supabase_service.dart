@@ -154,6 +154,7 @@ class SupabaseLibraryService {
     BookFormat? updatedFormat,
   ) async {
     try {
+      print('updating format');
       await _base
           .from('library')
           .update({_SupaLibrary.formatCol: updatedFormat?.name}).eq(
