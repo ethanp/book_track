@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/services/supabase_service.dart';
 import 'package:book_track/ui/common/design.dart';
@@ -32,57 +33,60 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
           child: Column(children: [
             coverArt(),
             bookMetadata(),
-            Padding(
-              padding: const EdgeInsets.only(top: 30),
-              child: Column(
-                children: [
-                  Text(
-                    "I'm reading this in",
-                    style: TextStyles().h1,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: _saving
-                        ? CircularProgressIndicator()
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: BookFormat.values.mapL(typeButton),
-                          ),
-                  ),
-                ],
-              ),
-            ),
+            formatButtons(),
           ]),
         ),
       ),
     );
   }
 
-  Widget typeButton(BookFormat bookType) {
-    return ElevatedButton(
-      onPressed: () async {
-        setState(() => _saving = true);
-        try {
-          await SupabaseLibraryService.addBook(widget.book, bookType);
-        } catch (error) {
-          if (mounted) context.showSnackBar('$error\n${error.runtimeType}');
-        } finally {
-          setState(() => _saving = false);
-        }
-      },
-      style: ElevatedButton.styleFrom(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: EdgeInsets.symmetric(horizontal: 8),
-        foregroundColor: Colors.black,
-        backgroundColor: switch (bookType) {
-          BookFormat.audiobook => Colors.orange[400],
-          BookFormat.eBook => Colors.blue[400],
-          BookFormat.paperback => Colors.red[300],
-          BookFormat.hardcover => Colors.green[200],
-        },
+  Widget formatButtons() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 30),
+      child: Column(
+        children: [
+          Text("I'm reading this in", style: TextStyles().h1),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: _saving
+                ? CircularProgressIndicator()
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: BookFormat.values.mapL(typeButton),
+                  ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget typeButton(BookFormat bookType) {
+    return CupertinoButton(
+      onPressed: () async {
+        await addBookToLibrary(bookType);
+        if (mounted) context.popUntilFirst();
+        ref.invalidate(userLibraryProvider);
+      },
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      color: switch (bookType) {
+        BookFormat.audiobook => Colors.orange[400],
+        BookFormat.eBook => Colors.blue[400],
+        BookFormat.paperback => Colors.red[300],
+        BookFormat.hardcover => Colors.green[200],
+      },
       child: Text(bookType.name),
     );
+  }
+
+  Future<void> addBookToLibrary(BookFormat bookType) async {
+    setState(() => _saving = true);
+    try {
+      await SupabaseLibraryService.addBook(widget.book, bookType);
+    } catch (error) {
+      if (mounted) context.showSnackBar('$error\n${error.runtimeType}');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   Widget bookMetadata() {

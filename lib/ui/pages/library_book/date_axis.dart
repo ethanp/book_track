@@ -20,8 +20,8 @@ class DateAxis {
 
   Widget dateAxisName() {
     final String text = timespan.beginning.sameDayAs(timespan.end)
-        ? '(${dateFormatter.format(timespan.beginning)})'
-        : 'Starting ${dateFormatter.format(timespan.beginning)}';
+        ? '(${dateFormatter(timespan.beginning)})'
+        : 'Starting ${dateFormatter(timespan.beginning)}';
     final TextStyle style = TextStyles().h2Skinny.copyWith(fontSize: 17);
 
     return transform(
@@ -58,7 +58,7 @@ class DateAxis {
     final formatter =
         timespan.duration > Duration(days: 2) ? dateFormatter : timeFormatter;
     final dateTime = DateTime.fromMillisecondsSinceEpoch(value.floor());
-    final dateString = formatter.format(dateTime);
+    final dateString = formatter(dateTime);
     return Text(dateString, style: TextStyle(letterSpacing: -.4, fontSize: 11));
   }
 }

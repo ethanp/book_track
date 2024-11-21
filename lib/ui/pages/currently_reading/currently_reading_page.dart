@@ -19,6 +19,15 @@ class CurrentlyReadingPage extends ConsumerStatefulWidget {
 
 class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    ref.watch(userLibraryProvider).whenData((items) => setState(() {
+          print('currently reading: sourcing stored format');
+        }));
+  }
+
+  @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
@@ -56,6 +65,7 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
           style: TextStyles().h1,
         );
     Widget body(Iterable<LibraryBook> items) {
+      print('loading outer body');
       final List<Widget> listTiles = items.map(BookTile.new).mapL(
             (tile) => Padding(
               padding: const EdgeInsets.all(6),
