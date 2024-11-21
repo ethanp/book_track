@@ -1,9 +1,8 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_service.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class BookPropertiesEditor extends ConsumerStatefulWidget {
@@ -29,8 +28,10 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
     List<BookFormat?> formatOptions = List.from(BookFormat.values);
     formatOptions.add(null);
     ref.watch(userLibraryProvider).whenData((items) => setState(() {
-          final isShownBook = (i) => i.supaId == widget.libraryBook.supaId;
-          _format = items.where(isShownBook).first.bookFormat;
+          bool isShownBook(LibraryBook book) =>
+              book.supaId == widget.libraryBook.supaId;
+          final LibraryBook shownBook = items.where(isShownBook).first;
+          _format = shownBook.bookFormat;
         }));
     return Column(
       children: [
@@ -44,26 +45,33 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
         ),
         Padding(
           padding: const EdgeInsets.all(12),
-          child: Row(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text('Book format: ', style: TextStyles().h2),
-              DropdownMenu(
-                textAlign: TextAlign.center,
-                onSelected: (selectedFormat) {
-                  setState(() => _format = selectedFormat);
+              Text('Book format: ', style: TextStyles().h3),
+              SizedBox(height: 12),
+              // We have to wrap BookFormat with Renderable format because
+              // nullable types are not allowed as a type param for
+              // CupertinoSegmentedControl.
+              CupertinoSegmentedControl<RenderableFormat>(
+                onValueChanged: (RenderableFormat selectedFormat) {
+                  setState(() => _format = selectedFormat.bookFormat);
                   SupabaseLibraryService.updateFormat(
-                      widget.libraryBook, selectedFormat);
+                      widget.libraryBook, selectedFormat.bookFormat);
                   ref.invalidate(userLibraryProvider);
                 },
-                initialSelection: _format,
-                dropdownMenuEntries: formatOptions.mapL((format) {
-                  return DropdownMenuEntry(
-                    value: format,
-                    label: _format?.name ?? 'No Format',
-                    labelWidget: Text(format?.name ?? 'unknown'),
-                  );
-                }),
+                groupValue: RenderableFormat(_format),
+                children: {
+                  for (final format in formatOptions)
+                    RenderableFormat(format): Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4, vertical: 8),
+                      child: Text(
+                        format?.name ?? 'unknown',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    )
+                },
               ),
             ],
           ),

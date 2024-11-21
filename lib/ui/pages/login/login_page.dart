@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/main.dart';
 import 'package:book_track/services/supabase_service.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -48,20 +49,30 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(_signUpText)),
-      body: ListView(
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(middle: Text(_signUpText)),
+      child: ListView(
         padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
         children: [
-          TextFormField(
+          CupertinoTextField(
             controller: _emailController,
-            decoration: const InputDecoration(labelText: 'Email'),
+            placeholder: 'email',
+            decoration: BoxDecoration(
+              border: Border.all(color: CupertinoColors.systemGrey, width: 1.0),
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
-          TextFormField(
+          CupertinoTextField(
             controller: _passwordController,
-            decoration: const InputDecoration(labelText: 'Password'),
+            placeholder: 'Password',
             obscureText: true,
-            onFieldSubmitted: (_) => _buttonPressed(),
+            onSubmitted: (_) => _buttonPressed(),
+            textInputAction:
+                TextInputAction.done, // Shows "done" button on keyboard
+            decoration: BoxDecoration(
+              border: Border.all(color: CupertinoColors.systemGrey, width: 1.0),
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
           const SizedBox(height: 18),
           ElevatedButton(

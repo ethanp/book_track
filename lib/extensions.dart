@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -44,10 +45,10 @@ extension BuildContextExtension on BuildContext {
   }
 
   void pushReplacementPage(Widget widget) => Navigator.of(this)
-      .pushReplacement(MaterialPageRoute(builder: (context) => widget));
+      .pushReplacement(CupertinoPageRoute(builder: (context) => widget));
 
   void push(Widget widget) =>
-      Navigator.of(this).push(MaterialPageRoute(builder: (context) => widget));
+      Navigator.of(this).push(CupertinoPageRoute(builder: (context) => widget));
 
   void pop<T>([T? result]) => Navigator.of(this).pop(result);
 }

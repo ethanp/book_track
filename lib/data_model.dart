@@ -74,3 +74,20 @@ enum BookFormat {
   paperback,
   hardcover,
 }
+
+/// Special handling for no known book format
+class RenderableFormat {
+  const RenderableFormat(this.bookFormat);
+
+  final BookFormat? bookFormat;
+
+  @override
+  String toString() => bookFormat?.name ?? 'not selected';
+
+  @override
+  bool operator ==(Object other) =>
+      other is RenderableFormat && bookFormat == other.bookFormat;
+
+  @override
+  int get hashCode => bookFormat?.hashCode ?? 0;
+}

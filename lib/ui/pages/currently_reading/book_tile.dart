@@ -26,7 +26,7 @@ class BookTile extends StatelessWidget {
           style: TextStyle(color: Colors.grey[100], fontSize: 18),
         ),
       ),
-      child: ListTile(
+      child: CupertinoListTile(
         title: Text(book.book.title),
         subtitle: Text(book.book.author ?? 'Author unknown'),
         leading: book.book.coverArtS.ifExists(

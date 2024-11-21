@@ -45,7 +45,7 @@ class _UpdateProgressDialogState
   Widget build(BuildContext context) {
     final String title = widget.book.book.title;
     final String format = widget.book.bookFormat?.name ?? '';
-    return AlertDialog(
+    return CupertinoAlertDialog(
       title: Text('Update Progress'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -97,19 +97,13 @@ class _UpdateProgressDialogState
 
   List<Widget> submitAndCancel() {
     return [
-      OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.deepOrangeAccent[100]!.withOpacity(.22),
-          foregroundColor: Colors.blueGrey[900],
-        ),
+      CupertinoButton(
+        // color: Colors.deepOrangeAccent[100]!.withOpacity(.22),
         onPressed: context.pop,
         child: Text('Cancel'),
       ),
-      OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.green[100]!.withOpacity(.5),
-          foregroundColor: Colors.blueGrey[900],
-        ),
+      CupertinoButton(
+        // color: Colors.green[100]!.withOpacity(.5),
         onPressed: _submit,
         child: Text('Submit'),
       ),
@@ -130,7 +124,10 @@ class _UpdateProgressDialogState
       format: _selectedProgressEventFormat,
       start: widget.startTime,
       end: _selectedEndTime,
-    ).then((void _) => ref.invalidate(userLibraryProvider));
+    ).then((void _) {
+      print('invalidating provider');
+      ref.invalidate(userLibraryProvider);
+    });
     context.showSnackBar('updating to: $userInput');
     context.pop();
   }
@@ -138,12 +135,16 @@ class _UpdateProgressDialogState
   Widget finishedBookButton() {
     return Padding(
       padding: const EdgeInsets.only(top: 16),
+      // TODO(ui): change to some kind of ios-specific styled button?
       child: OutlinedButton(
         // TODO(feature) implement
         onPressed: () {},
         style: OutlinedButton.styleFrom(
           backgroundColor: Colors.green[300]!.withOpacity(.7),
           foregroundColor: Colors.blueGrey[900],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           elevation: 3,
         ),
         child: Text('I finished the book'),

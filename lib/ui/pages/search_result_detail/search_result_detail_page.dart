@@ -5,6 +5,7 @@ import 'package:book_track/extensions.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/services/supabase_service.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,12 +22,11 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
   bool _saving = false;
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.book.title),
-        backgroundColor: ColorPalette().appBarColor,
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(widget.book.title),
       ),
-      body: Padding(
+      child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(children: [
           coverArt(),

@@ -33,20 +33,21 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
   Widget build(BuildContext context) {
     ref
         .watch(userLibraryProvider)
-        // TODO this setState may be redundant. Gotta test it out.
+        // TODO(optimize) this setState may be redundant or even harmful.
+        //  Gotta test it out.
         .whenData((items) => setState(() {
               bool isShownBook(LibraryBook i) =>
                   i.supaId == widget.libraryBook.supaId;
 
               _libraryBook = items.where(isShownBook).first;
             }));
+    // TODO(optimize) Is this guy necessary? Probably not?
     setState(() {});
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: ColorPalette().appBarColor,
-        title: Text(_libraryBook.book.title),
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(_libraryBook.book.title),
       ),
-      body: SafeArea(
+      child: SafeArea(
         child: Column(
           children: [
             BookPropertiesEditor(_libraryBook),

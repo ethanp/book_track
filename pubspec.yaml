@@ -16,6 +16,7 @@ environment:
   sdk: ^3.5.4
 
 dependencies:
+  cupertino_icons: ^1.0.8
   fl_chart: ^0.69.0
   flutter:
     sdk: flutter

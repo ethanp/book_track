@@ -29,12 +29,11 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
   @override
   Widget build(BuildContext context) {
     updateTimer();
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: ColorPalette().appBarColor,
-        title: Text('Session'),
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('Session'),
       ),
-      body: Center(
+      child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(top: 40),
           child: Column(children: [

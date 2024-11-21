@@ -1,6 +1,7 @@
 import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/pages/currently_reading/currently_reading_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,13 +22,13 @@ class MyBottomNavBar extends ConsumerWidget {
       ),
     ),
     BottomNavBarElement(
-      page: Scaffold(
-        appBar: AppBar(
-          title: const Text('Progress'),
-          backgroundColor: Color.lerp(Colors.lightGreen, Colors.grey[300], 0.8),
+      page: CupertinoPageScaffold(
+        navigationBar: CupertinoNavigationBar(
+          middle: Text('Progress'),
         ),
-        body: Text('Progress page does not exist yet'),
-        bottomNavigationBar: MyBottomNavBar(),
+        // TODO make it cupertino style.
+        // bottomNavigationBar: MyBottomNavBar(),
+        child: Text('Progress page does not exist yet'),
       ),
       item: BottomNavigationBarItem(
         icon: Icon(Icons.ssid_chart),

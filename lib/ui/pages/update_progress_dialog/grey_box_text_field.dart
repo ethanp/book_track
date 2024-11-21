@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class GreyBoxTextField extends ConsumerStatefulWidget {
@@ -33,30 +33,22 @@ class _GreyBoxTextFieldState extends ConsumerState<GreyBoxTextField> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: TextFormField(
+      child: CupertinoTextField(
         controller: _controller,
         onChanged: (String newText) => widget.textChanged(newText),
         focusNode: _focusNode,
-        decoration: InputDecoration(
-          filled: true,
-          // Turns darker while focused,
-          fillColor: Colors.grey[_focusNode.hasFocus ? 300 : 200],
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          // Border has sides only when focused
-          border: border(BorderSide.none),
-          focusedBorder:
-              border(BorderSide(color: Colors.grey[500]!, width: 1.5)),
-          hintText: 'Enter progress here',
+        placeholder: 'Enter progress here',
+        decoration: BoxDecoration(
+          color: _focusNode.hasFocus
+              ? CupertinoColors.systemGrey4
+              : CupertinoColors.systemGrey5,
+          borderRadius: BorderRadius.circular(8),
+          border: _focusNode.hasFocus
+              ? Border.all(color: CupertinoColors.systemGrey, width: 1.5)
+              : Border.all(
+                  color: CupertinoColors.white.withOpacity(0), width: 0),
         ),
       ),
-    );
-  }
-
-  static OutlineInputBorder border(BorderSide borderSide) {
-    return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: borderSide,
     );
   }
 }
