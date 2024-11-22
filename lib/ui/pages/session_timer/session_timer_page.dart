@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:segment_display/segment_display.dart';
 
 class SessionTimerPage extends ConsumerStatefulWidget {
@@ -21,9 +21,6 @@ class SessionTimerPage extends ConsumerStatefulWidget {
 }
 
 class _SessionTimerState extends ConsumerState<SessionTimerPage> {
-  static final dateFormatter = DateFormat('MMM d, y');
-  static final timeFormatter = DateFormat('h:mma');
-
   bool get sessionInProgress => ref.watch(sessionStartTimeProvider) != null;
 
   @override
@@ -109,9 +106,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
           backgroundColor: backgroundColor,
           foregroundColor: Colors.black,
           fixedSize: Size(170, 88),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
+          shape: FlutterHelpers.roundedRect(radius: 30),
           elevation: 4,
         ),
         child: Text(text, style: TextStyles().h2, textAlign: TextAlign.center),
@@ -198,8 +193,8 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
               Table(
                 children: progressToday.mapL((ev) {
                   return TableRow(children: [
-                    Text(dateFormatter.format(ev.end)),
-                    Text(timeFormatter.format(ev.end)),
+                    Text(TimeHelpers.monthDayYear(ev.end)),
+                    Text(TimeHelpers.hourMinuteAmPm(ev.end)),
                     Text('${ev.progress}%'),
                   ]);
                 }),

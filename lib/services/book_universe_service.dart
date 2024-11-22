@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:http/http.dart' as http;
 
@@ -68,9 +68,9 @@ class OpenLibraryBookUniverseRepository {
   Future<Uint8List?> coverBytes(int? coverId, String size) async {
     if (coverId == null) return null;
     var url = coverUrl(coverId, size);
-    print('$timeLog getting cover from $url');
+    print('${TimeHelpers.timeLog} getting cover from $url');
     final http.Response response = await http.get(url);
-    print('$timeLog got cover from $url');
+    print('${TimeHelpers.timeLog} got cover from $url');
     return response.bodyBytes;
   }
 }

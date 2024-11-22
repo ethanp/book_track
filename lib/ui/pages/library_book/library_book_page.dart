@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/session_timer/session_timer_page.dart';
@@ -104,9 +105,7 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: FlutterHelpers.roundedRect(radius: 16),
         visualDensity: VisualDensity.compact,
         side: BorderSide(width: 1.5),
         backgroundColor: backgroundColor,

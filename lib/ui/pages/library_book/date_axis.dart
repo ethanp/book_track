@@ -1,4 +1,5 @@
 import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/timespan.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -20,11 +21,11 @@ class DateAxis {
 
   Widget dateAxisName() {
     final String text = timespan.beginning.sameDayAs(timespan.end)
-        ? '(${dateFormatter(timespan.beginning)})'
-        : 'Starting ${dateFormatter(timespan.beginning)}';
+        ? '(${TimeHelpers.monthDayYear(timespan.beginning)})'
+        : 'Starting ${TimeHelpers.monthDayYear(timespan.beginning)}';
     final TextStyle style = TextStyles().h2Skinny.copyWith(fontSize: 17);
 
-    return transform(
+    return FlutterHelpers.transform(
       shift: Offset(20, 0),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -45,7 +46,7 @@ class DateAxis {
       reservedSize: 36,
       interval: verticalInterval,
       getTitlesWidget: (double value, TitleMeta meta) {
-        return transform(
+        return FlutterHelpers.transform(
           shift: Offset(8, 0),
           angleDegrees: 35,
           child: dateText(value),
@@ -55,8 +56,9 @@ class DateAxis {
   }
 
   Widget dateText(double value) {
-    final formatter =
-        timespan.duration > Duration(days: 2) ? dateFormatter : timeFormatter;
+    final formatter = timespan.duration > Duration(days: 2)
+        ? TimeHelpers.monthDayYear
+        : TimeHelpers.hourMinuteAmPm;
     final dateTime = DateTime.fromMillisecondsSinceEpoch(value.floor());
     final dateString = formatter(dateTime);
     return Text(dateString, style: TextStyle(letterSpacing: -.4, fontSize: 11));

@@ -1,33 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
-import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-Widget transform({
-  Offset? shift,
-  double? angleDegrees,
-  required Widget child,
-}) {
-  Widget ret = child;
-  if (shift != null) {
-    ret = Transform.translate(offset: shift, child: ret);
-  }
-  if (angleDegrees != null) {
-    ret = Transform.rotate(angle: angleDegrees.deg2rad, child: ret);
-  }
-  return ret;
-}
-
-final dateFormatter = DateFormat('MMM d, y').format;
-final timeFormatter = DateFormat('h:mma').format;
-final dateTimeFormatter = DateFormat('MMMM d, y h:mma').format;
-String get timeLog => timeLogFormatter(DateTime.now());
-String timeLogFormatter(DateTime dateTime) {
-  final time = DateFormat('hh:mm:ss').format(dateTime);
-  final millis = dateTime.millisecond.toString().padLeft(3, '0');
-  return '$time:$millis';
-}
 
 extension BuildContextExtension on BuildContext {
   void showSnackBar(String message, {bool isError = false}) =>
@@ -47,6 +21,7 @@ extension BuildContextExtension on BuildContext {
       Navigator.of(this).push(CupertinoPageRoute(builder: (context) => widget));
 
   void pop<T>([T? result]) => Navigator.of(this).pop(result);
+
   void popUntilFirst<T>([T? result]) =>
       Navigator.of(this).popUntil((route) => route.isFirst);
 }

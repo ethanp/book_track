@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -93,7 +94,7 @@ class ProgressHistoryView extends StatelessWidget {
 
   static AxisTitles percentageAxisTitles({required Offset shiftTitle}) {
     return AxisTitles(
-      axisNameWidget: transform(
+      axisNameWidget: FlutterHelpers.transform(
         shift: shiftTitle,
         child: Text('Percentage', style: TextStyles().sideAxisLabel),
       ),

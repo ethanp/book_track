@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_service.dart';
 import 'package:flutter/cupertino.dart';
@@ -50,7 +51,7 @@ class _UpdateProgressDialogState
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('Book: "$title" ($format)'),
-          finishedBookButton(),
+          bookStatusButtons(),
           GreyBoxTextField(textChanged: (input) => _textFieldInput = input),
           updateFormatSelector(),
           SizedBox(height: 15),
@@ -131,10 +132,10 @@ class _UpdateProgressDialogState
     context.pop();
   }
 
-  Widget finishedBookButton() {
+  // TODO(ux) Move these buttons to the library book detail page.
+  Widget bookStatusButtons() {
     return Padding(
       padding: const EdgeInsets.only(top: 16),
-      // TODO(ui): change to some kind of ios-specific styled button?
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -144,9 +145,7 @@ class _UpdateProgressDialogState
             style: OutlinedButton.styleFrom(
               backgroundColor: Colors.green[300]!.withOpacity(.3),
               foregroundColor: Colors.blueGrey[900],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              shape: FlutterHelpers.roundedRect(radius: 12),
               elevation: 3,
             ),
             child: Text('Complete'),
@@ -157,9 +156,7 @@ class _UpdateProgressDialogState
             style: OutlinedButton.styleFrom(
               backgroundColor: Colors.red[300]!.withOpacity(.3),
               foregroundColor: Colors.blueGrey[900],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              shape: FlutterHelpers.roundedRect(radius: 12),
               elevation: 3,
             ),
             child: Text('Abandon'),

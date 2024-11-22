@@ -76,6 +76,7 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Resume reading', style: TextStyles().h1),
+          SizedBox(height: 12),
           Expanded(child: ListView(children: listTiles)),
         ],
       );
