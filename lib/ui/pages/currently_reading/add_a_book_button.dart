@@ -7,19 +7,17 @@ class AddABookButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoButton(
+      padding: EdgeInsets.zero,
       onPressed: () => context.push(AddBookPage()),
-      child: Padding(
-        padding: const EdgeInsets.only(top: 6),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.add),
-            Text(
-              'Add book',
-              style: TextStyle(fontSize: 14),
-            )
-          ],
-        ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.add, size: 20),
+          Text(
+            'Add book',
+            style: TextStyle(fontSize: 13),
+          )
+        ],
       ),
     );
   }

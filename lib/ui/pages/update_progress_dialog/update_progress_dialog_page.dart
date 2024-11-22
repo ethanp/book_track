@@ -35,7 +35,7 @@ class _UpdateProgressDialogState
   @override
   void initState() {
     super.initState();
-    widget.book.progressHistory.progressEvents.lastOrNull?.format.ifExists(
+    widget.book.progressHistory.lastOrNull?.format.ifExists(
         (lastSelectedFormat) =>
             _selectedProgressEventFormat = lastSelectedFormat);
     widget.initialEndTime.ifExists((endTime) => _selectedEndTime = endTime);

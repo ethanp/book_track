@@ -180,8 +180,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
   }
 
   Widget sessionsToday() {
-    final List<ProgressEvent> progressEvents =
-        widget.book.progressHistory.progressEvents;
+    final List<ProgressEvent> progressEvents = widget.book.progressHistory;
     var progressToday = progressEvents.where((e) => e.end.isToday);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14),

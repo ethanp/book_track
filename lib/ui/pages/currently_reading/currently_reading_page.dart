@@ -31,6 +31,7 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
+        leading: AddABookButton(),
         middle: Text('Currently Reading'),
         trailing: SignOutButton(),
       ),
@@ -50,7 +51,6 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
                 child: sessionUi(),
               ),
             ),
-            AddABookButton(),
           ],
         ),
       ),

@@ -14,8 +14,7 @@ class BookTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int latestProgress =
-        book.progressHistory.progressEvents.lastOrNull?.progress ?? 0;
+    final int latestProgress = book.progressHistory.lastOrNull?.progress ?? 0;
     return Dismissible(
       key: Key(book.book.supaId.toString()),
       confirmDismiss: (direction) => _presentUpdateProgressDialog(context),

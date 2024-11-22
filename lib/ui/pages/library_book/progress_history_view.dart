@@ -8,24 +8,24 @@ import 'date_axis.dart';
 import 'timespan.dart';
 
 class ProgressHistoryView extends StatelessWidget {
-  const ProgressHistoryView(this.bookProgress);
+  const ProgressHistoryView(this.libraryBook);
 
-  final LibraryBook bookProgress;
+  final LibraryBook libraryBook;
   static const noAxisTitles =
       AxisTitles(sideTitles: SideTitles(showTitles: false));
 
   @override
   Widget build(BuildContext context) {
-    final List<ProgressEvent> progressEvents =
-        bookProgress.progressHistory.progressEvents;
-
     return Column(
       children: [
         Text('History', style: TextStyles().h1),
-        if (progressEvents.isEmpty)
+        if (libraryBook.progressHistory.isEmpty)
           Text('No progress updates yet')
         else
-          SizedBox(height: 300, child: flLineChart(progressEvents)),
+          SizedBox(
+            height: 300,
+            child: flLineChart(libraryBook.progressHistory),
+          ),
       ],
     );
   }

@@ -8,6 +8,7 @@ class LibraryBook {
     this.book,
     this.startTime,
     this.progressHistory,
+    this.statusHistory,
     this.bookFormat,
     this.bookLength,
   );
@@ -15,18 +16,15 @@ class LibraryBook {
   final int supaId;
   final Book book;
   final DateTime startTime;
-  final ProgressHistory progressHistory;
+  final List<ProgressEvent> progressHistory;
+  final List<StatusEvent> statusHistory;
   final BookFormat? bookFormat;
   final int? bookLength;
 
   String? get bookLengthPgs => bookLength.ifExists((l) => '$l pgs');
 }
 
-class ProgressHistory {
-  const ProgressHistory(this.progressEvents);
-
-  final List<ProgressEvent> progressEvents;
-}
+class StatusEvent {}
 
 class ProgressEvent {
   const ProgressEvent({

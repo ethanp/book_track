@@ -47,7 +47,7 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
           child: Text(
             'Author: ${widget.libraryBook.book.author}',
             textAlign: TextAlign.center,
-            style: TextStyles().h2,
+            style: TextStyles().h3,
           ),
         ),
         Padding(

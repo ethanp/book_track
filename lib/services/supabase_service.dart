@@ -42,15 +42,16 @@ class SupabaseBookService {
   static final _coverArtClient = _bucketClient.from('cover_art');
   static final _booksClient = _base.from('books');
 
-  static Future<PostgrestMap> storeBook(OpenLibraryBook book) async {
-    final PostgrestList preExistResponse = await _fetchPreExisting(book);
-    if (preExistResponse.isNotEmpty) return preExistResponse.first;
+  static Future<int> storeBook(OpenLibraryBook book) async {
+    final existingBookId = await _fetchPreExisting(book);
+    if (existingBookId != null) return existingBookId;
+
     final String? coverKey = book.openLibCoverId.ifExists(coverPath);
     if (book.openLibCoverId != null && book.coverArtS != null) {
       _storeCoverArtS(coverKey!, book.coverArtS!);
     }
 
-    return await _booksClient
+    final PostgrestMap result = await _booksClient
         .insert({
           _SupaBook.titleCol: book.title,
           _SupaBook.authorCol: book.firstAuthor,
@@ -60,21 +61,21 @@ class SupabaseBookService {
         })
         .select()
         .single();
+    return _SupaBook(result).supaId;
   }
 
-  static Future<PostgrestList> _fetchPreExisting(OpenLibraryBook book) async {
-    PostgrestFilterBuilder<PostgrestList> preExistQuery = _booksClient
-        .select('id')
-        .eq(_SupaBook.titleCol, book.title)
-        .eq(_SupaBook.authorCol, book.firstAuthor);
-    book.openLibCoverId.ifExists(
-        (id) => preExistQuery = preExistQuery.eq(_SupaBook.coverIdCol, id));
+  static Future<int?> _fetchPreExisting(OpenLibraryBook book) async {
     try {
-      final PostgrestList preExistResponse = await preExistQuery.limit(1);
-      return preExistResponse;
+      final PostgrestMap? existingBookMatch = await _booksClient
+          .select(_SupaBook.idCol)
+          .eq(_SupaBook.titleCol, book.title)
+          .eq(_SupaBook.authorCol, book.firstAuthor)
+          .limit(1)
+          .maybeSingle();
+      return existingBookMatch.ifExists((data) => _SupaBook(data).supaId);
     } on StorageException catch (e) {
       print('pre-existing book query error $e');
-      return [];
+      return null;
     }
   }
 
@@ -83,7 +84,7 @@ class SupabaseBookService {
       await _coverArtClient.uploadBinary(key, data);
     } on StorageException catch (e) {
       if (e.error == 'Duplicate') {
-        print('art $key is duplicate');
+        print('WARN: art $key is duplicate (which is probably fine)');
       }
     }
   }
@@ -107,29 +108,32 @@ class SupabaseBookService {
 }
 
 class SupabaseLibraryService {
+  static final _libraryClient = _base.from('library');
+
   static Future<void> addBook(OpenLibraryBook book, BookFormat bookType) async {
-    final PostgrestMap storedBook = await SupabaseBookService.storeBook(book);
-    if (await alreadyExists(storedBook, bookType)) {
-      print('library item already exists, not adding.');
-      return;
-    }
-    return await _base.from('library').insert({
-      _SupaLibrary.bookIdCol: storedBook[_SupaBook.idCol],
-      _SupaLibrary.userIdCol: SupabaseAuthService.loggedInUserId,
-      _SupaLibrary.formatCol: bookType.name,
-    });
+    final int bookId = await SupabaseBookService.storeBook(book);
+    final int? libraryBookId =
+        await findExistingLibraryBookId(bookId, bookType) ??
+            await _libraryClient.insert({
+              _SupaLibrary.bookIdCol: bookId,
+              _SupaLibrary.userIdCol: SupabaseAuthService.loggedInUserId,
+              _SupaLibrary.formatCol: bookType.name,
+            });
+    // TODO(feature) Store a reading Status event (started book).
+    //  Requires data model, Postgres table, and all the associated
+    //  de/serialization.
   }
 
-  static Future<bool> alreadyExists(
-      PostgrestMap storedBook, BookFormat bookType) async {
-    final PostgrestList preExistQuery = await _base
-        .from('library')
-        .select('id')
-        .eq(_SupaLibrary.bookIdCol, storedBook[_SupaBook.idCol])
+  static Future<int?> findExistingLibraryBookId(
+      int bookId, BookFormat bookType) async {
+    final PostgrestMap? preExistQuery = await _libraryClient
+        .select(_SupaLibrary.supaIdCol)
+        .eq(_SupaLibrary.bookIdCol, bookId)
         .eq(_SupaLibrary.userIdCol, SupabaseAuthService.loggedInUserId!)
         .eq(_SupaLibrary.formatCol, bookType.name)
-        .limit(1);
-    return preExistQuery.isNotEmpty;
+        .limit(1)
+        .maybeSingle();
+    return preExistQuery.ifExists((res) => _SupaLibrary(res).supaId);
   }
 
   static Future<List<LibraryBook>> myBooks() async {
@@ -139,7 +143,7 @@ class SupabaseLibraryService {
       final _SupaBook supaBook = await _SupaLibrary.bookById(bookId);
       final Uint8List? cover = await supaBook.coverKey
           .ifExists<Future<Uint8List?>>(SupabaseBookService.getCoverArt);
-      final ProgressHistory progressHistory =
+      final List<ProgressEvent> progressHistory =
           await SupabaseProgressService.history(bookId);
       return LibraryBook(
         myBook.supaId,
@@ -153,6 +157,8 @@ class SupabaseLibraryService {
         ),
         supaBook.createdAt,
         progressHistory,
+        [],
+// TODO fill in.
         myBook.format,
         myBook.length,
       );
@@ -292,22 +298,20 @@ class SupabaseProgressService {
     return await _progressClient.insert(progressUpdate);
   }
 
-  static Future<ProgressHistory> history(int bookId) async {
+  static Future<List<ProgressEvent>> history(int bookId) async {
     final queryResults = await _progressClient
         .select()
         .eq(_SupaProgress.libraryBookIdCol, bookId)
         .eq(_SupaProgress.userIdCol, SupabaseAuthService.loggedInUserId!);
-    return ProgressHistory(
-      queryResults.map(_SupaProgress.new).mapL(
-        (supaProgress) {
-          return ProgressEvent(
-            end: supaProgress.endSafe,
-            progress: supaProgress.progress,
-            format: supaProgress.format,
-            start: supaProgress.start,
-          );
-        },
-      ),
+    return queryResults.map(_SupaProgress.new).mapL(
+      (supaProgress) {
+        return ProgressEvent(
+          end: supaProgress.endSafe,
+          progress: supaProgress.progress,
+          format: supaProgress.format,
+          start: supaProgress.start,
+        );
+      },
     );
   }
 }
