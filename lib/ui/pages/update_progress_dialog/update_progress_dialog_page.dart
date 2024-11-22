@@ -35,10 +35,9 @@ class _UpdateProgressDialogState
   @override
   void initState() {
     super.initState();
-    widget.book.progressHistory.lastOrNull?.format.ifExists(
-        (lastSelectedFormat) =>
-            _selectedProgressEventFormat = lastSelectedFormat);
-    widget.initialEndTime.ifExists((endTime) => _selectedEndTime = endTime);
+    widget.book.progressHistory.lastOrNull?.format.map((lastSelectedFormat) =>
+        _selectedProgressEventFormat = lastSelectedFormat);
+    widget.initialEndTime.map((endTime) => _selectedEndTime = endTime);
   }
 
   @override
@@ -136,18 +135,36 @@ class _UpdateProgressDialogState
     return Padding(
       padding: const EdgeInsets.only(top: 16),
       // TODO(ui): change to some kind of ios-specific styled button?
-      child: OutlinedButton(
-        // TODO(feature) implement
-        onPressed: () {},
-        style: OutlinedButton.styleFrom(
-          backgroundColor: Colors.green[300]!.withOpacity(.7),
-          foregroundColor: Colors.blueGrey[900],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          OutlinedButton(
+            // TODO(feature) implement
+            onPressed: () {},
+            style: OutlinedButton.styleFrom(
+              backgroundColor: Colors.green[300]!.withOpacity(.3),
+              foregroundColor: Colors.blueGrey[900],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 3,
+            ),
+            child: Text('Complete'),
           ),
-          elevation: 3,
-        ),
-        child: Text('I finished the book'),
+          OutlinedButton(
+            // TODO(feature) implement
+            onPressed: () {},
+            style: OutlinedButton.styleFrom(
+              backgroundColor: Colors.red[300]!.withOpacity(.3),
+              foregroundColor: Colors.blueGrey[900],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 3,
+            ),
+            child: Text('Abandon'),
+          ),
+        ],
       ),
     );
   }

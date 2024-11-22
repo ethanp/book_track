@@ -21,7 +21,7 @@ class LibraryBook {
   final BookFormat? bookFormat;
   final int? bookLength;
 
-  String? get bookLengthPgs => bookLength.ifExists((l) => '$l pgs');
+  String? get bookLengthPgs => bookLength.map((l) => '$l pgs');
 }
 
 class StatusEvent {}
@@ -71,6 +71,12 @@ enum BookFormat {
   eBook,
   paperback,
   hardcover,
+}
+
+enum ReadingStatus {
+  reading,
+  abandoned,
+  completed,
 }
 
 /// Special handling for no known book format

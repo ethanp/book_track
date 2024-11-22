@@ -69,7 +69,7 @@ class SearchResults extends ConsumerWidget {
   Widget coverArt(OpenLibraryBook book) {
     return SizedBox(
       width: 50,
-      child: book.coverArtS.ifExists(Image.memory),
+      child: book.coverArtS.map(Image.memory),
     );
   }
 }

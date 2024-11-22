@@ -46,7 +46,7 @@ class SupabaseBookService {
     final existingBookId = await _fetchPreExisting(book);
     if (existingBookId != null) return existingBookId;
 
-    final String? coverKey = book.openLibCoverId.ifExists(coverPath);
+    final String? coverKey = book.openLibCoverId.map(coverPath);
     if (book.openLibCoverId != null && book.coverArtS != null) {
       _storeCoverArtS(coverKey!, book.coverArtS!);
     }
@@ -72,7 +72,7 @@ class SupabaseBookService {
           .eq(_SupaBook.authorCol, book.firstAuthor)
           .limit(1)
           .maybeSingle();
-      return existingBookMatch.ifExists((data) => _SupaBook(data).supaId);
+      return existingBookMatch.map(_SupaBook.new).map((book) => book.supaId);
     } on StorageException catch (e) {
       print('pre-existing book query error $e');
       return null;
@@ -119,9 +119,10 @@ class SupabaseLibraryService {
               _SupaLibrary.userIdCol: SupabaseAuthService.loggedInUserId,
               _SupaLibrary.formatCol: bookType.name,
             });
-    // TODO(feature) Store a reading Status event (started book).
-    //  Requires data model, Postgres table, and all the associated
-    //  de/serialization.
+    await _base.from('status').insert({
+      _SupaStatus.libraryBookIdCol: libraryBookId,
+      _SupaStatus.statusCol: ReadingStatus.reading,
+    });
   }
 
   static Future<int?> findExistingLibraryBookId(
@@ -133,7 +134,7 @@ class SupabaseLibraryService {
         .eq(_SupaLibrary.formatCol, bookType.name)
         .limit(1)
         .maybeSingle();
-    return preExistQuery.ifExists((res) => _SupaLibrary(res).supaId);
+    return preExistQuery.map(_SupaLibrary.new).map((res) => res.supaId);
   }
 
   static Future<List<LibraryBook>> myBooks() async {
@@ -142,7 +143,7 @@ class SupabaseLibraryService {
       final int bookId = myBook.bookId;
       final _SupaBook supaBook = await _SupaLibrary.bookById(bookId);
       final Uint8List? cover = await supaBook.coverKey
-          .ifExists<Future<Uint8List?>>(SupabaseBookService.getCoverArt);
+          .map<Future<Uint8List?>>(SupabaseBookService.getCoverArt);
       final List<ProgressEvent> progressHistory =
           await SupabaseProgressService.history(bookId);
       return LibraryBook(
@@ -182,6 +183,25 @@ class SupabaseLibraryService {
   }
 }
 
+class _SupaStatus {
+  int get supaId => rawData[supaIdCol];
+  static final String supaIdCol = 'id';
+
+  DateTime get createdAt => DateTime.parse(rawData[createdAtCol]);
+  static final String createdAtCol = 'created_at';
+
+  ReadingStatus get status => (rawData[statusCol] as String?)
+      .map((str) => ReadingStatus.values.firstWhere((v) => v.name == str))!;
+  static final String statusCol = 'status';
+
+  int get libraryBookId => rawData[libraryBookIdCol];
+  static final String libraryBookIdCol = 'library_book_id';
+
+  const _SupaStatus(this.rawData);
+
+  final PostgrestMap rawData;
+}
+
 class _SupaLibrary {
   int get supaId => rawData[supaIdCol];
   static final String supaIdCol = 'id';
@@ -195,8 +215,8 @@ class _SupaLibrary {
   int get userId => rawData[userIdCol];
   static final String userIdCol = 'user_id';
 
-  BookFormat? get format => (rawData[formatCol] as String?).ifExists(
-      (str) => BookFormat.values.firstWhere((BookFormat v) => v.name == str));
+  BookFormat? get format => (rawData[formatCol] as String?)
+      .map((str) => BookFormat.values.firstWhere((v) => v.name == str));
   static final String formatCol = 'format';
 
   int? get length => rawData[lengthCol];
@@ -316,5 +336,4 @@ class SupabaseProgressService {
   }
 }
 
-DateTime? parseDateCol(dynamic value) =>
-    (value as String?).ifExists(DateTime.parse);
+DateTime? parseDateCol(dynamic value) => (value as String?).map(DateTime.parse);

@@ -28,10 +28,8 @@ class BookTile extends StatelessWidget {
       child: CupertinoListTile(
         title: Text(book.book.title),
         subtitle: Text(book.book.author ?? 'Author unknown'),
-        leading: book.book.coverArtS.ifExists(
-          Image.memory,
-          otherwise: Icon(Icons.question_mark),
-        ),
+        leading:
+            book.book.coverArtS.map(Image.memory) ?? Icon(Icons.question_mark),
         trailing: ReadingProgressIndicator(progressPercent: latestProgress),
         onTap: () => context.push(LibraryBookPage(book)),
       ),
