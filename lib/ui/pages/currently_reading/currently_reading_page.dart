@@ -7,8 +7,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'add_a_book_button.dart';
 import 'book_tile.dart';
+import 'dismissible_cupertino_bottom_sheet.dart';
 
 class CurrentlyReadingPage extends ConsumerStatefulWidget {
   const CurrentlyReadingPage({super.key});
@@ -31,7 +31,7 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        leading: AddABookButton(),
+        leading: addABookButton(context),
         middle: Text('Currently Reading'),
         trailing: SignOutButton(),
       ),
@@ -53,6 +53,23 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  CupertinoButton addABookButton(BuildContext context) {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: () => DismissibleCupertinoBottomSheet.show(context),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.add, size: 20),
+          Text(
+            'Add book',
+            style: TextStyle(fontSize: 13),
+          )
+        ],
       ),
     );
   }

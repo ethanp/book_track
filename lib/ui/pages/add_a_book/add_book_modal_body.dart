@@ -2,29 +2,15 @@ import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'search_results.dart';
 
-class AddBookPage extends ConsumerWidget {
+class AddBookModalBody extends ConsumerWidget {
   final TextEditingController _controller = TextEditingController();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text('Add a book'),
-      ),
-      child: SafeArea(child: body(ref)));
-
-  PreferredSizeWidget appBar() {
-    return AppBar(
-      title: Text('Add a book'),
-      backgroundColor: ColorPalette().appBarColor,
-    );
-  }
-
-  Widget body(WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
