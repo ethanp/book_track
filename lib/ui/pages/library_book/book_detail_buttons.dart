@@ -41,7 +41,7 @@ class BookDetailButtons extends ConsumerWidget {
 
   Widget updateProgress(WidgetRef ref) {
     return BookDetailButton(
-      text: 'Update progress',
+      title: 'Update progress',
       subtitle: 'Sync with reality',
       icon: Icons.list_alt_outlined,
       onPressed: () => UpdateProgressDialogPage.show(ref, book),
@@ -52,7 +52,7 @@ class BookDetailButtons extends ConsumerWidget {
 
   Widget complete() {
     return BookDetailButton(
-      text: 'Complete',
+      title: 'Complete',
       subtitle: 'Mark book as finished',
       icon: Icons.check_box_outlined,
       onPressed: () {},
@@ -63,7 +63,7 @@ class BookDetailButtons extends ConsumerWidget {
 
   Widget startSession(BuildContext context) {
     return BookDetailButton(
-      text: 'Start session',
+      title: 'Start session',
       subtitle: 'Reading timer',
       icon: Icons.timer_outlined,
       onPressed: () => context.push(SessionTimerPage(book)),
@@ -74,7 +74,7 @@ class BookDetailButtons extends ConsumerWidget {
 
   Widget remove() {
     return BookDetailButton(
-      text: 'Remove',
+      title: 'Remove',
       subtitle: 'Remove book from app',
       icon: Icons.delete_forever_outlined,
       onPressed: () {},
@@ -85,7 +85,7 @@ class BookDetailButtons extends ConsumerWidget {
 
   Widget abandon() {
     return BookDetailButton(
-      text: 'Abandon',
+      title: 'Abandon',
       subtitle: 'Stop reading this book',
       icon: Icons.remove_circle_outline_outlined,
       onPressed: () {},

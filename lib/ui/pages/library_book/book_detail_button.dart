@@ -5,14 +5,14 @@ import 'package:flutter/material.dart';
 
 class BookDetailButton extends StatelessWidget {
   const BookDetailButton({
-    required this.text,
+    required this.title,
     required this.subtitle,
     required this.icon,
     required this.onPressed,
     required this.backgroundColor,
     required this.dense,
   });
-  final String text;
+  final String title;
   final String subtitle;
   final IconData icon;
   final VoidCallback onPressed;
@@ -44,32 +44,34 @@ class BookDetailButton extends StatelessWidget {
   }
 
   Widget buttonBody() {
-    print('dense $dense');
+    final titleText = Text(
+      title,
+      style: dense ? TextStyles().h4.copyWith(fontSize: 14) : TextStyles().h3,
+    );
+    final subtitleText = Text(
+      subtitle,
+      style: TextStyle(
+        color: CupertinoColors.black.withOpacity(.72),
+        fontSize: dense ? 10 : 14.5,
+      ),
+    );
+    final textColumn = Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        titleText,
+        SizedBox(height: dense ? 0 : 2),
+        subtitleText,
+      ],
+    );
+    final iconWidget = Icon(
+      icon,
+      color: CupertinoColors.black.withOpacity(.5),
+      size: dense ? 26 : 46,
+    );
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(text,
-                style: dense
-                    ? TextStyles().h4.copyWith(fontSize: 14)
-                    : TextStyles().h3),
-            SizedBox(height: dense ? 0 : 2),
-            Text(
-              subtitle,
-              style: TextStyle(
-                color: CupertinoColors.black.withOpacity(.72),
-                fontSize: dense ? 10 : 14.5,
-              ),
-            ),
-          ],
-        ),
-        Icon(icon,
-            size: dense ? 26 : 46,
-            color: CupertinoColors.black.withOpacity(.5)),
-      ],
+      children: [textColumn, iconWidget],
     );
   }
 }

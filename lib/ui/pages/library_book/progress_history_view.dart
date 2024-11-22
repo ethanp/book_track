@@ -25,7 +25,7 @@ class ProgressHistoryView extends StatelessWidget {
         else
           SizedBox(
             height: 300,
-            child: flLineChart(libraryBook.progressHistory),
+            child: flLineChart(),
           ),
       ],
     );
@@ -33,8 +33,9 @@ class ProgressHistoryView extends StatelessWidget {
 
   static final double horizontalInterval = 25;
 
-  Widget flLineChart(List<ProgressEvent> progressEvents) {
-    final Iterable<DateTime> eventTimes = progressEvents.map((e) => e.end);
+  Widget flLineChart() {
+    final Iterable<DateTime> eventTimes =
+        libraryBook.progressHistory.map((e) => e.end);
     final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
     return Padding(
       padding: const EdgeInsets.only(right: 24, bottom: 12, left: 4, top: 8),
@@ -44,14 +45,20 @@ class ProgressHistoryView extends StatelessWidget {
           maxY: 100,
           minX: timespan.beginning.millisecondsSinceEpoch.toDouble(),
           maxX: timespan.end.millisecondsSinceEpoch.toDouble(),
-          gridData: FlGridData(
-              horizontalInterval: horizontalInterval,
-              verticalInterval: verticalInterval(timespan)),
+          gridData: grid(timespan),
           titlesData: labelAxes(timespan),
-          lineBarsData: plotLines(progressEvents),
+          lineBarsData: plotLines(),
         ),
       ),
     );
+  }
+
+  FlGridData grid(TimeSpan timespan) {
+    return FlGridData(
+        checkToShowHorizontalLine: (v) =>
+            v == timespan.beginning.millisecondsSinceEpoch.toDouble(),
+        horizontalInterval: horizontalInterval,
+        verticalInterval: verticalInterval(timespan));
   }
 
   static double? verticalInterval(TimeSpan timespan) {
@@ -70,9 +77,9 @@ class ProgressHistoryView extends StatelessWidget {
     );
   }
 
-  List<LineChartBarData> plotLines(List<ProgressEvent> progressEvents) {
+  List<LineChartBarData> plotLines() {
     final readingProgressLine = LineChartBarData(
-      spots: progressEvents.mapL(eventToSpot),
+      spots: libraryBook.progressHistory.mapL(eventToSpot),
       belowBarData: gradientFill(),
     );
     return [readingProgressLine];

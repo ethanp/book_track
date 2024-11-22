@@ -143,6 +143,5 @@ class _UpdateProgressDialogState
     );
     context.showSnackBar('updating to: $userInput');
     context.pop();
-    print('popped');
   }
 }
