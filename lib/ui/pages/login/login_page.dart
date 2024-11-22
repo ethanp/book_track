@@ -51,40 +51,44 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(middle: Text(_signUpText)),
-      child: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-        children: [
-          CupertinoTextField(
-            controller: _emailController,
-            placeholder: 'email',
-            decoration: BoxDecoration(
-              border: Border.all(color: CupertinoColors.systemGrey, width: 1.0),
-              borderRadius: BorderRadius.circular(8),
+      child: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+          children: [
+            CupertinoTextField(
+              controller: _emailController,
+              placeholder: 'email',
+              decoration: BoxDecoration(
+                border:
+                    Border.all(color: CupertinoColors.systemGrey, width: 1.0),
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-          ),
-          CupertinoTextField(
-            controller: _passwordController,
-            placeholder: 'Password',
-            obscureText: true,
-            onSubmitted: (_) => _buttonPressed(),
-            textInputAction:
-                TextInputAction.done, // Shows "done" button on keyboard
-            decoration: BoxDecoration(
-              border: Border.all(color: CupertinoColors.systemGrey, width: 1.0),
-              borderRadius: BorderRadius.circular(8),
+            CupertinoTextField(
+              controller: _passwordController,
+              placeholder: 'Password',
+              obscureText: true,
+              onSubmitted: (_) => _buttonPressed(),
+              textInputAction:
+                  TextInputAction.done, // Shows "done" button on keyboard
+              decoration: BoxDecoration(
+                border:
+                    Border.all(color: CupertinoColors.systemGrey, width: 1.0),
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-          ),
-          const SizedBox(height: 18),
-          ElevatedButton(
-            onPressed: _processingSignIn ? null : _buttonPressed,
-            child: Text(_processingSignIn ? 'Processing...' : _signUpText),
-          ),
-          SignInUpToggle(
-            signUpMode: _signUpMode,
-            reverseSignUpText: _reverseSignUpText,
-            onTap: () => setState(() => _signUpMode = !_signUpMode),
-          )
-        ],
+            const SizedBox(height: 18),
+            ElevatedButton(
+              onPressed: _processingSignIn ? null : _buttonPressed,
+              child: Text(_processingSignIn ? 'Processing...' : _signUpText),
+            ),
+            SignInUpToggle(
+              signUpMode: _signUpMode,
+              reverseSignUpText: _reverseSignUpText,
+              onTap: () => setState(() => _signUpMode = !_signUpMode),
+            )
+          ],
+        ),
       ),
     );
   }

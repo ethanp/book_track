@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -31,17 +30,8 @@ String timeLogFormatter(DateTime dateTime) {
 }
 
 extension BuildContextExtension on BuildContext {
-  void showSnackBar(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(this).hideCurrentSnackBar();
-    ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError
-            ? Theme.of(this).colorScheme.error
-            : Theme.of(this).snackBarTheme.backgroundColor,
-      ),
-    );
-  }
+  void showSnackBar(String message, {bool isError = false}) =>
+      print('snack bar: $message');
 
   void authError(Object error) {
     final String message = error is AuthException

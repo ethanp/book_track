@@ -58,7 +58,7 @@ class BookSearchResult {
   final List<OpenLibraryBook> books;
   final int fullResultCount;
 
-  static BookSearchResult get empty =>
+  static const BookSearchResult empty =
       BookSearchResult(books: [], fullResultCount: 0);
 }
 

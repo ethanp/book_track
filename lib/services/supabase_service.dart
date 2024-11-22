@@ -45,16 +45,18 @@ class SupabaseBookService {
   static Future<PostgrestMap> storeBook(OpenLibraryBook book) async {
     final PostgrestList preExistResponse = await _fetchPreExisting(book);
     if (preExistResponse.isNotEmpty) return preExistResponse.first;
-    final String? coverStorageLoc = await book.coverArtS
-        .ifExists<Future<String>>(
-            (art) => _storeCoverArtS(book.openLibCoverId!, art));
+    final String? coverKey = book.openLibCoverId.ifExists(coverPath);
+    if (book.openLibCoverId != null && book.coverArtS != null) {
+      _storeCoverArtS(coverKey!, book.coverArtS!);
+    }
 
     return await _booksClient
         .insert({
           _SupaBook.titleCol: book.title,
+          _SupaBook.authorCol: book.firstAuthor,
           _SupaBook.yearPublishedCol: book.yearFirstPublished,
           _SupaBook.coverIdCol: book.openLibCoverId,
-          _SupaBook.coverKeyCol: coverStorageLoc,
+          _SupaBook.coverKeyCol: coverKey,
         })
         .select()
         .single();
@@ -76,13 +78,21 @@ class SupabaseBookService {
     }
   }
 
-  static Future<String> _storeCoverArtS(int coverI, Uint8List data) =>
-      _coverArtClient.uploadBinary('s/$coverI.jpg', data);
+  static Future<void> _storeCoverArtS(String key, Uint8List data) async {
+    try {
+      await _coverArtClient.uploadBinary(key, data);
+    } on StorageException catch (e) {
+      if (e.error == 'Duplicate') {
+        print('art $key is duplicate');
+      }
+    }
+  }
+
+  static String coverPath(int coverI) => 's/$coverI.jpg';
 
   static Future<Uint8List?> getCoverArt(String key) async {
     try {
-      final formattedKey = key.replaceAll('cover_art/', '');
-      return await _coverArtClient.download(formattedKey);
+      return await _coverArtClient.download(key);
     } on StorageException catch (e) {
       print('issue with the bucket: $e, $key');
       return null;
