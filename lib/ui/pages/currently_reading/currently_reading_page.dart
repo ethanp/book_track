@@ -82,7 +82,6 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
           style: TextStyles().h1,
         );
     Widget body(Iterable<LibraryBook> items) {
-      print('loading outer body');
       final List<Widget> listTiles = items.map(BookTile.new).mapL(
             (tile) => Padding(
               padding: const EdgeInsets.all(6),
