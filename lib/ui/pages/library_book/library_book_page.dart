@@ -1,14 +1,13 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
-import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/session_timer/session_timer_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'book_detail_button.dart';
 import 'book_properties_editor.dart';
 import 'progress_history_view.dart';
 
@@ -73,45 +72,59 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
   Widget buttons(BuildContext context) {
     return Expanded(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          outlinedButton(
-            text: 'Update progress',
-            backgroundColor: Colors.pink[100]!.withOpacity(0.5),
-            onPressed: () async {
-              await showCupertinoDialog(
-                context: context,
-                builder: (context) =>
-                    UpdateProgressDialogPage(book: _libraryBook),
-              );
-            },
-          ),
-          outlinedButton(
-            text: '🧑‍🎓 Start session',
-            backgroundColor: Colors.blue[100]!.withOpacity(0.5),
-            onPressed: () => context.push(SessionTimerPage(_libraryBook)),
-          ),
+          updateProgress(context),
+          complete(),
+          abandon(),
+          startSession(context),
         ],
       ),
     );
   }
 
-  Widget outlinedButton({
-    required String text,
-    required VoidCallback onPressed,
-    required Color backgroundColor,
-  }) {
-    return OutlinedButton(
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        shape: FlutterHelpers.roundedRect(radius: 16),
-        visualDensity: VisualDensity.compact,
-        side: BorderSide(width: 1.5),
-        backgroundColor: backgroundColor,
-        elevation: 4,
-      ),
-      child: Text(text, style: TextStyles().h1),
+  Widget updateProgress(BuildContext context) {
+    return BookDetailButton(
+      text: 'Update progress',
+      subtitle: 'Sync with reality',
+      icon: Icons.list_alt_outlined,
+      onPressed: () async {
+        await showCupertinoDialog(
+          context: context,
+          builder: (context) => UpdateProgressDialogPage(book: _libraryBook),
+        );
+      },
+      backgroundColor: Colors.pink[100]!.withOpacity(.75),
+    );
+  }
+
+  Widget complete() {
+    return BookDetailButton(
+      text: 'Complete',
+      subtitle: 'Mark book as finished',
+      icon: Icons.check_box_outlined,
+      onPressed: () {},
+      backgroundColor: Colors.green[300]!.withOpacity(.6),
+    );
+  }
+
+  Widget abandon() {
+    return BookDetailButton(
+      text: 'Abandon',
+      subtitle: 'Stop reading this book',
+      icon: Icons.remove_circle_outline_outlined,
+      onPressed: () {},
+      backgroundColor: Colors.red[300]!.withOpacity(.6),
+    );
+  }
+
+  Widget startSession(BuildContext context) {
+    return BookDetailButton(
+      text: 'Start session',
+      subtitle: 'Reading timer',
+      icon: Icons.timer_outlined,
+      onPressed: () => context.push(SessionTimerPage(_libraryBook)),
+      backgroundColor: Colors.blue[100]!.withOpacity(0.7),
     );
   }
 }

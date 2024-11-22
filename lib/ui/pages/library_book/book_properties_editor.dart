@@ -47,7 +47,7 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
           child: Text(
             'Author: ${widget.libraryBook.book.author}',
             textAlign: TextAlign.center,
-            style: TextStyles().h3,
+            style: TextStyles().h4,
           ),
         ),
         Padding(
@@ -55,7 +55,7 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text('Book format: ', style: TextStyles().h3),
+              Text('Book format: ', style: TextStyles().h4),
               SizedBox(height: 12),
               // We have to wrap BookFormat with Renderable format because
               // nullable types are not allowed as a type param for
