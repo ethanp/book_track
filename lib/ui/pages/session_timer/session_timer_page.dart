@@ -67,15 +67,13 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
     final DateTime? startTime = ref.read(sessionStartTimeProvider);
 
     return toggleSessionButton(
-      onPressed: () async {
+      onPressed: () {
         read.stop();
-        await showCupertinoDialog(
-          context: context,
-          builder: (context) => UpdateProgressDialogPage(
-            book: widget.book,
-            startTime: startTime,
-            initialEndTime: DateTime.now(),
-          ),
+        UpdateProgressDialogPage.show(
+          ref,
+          widget.book,
+          startTime: startTime,
+          initialEndTime: DateTime.now(),
         );
       },
       backgroundColor: Colors.orange,

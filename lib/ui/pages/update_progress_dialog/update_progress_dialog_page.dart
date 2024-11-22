@@ -1,10 +1,8 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
-import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_service.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'grey_box_text_field.dart';
@@ -23,6 +21,25 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
 
   @override
   ConsumerState createState() => _UpdateProgressDialogState();
+
+  static Future<bool> show(
+    WidgetRef ref,
+    LibraryBook book, {
+    DateTime? startTime,
+    DateTime? initialEndTime,
+  }) async {
+    await showCupertinoDialog(
+      context: ref.context,
+      builder: (context) => UpdateProgressDialogPage(
+        book: book,
+        startTime: startTime,
+        initialEndTime: initialEndTime,
+      ),
+    );
+    print('invalidating provider');
+    ref.invalidate(userLibraryProvider);
+    return false; // <- This means *don't* remove the book from the ListView.
+  }
 }
 
 class _UpdateProgressDialogState
@@ -51,7 +68,6 @@ class _UpdateProgressDialogState
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('Book: "$title" ($format)'),
-          bookStatusButtons(),
           GreyBoxTextField(textChanged: (input) => _textFieldInput = input),
           updateFormatSelector(),
           SizedBox(height: 15),
@@ -124,45 +140,9 @@ class _UpdateProgressDialogState
       format: _selectedProgressEventFormat,
       start: widget.startTime,
       end: _selectedEndTime,
-    ).then((void _) {
-      print('invalidating provider');
-      ref.invalidate(userLibraryProvider);
-    });
+    );
     context.showSnackBar('updating to: $userInput');
     context.pop();
-  }
-
-  // TODO(ux) Move these buttons to the library book detail page.
-  Widget bookStatusButtons() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          OutlinedButton(
-            // TODO(feature) implement
-            onPressed: () {},
-            style: OutlinedButton.styleFrom(
-              backgroundColor: Colors.green[300]!.withOpacity(.3),
-              foregroundColor: Colors.blueGrey[900],
-              shape: FlutterHelpers.roundedRect(radius: 12),
-              elevation: 3,
-            ),
-            child: Text('Complete'),
-          ),
-          OutlinedButton(
-            // TODO(feature) implement
-            onPressed: () {},
-            style: OutlinedButton.styleFrom(
-              backgroundColor: Colors.red[300]!.withOpacity(.3),
-              foregroundColor: Colors.blueGrey[900],
-              shape: FlutterHelpers.roundedRect(radius: 12),
-              elevation: 3,
-            ),
-            child: Text('Abandon'),
-          ),
-        ],
-      ),
-    );
+    print('popped');
   }
 }

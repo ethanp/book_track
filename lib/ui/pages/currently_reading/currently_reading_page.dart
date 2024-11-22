@@ -92,8 +92,11 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Resume reading', style: TextStyles().h1),
-          SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text('Resume reading', style: TextStyles().h1),
+          ),
+          SizedBox(height: 4),
           Expanded(child: ListView(children: listTiles)),
         ],
       );

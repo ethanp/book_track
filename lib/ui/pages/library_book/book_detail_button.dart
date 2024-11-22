@@ -10,17 +10,19 @@ class BookDetailButton extends StatelessWidget {
     required this.icon,
     required this.onPressed,
     required this.backgroundColor,
+    required this.dense,
   });
   final String text;
   final String subtitle;
   final IconData icon;
   final VoidCallback onPressed;
   final Color backgroundColor;
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 14),
+      padding: EdgeInsets.only(top: dense ? 0 : 14),
       child: ElevatedButton(
         onPressed: onPressed,
         style: buttonStyle(),
@@ -31,34 +33,42 @@ class BookDetailButton extends StatelessWidget {
 
   ButtonStyle buttonStyle() {
     return ElevatedButton.styleFrom(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+      padding: EdgeInsets.symmetric(
+          horizontal: dense ? 16.5 : 20, vertical: dense ? 0 : 11),
       shape: FlutterHelpers.roundedRect(radius: 10),
-      fixedSize: Size(300, 75),
-      side: BorderSide(width: .1),
+      fixedSize: dense ? Size(174, 44) : Size(300, 75),
+      side: BorderSide(width: dense ? .2 : .1),
       backgroundColor: backgroundColor,
-      elevation: 4,
+      elevation: dense ? 0 : 4,
     );
   }
 
   Widget buttonBody() {
+    print('dense $dense');
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(text, style: TextStyles().h3),
-            SizedBox(height: 2),
+            Text(text,
+                style: dense
+                    ? TextStyles().h4.copyWith(fontSize: 14)
+                    : TextStyles().h3),
+            SizedBox(height: dense ? 0 : 2),
             Text(
               subtitle,
               style: TextStyle(
                 color: CupertinoColors.black.withOpacity(.72),
-                fontSize: 14.5,
+                fontSize: dense ? 10 : 14.5,
               ),
             ),
           ],
         ),
-        Icon(icon, size: 46, color: CupertinoColors.black.withOpacity(.5)),
+        Icon(icon,
+            size: dense ? 26 : 46,
+            color: CupertinoColors.black.withOpacity(.5)),
       ],
     );
   }

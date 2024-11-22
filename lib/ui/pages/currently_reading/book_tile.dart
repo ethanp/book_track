@@ -1,23 +1,24 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
+import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../update_progress_dialog/update_progress_dialog_page.dart';
 import 'reading_progress_indicator.dart';
 
-class BookTile extends StatelessWidget {
+class BookTile extends ConsumerWidget {
   const BookTile(this.book);
 
   final LibraryBook book;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final int latestProgress = book.progressHistory.lastOrNull?.progress ?? 0;
     return Dismissible(
       key: Key(book.book.supaId.toString()),
-      confirmDismiss: (direction) => _presentUpdateProgressDialog(context),
+      confirmDismiss: (direction) => UpdateProgressDialogPage.show(ref, book),
       background: Container(
         color: Colors.green,
         child: Text(
@@ -26,6 +27,7 @@ class BookTile extends StatelessWidget {
         ),
       ),
       child: CupertinoListTile(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
         title: Text(book.book.title),
         subtitle: Text(book.book.author ?? 'Author unknown'),
         leading:
@@ -34,13 +36,5 @@ class BookTile extends StatelessWidget {
         onTap: () => context.push(LibraryBookPage(book)),
       ),
     );
-  }
-
-  Future<bool> _presentUpdateProgressDialog(BuildContext context) async {
-    await showCupertinoDialog(
-      context: context,
-      builder: (context) => UpdateProgressDialogPage(book: book),
-    );
-    return false; // <- This means *don't* remove the book from the ListView.
   }
 }
