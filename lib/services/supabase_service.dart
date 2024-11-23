@@ -181,6 +181,12 @@ class SupabaseLibraryService {
       rethrow;
     }
   }
+
+  static Future<void> remove(LibraryBook book) async {
+    // We use ON DELETE CASCADE on foreign keys referencing this column, so the
+    //  application doesn't need to worry about cleaning it up in this case.
+    await _libraryClient.delete().eq(_SupaLibrary.supaIdCol, book.supaId);
+  }
 }
 
 class _SupaStatus {

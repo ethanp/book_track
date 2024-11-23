@@ -64,7 +64,7 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
       margin: EdgeInsets.symmetric(horizontal: 16),
       color: Colors.grey[100],
       child: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: ProgressHistoryView(_libraryBook),
       ),
     );

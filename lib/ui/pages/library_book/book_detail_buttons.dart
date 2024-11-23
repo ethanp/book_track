@@ -1,5 +1,7 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/riverpods.dart';
+import 'package:book_track/services/supabase_service.dart';
 import 'package:book_track/ui/pages/session_timer/session_timer_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:flutter/material.dart';
@@ -20,12 +22,11 @@ class BookDetailButtons extends ConsumerWidget {
       startSession(context),
       complete(),
       abandon(),
-      remove(),
+      remove(ref),
     ];
     return Expanded(
       child: dense
-          ? Padding(
-              padding: const EdgeInsets.all(4.0),
+          ? Center(
               child: Wrap(
                 spacing: 8,
                 runSpacing: 6,
@@ -72,12 +73,19 @@ class BookDetailButtons extends ConsumerWidget {
     );
   }
 
-  Widget remove() {
+  Widget remove(WidgetRef ref) {
     return BookDetailButton(
       title: 'Remove',
       subtitle: 'Remove book from app',
       icon: Icons.delete_forever_outlined,
-      onPressed: () {},
+      onPressed: () {
+        // TODO(ux) Add standard-issue iOS confirmation dialog before removal.
+        SupabaseLibraryService.remove(book).then((val) {
+          print('invalidating user library provider');
+          ref.invalidate(userLibraryProvider);
+        });
+        ref.context.pop();
+      },
       backgroundColor: Colors.red[300]!.withOpacity(.6),
       dense: dense,
     );

@@ -76,21 +76,32 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
       LineChartData(
         minY: 0,
         maxY: 100,
-        minX: timespan.beginning.millisecondsSinceEpoch.toDouble(),
-        maxX: timespan.end.millisecondsSinceEpoch.toDouble(),
-        gridData: grid(timespan),
+        minX: timespan.beginning.millisSinceEpoch,
+        maxX: timespan.end.millisSinceEpoch,
+        gridData: grid(),
         titlesData: labelAxes(timespan),
         lineBarsData: plotLines(),
+        borderData: border(),
       ),
     );
   }
 
-  FlGridData grid(TimeSpan timespan) {
+  FlBorderData border() {
+    final borderSide = BorderSide(color: Colors.black, width: 2);
+    return FlBorderData(
+      show: true,
+      border: Border(
+        left: borderSide,
+        bottom: borderSide,
+      ),
+    );
+  }
+
+  FlGridData grid() {
     return FlGridData(
-        checkToShowHorizontalLine: (v) =>
-            v == timespan.beginning.millisecondsSinceEpoch.toDouble(),
-        horizontalInterval: horizontalInterval,
-        verticalInterval: verticalInterval(timespan));
+      horizontalInterval: horizontalInterval,
+      drawVerticalLine: false,
+    );
   }
 
   static double? verticalInterval(TimeSpan timespan) {
@@ -111,20 +122,27 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
 
   List<LineChartBarData> plotLines() {
     final readingProgressLine = LineChartBarData(
-      spots: _latestBook.progressHistory.mapL(eventToSpot),
-      belowBarData: gradientFill(),
-    );
+        spots: _latestBook.progressHistory.mapL(eventToSpot),
+        belowBarData: gradientFill(),
+        gradient: lineGradient());
     return [readingProgressLine];
+  }
+
+  static LinearGradient lineGradient() {
+    return LinearGradient(
+      colors: [Colors.grey[600]!, Colors.blue.withOpacity(.2)],
+      stops: [.4, 1],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    );
   }
 
   static BarAreaData gradientFill() {
     return BarAreaData(
       show: true,
       gradient: LinearGradient(
-        colors: [
-          Colors.blue.withOpacity(1),
-          Colors.blue.withOpacity(.2),
-        ],
+        colors: [Colors.teal[400]!, Colors.blue.withOpacity(.2)],
+        stops: [.4, 1],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
       ),

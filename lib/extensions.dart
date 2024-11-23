@@ -84,4 +84,6 @@ extension DateTimeExtension on DateTime {
       year == other.year && month == other.month && day == other.day;
 
   bool get isToday => sameDayAs(DateTime.now());
+
+  double get millisSinceEpoch => millisecondsSinceEpoch.toDouble();
 }
