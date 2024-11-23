@@ -87,3 +87,15 @@ extension DateTimeExtension on DateTime {
 
   double get millisSinceEpoch => millisecondsSinceEpoch.toDouble();
 }
+
+extension SupaExtension<T> on RawPostgrestBuilder<T, T, T> {
+  /// Using this makes the stack trace originate from my code instead of the
+  /// supabase protocol implementation, so the actual problem gets exposed.
+  Future<T> captureStackTraceOnError() async {
+    try {
+      return await this;
+    } on PostgrestException catch (e) {
+      throw Exception(e);
+    }
+  }
+}

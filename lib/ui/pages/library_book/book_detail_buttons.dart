@@ -57,7 +57,8 @@ class BookDetailButtons extends ConsumerWidget {
       title: 'Complete',
       subtitle: 'Mark book as finished',
       icon: Icons.check_box_outlined,
-      onPressed: () {},
+      onPressed: () =>
+          SupabaseStatusService.add(book.supaId, ReadingStatus.completed),
       backgroundColor: Colors.green[300]!.withOpacity(.6),
       dense: dense,
     );
@@ -102,7 +103,8 @@ class BookDetailButtons extends ConsumerWidget {
       title: 'Abandon',
       subtitle: 'Stop reading this book',
       icon: Icons.remove_circle_outline_outlined,
-      onPressed: () {},
+      onPressed: () =>
+          SupabaseStatusService.add(book.supaId, ReadingStatus.abandoned),
       backgroundColor: Colors.orange[300]!.withOpacity(.6),
       dense: dense,
     );
