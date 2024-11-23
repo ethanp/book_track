@@ -4,6 +4,7 @@ import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_service.dart';
 import 'package:book_track/ui/pages/session_timer/session_timer_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -79,12 +80,17 @@ class BookDetailButtons extends ConsumerWidget {
       subtitle: 'Remove book from app',
       icon: Icons.delete_forever_outlined,
       onPressed: () {
-        // TODO(ux) Add standard-issue iOS confirmation dialog before removal.
-        SupabaseLibraryService.remove(book).then((val) {
-          print('invalidating user library provider');
-          ref.invalidate(userLibraryProvider);
-        });
-        ref.context.pop();
+        showRemoveBookDialog(
+          ref.context,
+          book.book.title,
+          () {
+            SupabaseLibraryService.remove(book).then((val) {
+              print('invalidating user library provider');
+              ref.invalidate(userLibraryProvider);
+            });
+            ref.context.pop();
+          },
+        );
       },
       backgroundColor: Colors.red[300]!.withOpacity(.6),
       dense: dense,
@@ -99,6 +105,41 @@ class BookDetailButtons extends ConsumerWidget {
       onPressed: () {},
       backgroundColor: Colors.orange[300]!.withOpacity(.6),
       dense: dense,
+    );
+  }
+
+  static void showRemoveBookDialog(
+    BuildContext context,
+    String bookTitle,
+    VoidCallback onConfirm,
+  ) {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: Text('Remove Book'),
+          content: Text(
+              'Are you sure you want to remove "$bookTitle" from your library?'),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.pop(context),
+              isDefaultAction: true,
+              child: Text('Cancel'),
+            ),
+            CupertinoDialogAction(
+              onPressed: () {
+                Navigator.pop(context);
+                onConfirm();
+              },
+              isDestructiveAction: true,
+              child: Text(
+                'Remove',
+                style: TextStyle(color: CupertinoColors.destructiveRed),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
