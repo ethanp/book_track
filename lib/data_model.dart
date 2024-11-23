@@ -24,7 +24,17 @@ class LibraryBook {
   String? get bookLengthPgs => bookLength.map((l) => '$l pgs');
 }
 
-class StatusEvent {}
+class StatusEvent {
+  const StatusEvent({required this.time, required this.status});
+
+  final DateTime time;
+  final ReadingStatus status;
+
+  @override
+  String toString() {
+    return 'StatusEvent{time: $time, status: $status}';
+  }
+}
 
 class ProgressEvent {
   const ProgressEvent({

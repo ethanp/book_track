@@ -151,6 +151,8 @@ class SupabaseLibraryService {
           .map<Future<Uint8List?>>(SupabaseBookService.getCoverArt);
       final List<ProgressEvent> progressHistory =
           await SupabaseProgressService.history(bookId);
+      final List<StatusEvent> statusHistory =
+          await SupabaseStatusService.history(bookId);
       return LibraryBook(
         myBook.supaId,
         Book(
@@ -163,8 +165,7 @@ class SupabaseLibraryService {
         ),
         supaBook.createdAt,
         progressHistory,
-        [],
-// TODO fill in.
+        statusHistory,
         myBook.format,
         myBook.length,
       );
@@ -195,12 +196,31 @@ class SupabaseLibraryService {
 class SupabaseStatusService {
   static final SupabaseQueryBuilder _statusClient = _base.from('status');
 
-  static Future<int> add(int libraryBookId, ReadingStatus status) async {
+  static Future<void> add(
+    int libraryBookId,
+    ReadingStatus status, [
+    DateTime? dateTime,
+  ]) async {
+    print('adding status $status');
+    dateTime ??= DateTime.now();
     return await _statusClient.insert({
       _SupaStatus.libraryBookIdCol: libraryBookId,
       _SupaStatus.statusCol: status.name,
       _SupaStatus.userIdCol: SupabaseAuthService.loggedInUserId,
+      _SupaStatus.timeCol: dateTime.toIso8601String(),
     }).captureStackTraceOnError();
+  }
+
+  static Future<List<StatusEvent>> history(int bookId) async {
+    final queryResults = await _statusClient
+        .select()
+        .eq(_SupaStatus.libraryBookIdCol, bookId)
+        .eq(_SupaStatus.userIdCol, SupabaseAuthService.loggedInUserId!)
+        .captureStackTraceOnError();
+    final list = queryResults.map(_SupaStatus.new).mapL((supaStatus) =>
+        StatusEvent(time: supaStatus.time, status: supaStatus.status));
+    list.sort((a, b) => a.time.difference(b.time).inSeconds);
+    return list;
   }
 }
 
@@ -213,6 +233,9 @@ class _SupaStatus {
 
   int get userId => rawData[userIdCol];
   static final String userIdCol = 'user_id';
+
+  DateTime get time => DateTime.parse(rawData[timeCol]);
+  static final String timeCol = 'time';
 
   ReadingStatus get status => (rawData[statusCol] as String?)
       .map((str) => ReadingStatus.values.firstWhere((v) => v.name == str))!;

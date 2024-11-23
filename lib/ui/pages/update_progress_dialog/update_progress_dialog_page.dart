@@ -36,7 +36,6 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
         initialEndTime: initialEndTime,
       ),
     );
-    print('invalidating provider');
     ref.invalidate(userLibraryProvider);
     return false; // <- This means *don't* remove the book from the ListView.
   }

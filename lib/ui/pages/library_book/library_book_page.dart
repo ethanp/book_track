@@ -27,25 +27,15 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    ref
-        .watch(userLibraryProvider)
-        // TODO(optimize) this setState may be redundant or even harmful.
-        //  Gotta test it out.
-        .whenData((items) => setState(() {
-              print('data came in');
-              bool isShownBook(LibraryBook i) =>
-                  i.supaId == widget.libraryBook.supaId;
-              _libraryBook = items.where(isShownBook).first;
-            }));
-  }
-
-  @override
   Widget build(BuildContext context) {
+    ref.watch(userLibraryProvider).whenData((items) {
+      bool isShownBook(LibraryBook i) => i.supaId == widget.libraryBook.supaId;
+      _libraryBook = items.where(isShownBook).first;
+    });
+    final subtitle = _libraryBook.statusHistory.last.status.name;
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text(_libraryBook.book.title),
+        middle: Text('${_libraryBook.book.title} ($subtitle)'),
       ),
       child: SafeArea(
         child: Column(

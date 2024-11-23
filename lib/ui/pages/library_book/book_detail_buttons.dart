@@ -18,11 +18,13 @@ class BookDetailButtons extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(userLibraryProvider);
+    print('building BookDetailButtons widget');
     final List<Widget> children = [
       updateProgress(ref),
       startSession(context),
-      complete(),
-      abandon(),
+      complete(ref),
+      abandon(ref),
       remove(ref),
     ];
     return Expanded(
@@ -52,13 +54,15 @@ class BookDetailButtons extends ConsumerWidget {
     );
   }
 
-  Widget complete() {
+  Widget complete(WidgetRef ref) {
     return BookDetailButton(
       title: 'Complete',
       subtitle: 'Mark book as finished',
       icon: Icons.check_box_outlined,
-      onPressed: () =>
-          SupabaseStatusService.add(book.supaId, ReadingStatus.completed),
+      onPressed: () async {
+        await SupabaseStatusService.add(book.supaId, ReadingStatus.completed);
+        ref.invalidate(userLibraryProvider);
+      },
       backgroundColor: Colors.green[300]!.withOpacity(.6),
       dense: dense,
     );
@@ -86,7 +90,6 @@ class BookDetailButtons extends ConsumerWidget {
           book.book.title,
           () {
             SupabaseLibraryService.remove(book).then((val) {
-              print('invalidating user library provider');
               ref.invalidate(userLibraryProvider);
             });
             ref.context.pop();
@@ -98,13 +101,15 @@ class BookDetailButtons extends ConsumerWidget {
     );
   }
 
-  Widget abandon() {
+  Widget abandon(WidgetRef ref) {
     return BookDetailButton(
       title: 'Abandon',
       subtitle: 'Stop reading this book',
       icon: Icons.remove_circle_outline_outlined,
-      onPressed: () =>
-          SupabaseStatusService.add(book.supaId, ReadingStatus.abandoned),
+      onPressed: () async {
+        await SupabaseStatusService.add(book.supaId, ReadingStatus.abandoned);
+        ref.invalidate(userLibraryProvider);
+      },
       backgroundColor: Colors.orange[300]!.withOpacity(.6),
       dense: dense,
     );
