@@ -15,6 +15,7 @@ class TextStyles {
   TextStyle get h2 => h1.copyWith(fontSize: 20);
   TextStyle get h3 => h1.copyWith(fontSize: 19, fontWeight: FontWeight.w600);
   TextStyle get h4 => h1.copyWith(fontSize: 18, fontWeight: FontWeight.w500);
+  TextStyle get title => h2.copyWith(fontSize: 13);
 
   final bottomAxisLabel = TextStyle(fontSize: 20, fontWeight: FontWeight.w600);
   TextStyle get sideAxisLabel => bottomAxisLabel.copyWith(fontSize: 16);

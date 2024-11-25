@@ -83,7 +83,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
     try {
       await SupabaseLibraryService.addBook(widget.book, bookType);
     } catch (error) {
-      if (mounted) context.showSnackBar('$error\n${error.runtimeType}');
+      if (mounted) context.showSnackBar('(${error.runtimeType}) $error');
     } finally {
       if (mounted) setState(() => _saving = false);
     }

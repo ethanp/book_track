@@ -22,6 +22,9 @@ class LibraryBook {
   final int? bookLength;
 
   String? get bookLengthPgs => bookLength.map((l) => '$l pgs');
+
+  ReadingStatus get status =>
+      statusHistory.lastOrNull?.status ?? ReadingStatus.reading;
 }
 
 class StatusEvent {

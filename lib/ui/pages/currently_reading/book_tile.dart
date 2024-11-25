@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:flutter/cupertino.dart';
@@ -28,7 +29,7 @@ class BookTile extends ConsumerWidget {
       ),
       child: CupertinoListTile(
         padding: const EdgeInsets.symmetric(horizontal: 4),
-        title: Text(book.book.title),
+        title: Text(book.book.title, style: TextStyles().title),
         subtitle: Text(book.book.author ?? 'Author unknown'),
         leading:
             book.book.coverArtS.map(Image.memory) ?? Icon(Icons.question_mark),

@@ -32,7 +32,8 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
       bool isShownBook(LibraryBook i) => i.supaId == widget.libraryBook.supaId;
       _libraryBook = items.where(isShownBook).first;
     });
-    final subtitle = _libraryBook.statusHistory.last.status.name;
+    final subtitle =
+        _libraryBook.statusHistory.lastOrNull?.status.name ?? 'no status';
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         middle: Text('${_libraryBook.book.title} ($subtitle)'),

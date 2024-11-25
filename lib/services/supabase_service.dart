@@ -176,7 +176,6 @@ class SupabaseLibraryService {
     LibraryBook libraryBook,
     BookFormat? updatedFormat,
   ) async {
-    print('updating format');
     await _libraryClient
         .update({_SupaLibrary.formatCol: updatedFormat?.name})
         .eq(_SupaLibrary.supaIdCol, libraryBook.supaId)
@@ -201,7 +200,6 @@ class SupabaseStatusService {
     ReadingStatus status, [
     DateTime? dateTime,
   ]) async {
-    print('adding status $status');
     dateTime ??= DateTime.now();
     return await _statusClient.insert({
       _SupaStatus.libraryBookIdCol: libraryBookId,
@@ -358,18 +356,14 @@ class SupabaseProgressService {
     DateTime? start,
     DateTime? end,
   }) async {
-    final progressUpdate = {
+    return await _progressClient.insert({
       _SupaProgress.libraryBookIdCol: book.book.supaId,
       _SupaProgress.userIdCol: SupabaseAuthService.loggedInUserId,
       _SupaProgress.formatCol: format.name,
       _SupaProgress.progressCol: userInput,
       _SupaProgress.startCol: start?.toIso8601String(),
       _SupaProgress.endCol: end?.toIso8601String(),
-    };
-    print('inserting progress update $progressUpdate');
-    return await _progressClient
-        .insert(progressUpdate)
-        .captureStackTraceOnError();
+    }).captureStackTraceOnError();
   }
 
   static Future<List<ProgressEvent>> history(int bookId) async {
@@ -378,17 +372,15 @@ class SupabaseProgressService {
         .eq(_SupaProgress.libraryBookIdCol, bookId)
         .eq(_SupaProgress.userIdCol, SupabaseAuthService.loggedInUserId!)
         .captureStackTraceOnError();
-    return queryResults.map(_SupaProgress.new).mapL(
-      (supaProgress) {
-        return ProgressEvent(
-          end: supaProgress.endSafe,
-          progress: supaProgress.progress,
-          format: supaProgress.format,
-          start: supaProgress.start,
-        );
-      },
-    );
+    return queryResults
+        .map(_SupaProgress.new)
+        .mapL((supaProgress) => ProgressEvent(
+              end: supaProgress.endSafe,
+              progress: supaProgress.progress,
+              format: supaProgress.format,
+              start: supaProgress.start,
+            ));
   }
 }
 
-DateTime? parseDateCol(dynamic value) => (value as String?).map(DateTime.parse);
+DateTime? parseDateCol(value) => (value as String?).map(DateTime.parse);

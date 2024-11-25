@@ -16,17 +16,23 @@ class BookDetailButtons extends ConsumerWidget {
   final LibraryBook book;
   final bool dense;
 
+  bool get completed => book.status == ReadingStatus.completed;
+
+  bool get abandoned => book.status == ReadingStatus.abandoned;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(userLibraryProvider);
     print('building BookDetailButtons widget');
-    final List<Widget> children = [
-      updateProgress(ref),
-      startSession(context),
-      complete(ref),
-      abandon(ref),
-      remove(ref),
-    ];
+    List<Widget> children = [remove(ref)];
+    if (!completed) {
+      children += [
+        updateProgress(ref),
+        startSession(context),
+        complete(ref),
+        abandon(ref),
+      ];
+    }
     return Expanded(
       child: dense
           ? Center(
@@ -103,14 +109,21 @@ class BookDetailButtons extends ConsumerWidget {
 
   Widget abandon(WidgetRef ref) {
     return BookDetailButton(
-      title: 'Abandon',
-      subtitle: 'Stop reading this book',
-      icon: Icons.remove_circle_outline_outlined,
+      title: abandoned ? 'Resume' : 'Abandon',
+      subtitle: '${abandoned ? 'Continue' : 'Stop'} reading this book',
+      icon: abandoned
+          ? Icons.play_circle_outline
+          : Icons.remove_circle_outline_outlined,
       onPressed: () async {
-        await SupabaseStatusService.add(book.supaId, ReadingStatus.abandoned);
+        await SupabaseStatusService.add(
+          book.supaId,
+          abandoned ? ReadingStatus.reading : ReadingStatus.abandoned,
+        );
         ref.invalidate(userLibraryProvider);
       },
-      backgroundColor: Colors.orange[300]!.withOpacity(.6),
+      backgroundColor: abandoned
+          ? Colors.tealAccent[700]!.withOpacity(.2)
+          : Colors.orange[300]!.withOpacity(.6),
       dense: dense,
     );
   }

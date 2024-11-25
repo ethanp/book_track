@@ -34,7 +34,9 @@ class BookDetailButton extends StatelessWidget {
   ButtonStyle buttonStyle() {
     return ElevatedButton.styleFrom(
       padding: EdgeInsets.symmetric(
-          horizontal: dense ? 16.5 : 20, vertical: dense ? 0 : 11),
+        horizontal: dense ? 16.5 : 20,
+        vertical: dense ? 0 : 10,
+      ),
       shape: FlutterHelpers.roundedRect(radius: 10),
       fixedSize: dense ? Size(174, 44) : Size(300, 75),
       side: BorderSide(width: dense ? .2 : .1),

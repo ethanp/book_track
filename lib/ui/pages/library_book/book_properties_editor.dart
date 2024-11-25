@@ -30,6 +30,10 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
     ref.watch(userLibraryProvider).whenData((items) => setState(() {
           bool isShownBook(LibraryBook book) =>
               book.supaId == widget.libraryBook.supaId;
+          // TODO does this ever get called? Is this block still needed?
+          //  setState() is called from within build() so maybe not? Does it
+          //  get called when a button is pressed and the setState() call from
+          //  build() would not be triggered in that case?
           print('sourcing stored format');
           final LibraryBook shownBook = items.where(isShownBook).first;
           _format = shownBook.bookFormat;
@@ -38,52 +42,66 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
 
   @override
   Widget build(BuildContext context) {
-    List<BookFormat?> formatOptions = List.from(BookFormat.values);
-    formatOptions.add(null);
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(18),
-          child: Text(
-            'Author: ${widget.libraryBook.book.author}',
-            textAlign: TextAlign.center,
-            style: TextStyles().h4,
+    return Column(children: [author(), bookFormat()]);
+  }
+
+  Widget author() {
+    return Padding(
+      padding: const EdgeInsets.all(18),
+      child: Text(
+        'Author: ${widget.libraryBook.book.author}',
+        textAlign: TextAlign.center,
+        style: TextStyles().h4,
+      ),
+    );
+  }
+
+  Padding bookFormat() {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Text('Book format: ', style: TextStyles().h4),
+          SizedBox(height: 12),
+          // We have to wrap BookFormat with Renderable format because
+          // nullable types are not allowed as a type param for
+          // CupertinoSegmentedControl.
+          CupertinoSegmentedControl<RenderableFormat>(
+            onValueChanged: updateFormat,
+            groupValue: RenderableFormat(_format),
+            children: formatNames(),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Text('Book format: ', style: TextStyles().h4),
-              SizedBox(height: 12),
-              // We have to wrap BookFormat with Renderable format because
-              // nullable types are not allowed as a type param for
-              // CupertinoSegmentedControl.
-              CupertinoSegmentedControl<RenderableFormat>(
-                onValueChanged: (RenderableFormat selectedFormat) {
-                  setState(() => _format = selectedFormat.bookFormat);
-                  SupabaseLibraryService.updateFormat(
-                      widget.libraryBook, selectedFormat.bookFormat);
-                  ref.invalidate(userLibraryProvider);
-                },
-                groupValue: RenderableFormat(_format),
-                children: {
-                  for (final format in formatOptions)
-                    RenderableFormat(format): Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 8),
-                      child: Text(
-                        format?.name ?? 'unknown',
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                    )
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+
+  void updateFormat(RenderableFormat selectedFormat) {
+    setState(() => _format = selectedFormat.bookFormat);
+    SupabaseLibraryService.updateFormat(
+        widget.libraryBook, selectedFormat.bookFormat);
+    ref.invalidate(userLibraryProvider);
+  }
+
+  Map<RenderableFormat, Widget> formatNames() {
+    var formats = List.from(BookFormat.values)..add(null);
+    return {
+      for (final BookFormat? format in formats)
+        RenderableFormat(format): paddedText(format)
+    };
+  }
+
+  Widget paddedText(BookFormat? format) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 4,
+        vertical: 8,
+      ),
+      child: Text(
+        format?.name ?? 'unknown',
+        style: const TextStyle(fontSize: 11),
+      ),
     );
   }
 }
