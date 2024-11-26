@@ -27,11 +27,20 @@ class TimeHelpers {
   static final monthDayYear = DateFormat('MMM d, y').format;
   static final hourMinuteAmPm = DateFormat('h:mma').format;
 
-  static String get timeLog => timeLogFormatter(DateTime.now());
+  static String get timestamp => timestampFormatter(DateTime.now());
 
-  static String timeLogFormatter(DateTime dateTime) {
+  static String timestampFormatter(DateTime dateTime) {
     final time = DateFormat('hh:mm:ss').format(dateTime);
     final millis = dateTime.millisecond.toString().padLeft(3, '0');
     return '$time:$millis';
   }
+}
+
+class SimpleLogger {
+  const SimpleLogger({required this.prefix});
+  final String prefix;
+
+  /// [call] method is a special method in Dart that, when defined,
+  /// allows instances of the class to be invoked like functions.
+  void call(String s) => print('${TimeHelpers.timestamp} ($prefix): $s');
 }

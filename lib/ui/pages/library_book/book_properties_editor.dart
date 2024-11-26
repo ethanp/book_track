@@ -1,4 +1,5 @@
 import 'package:book_track/data_model.dart';
+import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_service.dart';
 import 'package:book_track/ui/common/design.dart';
@@ -9,6 +10,7 @@ class BookPropertiesEditor extends ConsumerStatefulWidget {
   const BookPropertiesEditor(this.libraryBook);
 
   final LibraryBook libraryBook;
+  static final SimpleLogger log = SimpleLogger(prefix: 'BookPropertiesEditor');
 
   @override
   ConsumerState createState() => _EditableBookPropertiesState();
@@ -30,11 +32,10 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
     ref.watch(userLibraryProvider).whenData((items) => setState(() {
           bool isShownBook(LibraryBook book) =>
               book.supaId == widget.libraryBook.supaId;
-          // TODO does this ever get called? Is this block still needed?
-          //  setState() is called from within build() so maybe not? Does it
-          //  get called when a button is pressed and the setState() call from
-          //  build() would not be triggered in that case?
-          print('sourcing stored format');
+          // The point of this block is to update this widget state when
+          // an inner widget like the buttons modifies the backend. The
+          // button invalidates the provider, which triggers this block.
+          BookPropertiesEditor.log('sourcing stored format');
           final LibraryBook shownBook = items.where(isShownBook).first;
           _format = shownBook.bookFormat;
         }));
@@ -84,13 +85,11 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
     ref.invalidate(userLibraryProvider);
   }
 
-  Map<RenderableFormat, Widget> formatNames() {
-    var formats = List.from(BookFormat.values)..add(null);
-    return {
-      for (final BookFormat? format in formats)
-        RenderableFormat(format): paddedText(format)
-    };
-  }
+  Map<RenderableFormat, Widget> formatNames() => {
+        for (final BookFormat? format
+            in List.from(BookFormat.values)..add(null))
+          RenderableFormat(format): paddedText(format)
+      };
 
   Widget paddedText(BookFormat? format) {
     return Padding(

@@ -95,9 +95,11 @@ class BookDetailButtons extends ConsumerWidget {
           ref.context,
           book.book.title,
           () {
-            SupabaseLibraryService.remove(book).then((val) {
-              ref.invalidate(userLibraryProvider);
-            });
+            // We explicitly use `then` (instead of `await`) to ensure the
+            // context.pop happens on the same thread as this callback was
+            // called on.
+            SupabaseLibraryService.remove(book)
+                .then((_) => ref.invalidate(userLibraryProvider));
             ref.context.pop();
           },
         );
@@ -132,34 +134,34 @@ class BookDetailButtons extends ConsumerWidget {
     BuildContext context,
     String bookTitle,
     VoidCallback onConfirm,
-  ) {
-    showCupertinoDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CupertinoAlertDialog(
-          title: Text('Remove Book'),
-          content: Text(
-              'Are you sure you want to remove "$bookTitle" from your library?'),
-          actions: [
-            CupertinoDialogAction(
-              onPressed: () => Navigator.pop(context),
-              isDefaultAction: true,
-              child: Text('Cancel'),
+  ) =>
+      showCupertinoDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CupertinoAlertDialog(
+            title: Text('Remove Book'),
+            content: Text(
+              'Are you sure you want to remove "$bookTitle" from your library?',
             ),
-            CupertinoDialogAction(
-              onPressed: () {
-                Navigator.pop(context);
-                onConfirm();
-              },
-              isDestructiveAction: true,
-              child: Text(
-                'Remove',
-                style: TextStyle(color: CupertinoColors.destructiveRed),
+            actions: [
+              CupertinoDialogAction(
+                onPressed: () => Navigator.pop(context),
+                isDefaultAction: true,
+                child: Text('Cancel'),
               ),
-            ),
-          ],
-        );
-      },
-    );
-  }
+              CupertinoDialogAction(
+                onPressed: () {
+                  Navigator.pop(context);
+                  onConfirm();
+                },
+                isDestructiveAction: true,
+                child: Text(
+                  'Remove',
+                  style: TextStyle(color: CupertinoColors.destructiveRed),
+                ),
+              ),
+            ],
+          );
+        },
+      );
 }

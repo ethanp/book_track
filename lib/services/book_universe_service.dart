@@ -68,9 +68,9 @@ class OpenLibraryBookUniverseRepository {
   Future<Uint8List?> coverBytes(int? coverId, String size) async {
     if (coverId == null) return null;
     var url = coverUrl(coverId, size);
-    print('${TimeHelpers.timeLog} getting cover from $url');
+    print('${TimeHelpers.timestamp} getting cover from $url');
     final http.Response response = await http.get(url);
-    print('${TimeHelpers.timeLog} got cover from $url');
+    print('${TimeHelpers.timestamp} got cover from $url');
     return response.bodyBytes;
   }
 }
