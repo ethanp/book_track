@@ -6,8 +6,7 @@ import 'supabase_auth_service.dart';
 import 'supabase_service.dart';
 
 class SupabaseProgressService {
-  static final SupabaseQueryBuilder _progressClient =
-      supabase.from('progress_events');
+  static final _progressClient = supabase.from('progress_events');
 
   static Future<void> updateProgress({
     required LibraryBook book,
@@ -15,16 +14,16 @@ class SupabaseProgressService {
     required ProgressEventFormat format,
     DateTime? start,
     DateTime? end,
-  }) async {
-    return await _progressClient.insert({
-      _SupaProgress.libraryBookIdCol: book.book.supaId,
-      _SupaProgress.userIdCol: SupabaseAuthService.loggedInUserId,
-      _SupaProgress.formatCol: format.name,
-      _SupaProgress.progressCol: userInput,
-      _SupaProgress.startCol: start?.toIso8601String(),
-      _SupaProgress.endCol: end?.toIso8601String(),
-    }).captureStackTraceOnError();
-  }
+  }) async =>
+      await _progressClient.insert({
+        _SupaProgress.libraryBookIdCol: book.book.supaId,
+        _SupaProgress.userIdCol: SupabaseAuthService.loggedInUserId,
+        _SupaProgress.formatCol: format.name,
+        _SupaProgress.progressCol: userInput,
+        // This is the date-time format that works well with Supabase/Postgres.
+        _SupaProgress.startCol: start?.toIso8601String(),
+        _SupaProgress.endCol: end?.toIso8601String(),
+      }).captureStackTraceOnError();
 
   static Future<List<ProgressEvent>> history(int bookId) async {
     final queryResults = await _progressClient

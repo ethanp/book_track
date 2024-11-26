@@ -16,11 +16,32 @@ class SupabaseBookService {
 
   static final SimpleLogger log = SimpleLogger(prefix: 'SupabaseBookService');
 
-  static Future<int> getOrCreateBookId(OpenLibraryBook book) async =>
-      await existingBookId(book) ?? await storeBook(book);
+  static Future<Book> getBookById(int bookId) async {
+    final PostgrestMap rawData = await supabase
+        .from('books')
+        .select()
+        .eq(_SupaBook.idCol, bookId)
+        .single()
+        .captureStackTraceOnError();
+    final supaBook = _SupaBook(rawData);
+    final coverArt =
+        // Not sure why, but these angle brackets are necessary.
+        await supaBook.coverKey.map<Future<Uint8List?>>(_getCoverArt);
+    return Book(
+      supaBook.supaId,
+      supaBook.title,
+      supaBook.author,
+      supaBook.yearPublished,
+      supaBook.coverId,
+      coverArt,
+    );
+  }
 
-  static Future<int> storeBook(OpenLibraryBook book) async {
-    final String? coverKey = await storeCoverArtS(book);
+  static Future<int> getOrCreateBookId(OpenLibraryBook book) async =>
+      await _existingBookId(book) ?? await _storeBookAndCover(book);
+
+  static Future<int> _storeBookAndCover(OpenLibraryBook book) async {
+    final String? coverKey = await _storeCoverArtS(book);
     final _SupaBook result = await _storeBook(book, coverKey);
     return result.supaId;
   }
@@ -41,7 +62,7 @@ class SupabaseBookService {
     return _SupaBook(result);
   }
 
-  static Future<int?> existingBookId(OpenLibraryBook book) async {
+  static Future<int?> _existingBookId(OpenLibraryBook book) async {
     try {
       final PostgrestMap? existingBookMatch = await _booksClient
           .select(_SupaBook.idCol)
@@ -57,8 +78,8 @@ class SupabaseBookService {
     }
   }
 
-  static Future<String?> storeCoverArtS(OpenLibraryBook book) async {
-    final String? coverKey = book.openLibCoverId.map(coverPath);
+  static Future<String?> _storeCoverArtS(OpenLibraryBook book) async {
+    final String? coverKey = book.openLibCoverId.map(_coverPath);
     if (book.openLibCoverId == null || book.coverArtS == null) {
       log('INFO: No cover for ${book.title}');
       return null;
@@ -79,9 +100,9 @@ class SupabaseBookService {
     }
   }
 
-  static String coverPath(int coverI) => 's/$coverI.jpg';
+  static String _coverPath(int coverI) => 's/$coverI.jpg';
 
-  static Future<Uint8List?> getCoverArt(String key) async {
+  static Future<Uint8List?> _getCoverArt(String key) async {
     try {
       return await _coverArtClient.download(key);
     } on StorageException catch (e) {
@@ -94,27 +115,6 @@ class SupabaseBookService {
       print('strange error: $e');
       return null;
     }
-  }
-
-  static Future<Book> bookById(int bookId) async {
-    final PostgrestMap rawData = await supabase
-        .from('books')
-        .select()
-        .eq(_SupaBook.idCol, bookId)
-        .single()
-        .captureStackTraceOnError();
-    final supaBook = _SupaBook(rawData);
-    final coverArt =
-        // Not sure why, but these angle brackets are necessary.¬
-        await supaBook.coverKey.map<Future<Uint8List?>>(getCoverArt);
-    return Book(
-      supaBook.supaId,
-      supaBook.title,
-      supaBook.author,
-      supaBook.yearPublished,
-      supaBook.coverId,
-      coverArt,
-    );
   }
 }
 

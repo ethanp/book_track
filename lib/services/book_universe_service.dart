@@ -17,14 +17,17 @@ class BookUniverseService {
   }
 
   static Future<Uint8List?> downloadMedSizeCover(OpenLibraryBook book) =>
-      bookUniverseRepo.coverBytes(book.openLibCoverId, 'M');
+      bookUniverseRepo._coverBytes(book.openLibCoverId, 'M');
 }
 
-/// One decent book api option is https://hardcover.app/account/api?referrer_id=15017
-/// The other decent one I've found is https://openlibrary.org/dev/docs/api/books
-///    Nice thing about this one is it doesn't require any authentication.
-///    I'm starting with this one for now.
-/// Google would probably work fine too https://developers.google.com/books/docs/v1/using
+/// Open Library has a simple HTTP search endpoint for books and covers:
+///     https://openlibrary.org/dev/docs/api/books
+///    It doesn't require any authentication or setup.
+///    ***I'm starting with this one for now.***
+/// Google would probably work better/faster, but more difficult to use:
+///     https://developers.google.com/books/docs/v1/using
+/// Another one to check out is:
+///     https://hardcover.app/account/api?referrer_id=15017
 class OpenLibraryBookUniverseRepository {
   static final Uri apiUrl = Uri.parse('https://openlibrary.org/search.json');
 
@@ -57,7 +60,7 @@ class OpenLibraryBookUniverseRepository {
               openLibBookDoc['first_publish_year'],
               openLibBookDoc['number_of_pages_median'],
               openLibBookDoc['cover_i'],
-              await coverBytes(openLibBookDoc['cover_i'], 'S'),
+              await _coverBytes(openLibBookDoc['cover_i'], 'S'),
             );
           },
         ),
@@ -65,7 +68,7 @@ class OpenLibraryBookUniverseRepository {
     );
   }
 
-  Future<Uint8List?> coverBytes(int? coverId, String size) async {
+  Future<Uint8List?> _coverBytes(int? coverId, String size) async {
     if (coverId == null) return null;
     var url = coverUrl(coverId, size);
     print('${TimeHelpers.timestamp} getting cover from $url');

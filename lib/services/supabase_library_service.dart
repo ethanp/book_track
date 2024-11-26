@@ -12,42 +12,11 @@ import 'supabase_status_service.dart';
 class SupabaseLibraryService {
   static final _libraryClient = supabase.from('library');
 
-  static Future<void> addBook(OpenLibraryBook book, BookFormat bookType) async {
-    final int bookId = await SupabaseBookService.getOrCreateBookId(book);
-    final int libraryBookId = await getOrCreateLibraryBookId(bookId, bookType);
-    await SupabaseStatusService.add(libraryBookId, ReadingStatus.reading);
-  }
-
-  static Future<dynamic> getOrCreateLibraryBookId(
-          int bookId, BookFormat bookType) async =>
-      await existingLibraryBookId(bookId, bookType) ??
-      await newLibraryBookId(bookId, bookType);
-
-  static Future<int?> existingLibraryBookId(
-      int bookId, BookFormat bookType) async {
-    final PostgrestMap? preExistQuery = await _libraryClient
-        .select(_SupaLibrary.supaIdCol)
-        .eq(_SupaLibrary.bookIdCol, bookId)
-        .eq(_SupaLibrary.userIdCol, SupabaseAuthService.loggedInUserId!)
-        .eq(_SupaLibrary.formatCol, bookType.name)
-        .limit(1)
-        .maybeSingle()
-        .captureStackTraceOnError();
-    return preExistQuery.map(_SupaLibrary.new).map((res) => res.supaId);
-  }
-
-  static Future<dynamic> newLibraryBookId(int bookId, BookFormat bookType) =>
-      _libraryClient.insert({
-        _SupaLibrary.bookIdCol: bookId,
-        _SupaLibrary.userIdCol: SupabaseAuthService.loggedInUserId,
-        _SupaLibrary.formatCol: bookType.name,
-      }).captureStackTraceOnError();
-
   static Future<List<LibraryBook>> myBooks() async {
     final List<_SupaLibrary> library = await _SupaLibrary.forLoggedInUser();
     final libraryBooks = library.map((_SupaLibrary supaLibraryBook) async {
       final int bookId = supaLibraryBook.bookId;
-      final Book book = await SupabaseBookService.bookById(bookId);
+      final Book book = await SupabaseBookService.getBookById(bookId);
       final progressHistory = await SupabaseProgressService.history(bookId);
       final statusHistory = await SupabaseStatusService.history(bookId);
       return LibraryBook(
@@ -62,6 +31,12 @@ class SupabaseLibraryService {
     return Future.wait(libraryBooks);
   }
 
+  static Future<void> addBook(OpenLibraryBook book, BookFormat bookType) async {
+    final int bookId = await SupabaseBookService.getOrCreateBookId(book);
+    final int libraryBookId = await _getOrCreateLibraryBookId(bookId, bookType);
+    await SupabaseStatusService.add(libraryBookId, ReadingStatus.reading);
+  }
+
   static Future<void> updateFormat(
     LibraryBook libraryBook,
     BookFormat? updatedFormat,
@@ -71,12 +46,38 @@ class SupabaseLibraryService {
           .eq(_SupaLibrary.supaIdCol, libraryBook.supaId)
           .captureStackTraceOnError();
 
-  // We use ON DELETE CASCADE on foreign keys referencing this column, so the
-  //  application doesn't need to worry about cleaning it up in this case.
-  static Future<void> remove(LibraryBook book) async => await _libraryClient
-      .delete()
-      .eq(_SupaLibrary.supaIdCol, book.supaId)
-      .captureStackTraceOnError();
+  static Future<void> remove(LibraryBook book) async =>
+      // We use ON DELETE CASCADE on foreign keys referencing this column,
+      //  so the application doesn't need to worry about cleaning it up here.
+      await _libraryClient
+          .delete()
+          .eq(_SupaLibrary.supaIdCol, book.supaId)
+          .captureStackTraceOnError();
+
+  static Future<dynamic> _getOrCreateLibraryBookId(
+          int bookId, BookFormat bookType) async =>
+      await _existingLibraryBookId(bookId, bookType) ??
+      await _newLibraryBookId(bookId, bookType);
+
+  static Future<int?> _existingLibraryBookId(
+      int bookId, BookFormat bookType) async {
+    final PostgrestMap? preExistQuery = await _libraryClient
+        .select(_SupaLibrary.supaIdCol)
+        .eq(_SupaLibrary.bookIdCol, bookId)
+        .eq(_SupaLibrary.userIdCol, SupabaseAuthService.loggedInUserId!)
+        .eq(_SupaLibrary.formatCol, bookType.name)
+        .limit(1)
+        .maybeSingle()
+        .captureStackTraceOnError();
+    return preExistQuery.map(_SupaLibrary.new).map((res) => res.supaId);
+  }
+
+  static Future<dynamic> _newLibraryBookId(int bookId, BookFormat bookType) =>
+      _libraryClient.insert({
+        _SupaLibrary.bookIdCol: bookId,
+        _SupaLibrary.userIdCol: SupabaseAuthService.loggedInUserId,
+        _SupaLibrary.formatCol: bookType.name,
+      }).captureStackTraceOnError();
 }
 
 class _SupaLibrary {
