@@ -43,7 +43,11 @@ class OpenLibraryBookUniverseRepository {
     print('apiUrl: $url');
     final http.Response response = await http.get(url);
     if (response.statusCode != 200) {
-      print('search error: $response');
+      // TODO(ux): Sometimes I get 500 Internal Server Error from here.
+      //  Currently nothing is shown to user :(.
+      //  Ask user to try their search again.
+      //  Or better yet, back off then try again automagically.
+      print('search error: ${response.statusCode} ${response.reasonPhrase}');
       return BookSearchResult.empty;
     }
     final dynamic bodyJson = jsonDecode(response.body);

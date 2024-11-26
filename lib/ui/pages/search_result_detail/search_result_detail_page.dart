@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/services/supabase_library_service.dart';
@@ -20,7 +21,10 @@ class SearchResultDetailPage extends ConsumerStatefulWidget {
 }
 
 class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
+  static SimpleLogger log = SimpleLogger(prefix: 'SearchResultDetailPage');
+
   bool _saving = false;
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -51,7 +55,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
             child: _saving
                 ? CircularProgressIndicator()
                 : Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: BookFormat.values.mapL(typeButton),
                   ),
           ),
@@ -61,20 +65,26 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
   }
 
   Widget typeButton(BookFormat bookType) {
-    return CupertinoButton(
-      onPressed: () async {
-        await addBookToLibrary(bookType);
-        if (mounted) context.popUntilFirst();
-        ref.invalidate(userLibraryProvider);
-      },
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      color: switch (bookType) {
-        BookFormat.audiobook => Colors.orange[400],
-        BookFormat.eBook => Colors.blue[400],
-        BookFormat.paperback => Colors.red[300],
-        BookFormat.hardcover => Colors.green[200],
-      },
-      child: Text(bookType.name),
+    return Padding(
+      padding: const EdgeInsets.all(6),
+      child: CupertinoButton(
+        onPressed: () async {
+          await addBookToLibrary(bookType);
+          if (mounted) context.popUntilFirst();
+          ref.invalidate(userLibraryProvider);
+        },
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        color: switch (bookType) {
+          BookFormat.audiobook => Colors.orange[400],
+          BookFormat.eBook => Colors.blue[400],
+          BookFormat.paperback => Colors.red[300],
+          BookFormat.hardcover => Colors.green[200],
+        },
+        child: Text(
+          bookType.name,
+          style: TextStyles().h4.copyWith(fontSize: 13),
+        ),
+      ),
     );
   }
 
@@ -82,8 +92,8 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
     setState(() => _saving = true);
     try {
       await SupabaseLibraryService.addBook(widget.book, bookType);
-    } catch (error) {
-      if (mounted) context.showSnackBar('(${error.runtimeType}) $error');
+    } catch (error, stack) {
+      log('(${error.runtimeType}) $error $stack');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -93,10 +103,9 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
     return Column(children: [
       keyValueText('Title: ', widget.book.title),
       keyValueText('Author: ', widget.book.firstAuthor),
-      keyValueText(
-          'Year First Published: ', widget.book.yearFirstPublished.toString()),
+      keyValueText('First Pub\'d: ', widget.book.yearFirstPublished.toString()),
       if (widget.book.numPagesMedian != null)
-        keyValueText('Length: ', widget.book.numPagesMedian!.toString()),
+        keyValueText('Pages (est): ', widget.book.numPagesMedian!.toString()),
     ]);
   }
 
@@ -165,8 +174,8 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
   }
 
   Widget keyValueText(String key, String value) {
-    final TextStyle black = TextStyles().h2;
-    final TextStyle bold = black.copyWith(fontWeight: FontWeight.w800);
+    final TextStyle black = TextStyles().h3;
+    final TextStyle bold = black.copyWith(fontWeight: FontWeight.w700);
     final Widget keyWidget = SizedBox(
       width: 90,
       child: Text(key, style: bold, maxLines: 3, textAlign: TextAlign.right),

@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'book_universe_service.dart';
@@ -11,14 +12,16 @@ import 'supabase_status_service.dart';
 
 class SupabaseLibraryService {
   static final _libraryClient = supabase.from('library');
+  static SimpleLogger log = SimpleLogger(prefix: 'SupabaseLibraryService');
 
   static Future<List<LibraryBook>> myBooks() async {
-    final List<_SupaLibrary> library = await _SupaLibrary.forLoggedInUser();
+    final List<_SupaLibrary> library = await _forLoggedInUser();
     final libraryBooks = library.map((_SupaLibrary supaLibraryBook) async {
+      final int libBookId = supaLibraryBook.supaId;
       final int bookId = supaLibraryBook.bookId;
       final Book book = await SupabaseBookService.getBookById(bookId);
-      final progressHistory = await SupabaseProgressService.history(bookId);
-      final statusHistory = await SupabaseStatusService.history(bookId);
+      final progressHistory = await SupabaseProgressService.history(libBookId);
+      final statusHistory = await SupabaseStatusService.history(libBookId);
       return LibraryBook(
         supaLibraryBook.supaId,
         book,
@@ -54,13 +57,23 @@ class SupabaseLibraryService {
           .eq(_SupaLibrary.supaIdCol, book.supaId)
           .captureStackTraceOnError();
 
-  static Future<dynamic> _getOrCreateLibraryBookId(
+  static Future<List<_SupaLibrary>> _forLoggedInUser() async {
+    final PostgrestList rawData = await _libraryClient
+        .select()
+        .eq(_SupaLibrary.userIdCol, SupabaseAuthService.loggedInUserId!)
+        .captureStackTraceOnError();
+    return rawData.mapL(_SupaLibrary.new);
+  }
+
+  static Future<int> _getOrCreateLibraryBookId(
           int bookId, BookFormat bookType) async =>
       await _existingLibraryBookId(bookId, bookType) ??
       await _newLibraryBookId(bookId, bookType);
 
   static Future<int?> _existingLibraryBookId(
       int bookId, BookFormat bookType) async {
+    // TODO there's an error getting thrown here:
+    //  (_TypeError) type 'Null' is not a subtype of type 'int'
     final PostgrestMap? preExistQuery = await _libraryClient
         .select(_SupaLibrary.supaIdCol)
         .eq(_SupaLibrary.bookIdCol, bookId)
@@ -72,12 +85,19 @@ class SupabaseLibraryService {
     return preExistQuery.map(_SupaLibrary.new).map((res) => res.supaId);
   }
 
-  static Future<dynamic> _newLibraryBookId(int bookId, BookFormat bookType) =>
-      _libraryClient.insert({
-        _SupaLibrary.bookIdCol: bookId,
-        _SupaLibrary.userIdCol: SupabaseAuthService.loggedInUserId,
-        _SupaLibrary.formatCol: bookType.name,
-      }).captureStackTraceOnError();
+  static Future<int> _newLibraryBookId(int bookId, BookFormat bookType) async {
+    final PostgrestMap supaEntity = await _libraryClient
+        .insert({
+          _SupaLibrary.bookIdCol: bookId,
+          _SupaLibrary.userIdCol: SupabaseAuthService.loggedInUserId,
+          _SupaLibrary.formatCol: bookType.name,
+        })
+        .select(_SupaLibrary.supaIdCol)
+        .limit(1)
+        .single()
+        .captureStackTraceOnError();
+    return supaEntity[_SupaLibrary.supaIdCol];
+  }
 }
 
 class _SupaLibrary {
@@ -103,13 +123,4 @@ class _SupaLibrary {
   const _SupaLibrary(this.rawData);
 
   final PostgrestMap rawData;
-
-  static Future<List<_SupaLibrary>> forLoggedInUser() async {
-    final PostgrestList rawData = await supabase
-        .from('library')
-        .select()
-        .eq('user_id', SupabaseAuthService.loggedInUserId!)
-        .captureStackTraceOnError();
-    return rawData.mapL(_SupaLibrary.new);
-  }
 }

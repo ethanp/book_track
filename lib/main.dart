@@ -31,7 +31,10 @@ class WholeAppWidget extends ConsumerWidget {
     return CupertinoApp(
       title: 'The app itself',
       debugShowCheckedModeBanner: false,
-      theme: CupertinoThemeData(),
+      theme: CupertinoThemeData(
+        // Always use light mode (for now, for simplicity).
+        brightness: Brightness.light,
+      ),
       home: SupabaseAuthService.isLoggedOut
           ? const LoginPage()
           : MyBottomNavBar.elements[selectedIdx].page,

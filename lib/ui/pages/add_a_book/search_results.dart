@@ -62,6 +62,7 @@ class SearchResults extends ConsumerWidget {
       style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w700,
+        color: Colors.grey[900],
       ),
     );
   }

@@ -8,24 +8,28 @@ import 'supabase_service.dart';
 class SupabaseStatusService {
   static final SupabaseQueryBuilder _statusClient = supabase.from('status');
 
-  static Future<void> add(
+  static Future<PostgrestMap> add(
     int libraryBookId,
     ReadingStatus status, [
     DateTime? dateTime,
   ]) async {
     dateTime ??= DateTime.now();
-    return await _statusClient.insert({
-      _SupaStatus.libraryBookIdCol: libraryBookId,
-      _SupaStatus.statusCol: status.name,
-      _SupaStatus.userIdCol: SupabaseAuthService.loggedInUserId,
-      _SupaStatus.timeCol: dateTime.toIso8601String(),
-    }).captureStackTraceOnError();
+    return await _statusClient
+        .insert({
+          _SupaStatus.libraryBookIdCol: libraryBookId,
+          _SupaStatus.statusCol: status.name,
+          _SupaStatus.userIdCol: SupabaseAuthService.loggedInUserId,
+          _SupaStatus.timeCol: dateTime.toIso8601String(),
+        })
+        .select()
+        .single()
+        .captureStackTraceOnError();
   }
 
-  static Future<List<StatusEvent>> history(int bookId) async {
+  static Future<List<StatusEvent>> history(int libraryBookId) async {
     final queryResults = await _statusClient
         .select()
-        .eq(_SupaStatus.libraryBookIdCol, bookId)
+        .eq(_SupaStatus.libraryBookIdCol, libraryBookId)
         .eq(_SupaStatus.userIdCol, SupabaseAuthService.loggedInUserId!)
         .captureStackTraceOnError();
     final supaStatus = queryResults.map(_SupaStatus.new);
