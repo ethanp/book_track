@@ -9,33 +9,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'book_universe_service.dart';
 import 'supabase_service.dart';
 
-class _SupaBook {
-  int get supaId => rawData[idCol];
-  static final String idCol = 'id';
-
-  DateTime get createdAt => DateTime.parse(rawData[createdAtCol]);
-  static final String createdAtCol = 'created_at';
-
-  String get title => rawData[titleCol];
-  static final String titleCol = 'title';
-
-  String? get author => rawData[authorCol];
-  static final String authorCol = 'author';
-
-  int? get yearPublished => rawData[yearPublishedCol];
-  static final String yearPublishedCol = 'first_year_published';
-
-  int? get coverId => rawData[coverIdCol];
-  static final String coverIdCol = 'openlib_cover_id';
-
-  String? get coverKey => rawData[coverKeyCol];
-  static final String coverKeyCol = 'small_cover_key';
-
-  const _SupaBook(this.rawData);
-
-  final PostgrestMap rawData;
-}
-
 class SupabaseBookService {
   static final _bucketClient = supabase.storage;
   static final _coverArtClient = _bucketClient.from('cover_art');
@@ -143,4 +116,31 @@ class SupabaseBookService {
       coverArt,
     );
   }
+}
+
+class _SupaBook {
+  int get supaId => rawData[idCol];
+  static final String idCol = 'id';
+
+  DateTime get createdAt => DateTime.parse(rawData[createdAtCol]);
+  static final String createdAtCol = 'created_at';
+
+  String get title => rawData[titleCol];
+  static final String titleCol = 'title';
+
+  String? get author => rawData[authorCol];
+  static final String authorCol = 'author';
+
+  int? get yearPublished => rawData[yearPublishedCol];
+  static final String yearPublishedCol = 'first_year_published';
+
+  int? get coverId => rawData[coverIdCol];
+  static final String coverIdCol = 'openlib_cover_id';
+
+  String? get coverKey => rawData[coverKeyCol];
+  static final String coverKeyCol = 'small_cover_key';
+
+  const _SupaBook(this.rawData);
+
+  final PostgrestMap rawData;
 }

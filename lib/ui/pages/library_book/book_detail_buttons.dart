@@ -1,7 +1,8 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/services/supabase_service.dart';
+import 'package:book_track/services/supabase_library_service.dart';
+import 'package:book_track/services/supabase_status_service.dart';
 import 'package:book_track/ui/pages/session_timer/session_timer_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:flutter/cupertino.dart';

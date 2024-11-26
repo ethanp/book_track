@@ -1,6 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/services/book_universe_service.dart';
-import 'package:book_track/services/supabase_service.dart';
+import 'package:book_track/services/supabase_library_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
