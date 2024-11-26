@@ -1,5 +1,5 @@
 import 'package:book_track/extensions.dart';
-import 'package:book_track/services/supabase_service.dart';
+import 'package:book_track/services/supabase_auth_service.dart';
 import 'package:book_track/ui/pages/login/login_page.dart';
 import 'package:flutter/material.dart';
 

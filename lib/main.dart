@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/services/supabase_service.dart';
+import 'package:book_track/services/supabase_auth_service.dart';
 import 'package:book_track/ui/common/my_bottom_nav_bar.dart';
 import 'package:book_track/ui/pages/login/login_page.dart';
 import 'package:flutter/cupertino.dart';

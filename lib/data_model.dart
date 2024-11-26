@@ -6,7 +6,6 @@ class LibraryBook {
   const LibraryBook(
     this.supaId,
     this.book,
-    this.startTime,
     this.progressHistory,
     this.statusHistory,
     this.bookFormat,
@@ -15,11 +14,12 @@ class LibraryBook {
 
   final int supaId;
   final Book book;
-  final DateTime startTime;
   final List<ProgressEvent> progressHistory;
   final List<StatusEvent> statusHistory;
   final BookFormat? bookFormat;
   final int? bookLength;
+
+  DateTime get startTime => progressHistory.first.end;
 
   String? get bookLengthPgs => bookLength.map((l) => '$l pgs');
 
