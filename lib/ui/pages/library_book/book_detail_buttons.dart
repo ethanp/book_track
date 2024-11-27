@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_library_service.dart';
 import 'package:book_track/services/supabase_status_service.dart';
@@ -17,6 +18,8 @@ class BookDetailButtons extends ConsumerWidget {
   final LibraryBook book;
   final bool dense;
 
+  static final SimpleLogger log = SimpleLogger(prefix: 'BookDetailButtons');
+
   bool get completed => book.status == ReadingStatus.completed;
 
   bool get abandoned => book.status == ReadingStatus.abandoned;
@@ -24,7 +27,8 @@ class BookDetailButtons extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(userLibraryProvider);
-    print('building BookDetailButtons widget');
+    log('running build()');
+
     final List<Widget> children = completed
         ? [remove(ref)]
         : [

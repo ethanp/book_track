@@ -30,19 +30,25 @@ class LibraryBook {
       statusHistory.lastOrNull?.status ?? ReadingStatus.reading;
 }
 
-class StatusEvent {
+abstract class ReadingEvent {
+  const ReadingEvent();
+  int get sortKey;
+}
+
+class StatusEvent extends ReadingEvent {
   const StatusEvent({required this.time, required this.status});
 
   final DateTime time;
   final ReadingStatus status;
 
   @override
-  String toString() {
-    return 'StatusEvent{time: $time, status: $status}';
-  }
+  int get sortKey => time.millisecondsSinceEpoch;
+
+  @override
+  String toString() => '{time: $time, status: $status}';
 }
 
-class ProgressEvent {
+class ProgressEvent extends ReadingEvent {
   const ProgressEvent({
     required this.end,
     required this.progress,
@@ -54,6 +60,13 @@ class ProgressEvent {
   final DateTime? start;
   final DateTime end;
   final ProgressEventFormat format;
+
+  @override
+  int get sortKey => end.millisecondsSinceEpoch;
+
+  @override
+  String toString() =>
+      '{progress: $progress, start: $start, end: $end, format: $format}';
 }
 
 enum ProgressEventFormat {

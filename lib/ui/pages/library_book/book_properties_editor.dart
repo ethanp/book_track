@@ -10,7 +10,6 @@ class BookPropertiesEditor extends ConsumerStatefulWidget {
   const BookPropertiesEditor(this.libraryBook);
 
   final LibraryBook libraryBook;
-  static final SimpleLogger log = SimpleLogger(prefix: 'BookPropertiesEditor');
 
   @override
   ConsumerState createState() => _EditableBookPropertiesState();
@@ -18,6 +17,7 @@ class BookPropertiesEditor extends ConsumerStatefulWidget {
 
 class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
   BookFormat? _format;
+  static final SimpleLogger log = SimpleLogger(prefix: 'BookPropertiesEditor');
 
   @override
   void initState() {
@@ -35,7 +35,7 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
           // The point of this block is to update this widget state when
           // an inner widget like the buttons modifies the backend. The
           // button invalidates the provider, which triggers this block.
-          BookPropertiesEditor.log('sourcing stored format');
+          log('sourcing stored format');
           final LibraryBook shownBook = items.where(isShownBook).first;
           _format = shownBook.bookFormat;
         }));

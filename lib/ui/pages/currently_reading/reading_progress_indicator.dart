@@ -1,4 +1,5 @@
 import 'package:book_track/data_model.dart';
+import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
 import 'package:flutter/material.dart';
 
@@ -12,20 +13,11 @@ class ReadingProgressIndicator extends StatelessWidget {
   static SimpleLogger log = SimpleLogger(prefix: 'ReadingProgressIndicator');
 
   double? get percentage {
-    if (book.status == ReadingStatus.completed) {
-      return 100;
-    }
-    if (latestProgress == null) {
-      return null;
-    }
-    switch (latestProgress!.format) {
-      case ProgressEventFormat.percent:
-        return latestProgress?.progress.toDouble();
-      case ProgressEventFormat.pageNum:
-      case ProgressEventFormat.minutes:
-        if (book.bookLength == null) return null;
-        return latestProgress!.progress.toDouble() / book.bookLength!;
-    }
+    if (book.status == ReadingStatus.completed) return 100;
+    if (latestProgress == null) return null;
+    final double progress = latestProgress!.progress.toDouble();
+    if (latestProgress!.format == ProgressEventFormat.percent) return progress;
+    return book.bookLength.map((length) => progress / length);
   }
 
   @override
@@ -50,7 +42,7 @@ class ReadingProgressIndicator extends StatelessWidget {
   Widget progressBar(double width) {
     return SizedBox(
       height: 12,
-      // Recall: later children are placed *on top* of prior children.
+      // Recall: latter children are placed *on top* of prior children.
       child: Stack(children: [colors(width), border(width)]),
     );
   }
@@ -58,9 +50,6 @@ class ReadingProgressIndicator extends StatelessWidget {
   Widget colors(double width) {
     final double scale = .94;
     final double scaledWidthPerPercent = width / 100 * scale;
-    if (percentage == null) {
-      return Placeholder();
-    }
     final percent = percentage!;
     final double readWidth = percent * scaledWidthPerPercent;
     final double unreadWidth = (100 - percent) * scaledWidthPerPercent;
