@@ -16,7 +16,6 @@ class BookTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final int latestProgress = book.progressHistory.lastOrNull?.progress ?? 0;
     return Dismissible(
       key: Key(book.book.supaId.toString()),
       confirmDismiss: (direction) => UpdateProgressDialogPage.show(ref, book),
@@ -33,7 +32,7 @@ class BookTile extends ConsumerWidget {
         subtitle: Text(book.book.author ?? 'Author unknown'),
         leading:
             book.book.coverArtS.map(Image.memory) ?? Icon(Icons.question_mark),
-        trailing: ReadingProgressIndicator(progressPercent: latestProgress),
+        trailing: ReadingProgressIndicator(book),
         onTap: () => context.push(LibraryBookPage(book)),
       ),
     );

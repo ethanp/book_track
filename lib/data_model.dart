@@ -17,6 +17,9 @@ class LibraryBook {
   final List<ProgressEvent> progressHistory;
   final List<StatusEvent> statusHistory;
   final BookFormat? bookFormat;
+
+  /// Only if [bookFormat] is [BookFormat.audiobook], then this represents the
+  /// number of minutes in the audiobook.
   final int? bookLength;
 
   DateTime get startTime => progressHistory.first.end;

@@ -43,7 +43,10 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [author(), bookFormat()]);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [author(), bookFormat()],
+    );
   }
 
   Widget author() {
@@ -57,10 +60,11 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
     );
   }
 
-  Padding bookFormat() {
+  Widget bookFormat() {
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Text('Book format: ', style: TextStyles().h4),

@@ -25,16 +25,17 @@ class BookDetailButtons extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(userLibraryProvider);
     print('building BookDetailButtons widget');
-    List<Widget> children = [remove(ref)];
-    if (!completed) {
-      children += [
-        updateProgress(ref),
-        startSession(context),
-        complete(ref),
-        abandon(ref),
-      ];
-    }
-    return Expanded(
+    final List<Widget> children = completed
+        ? [remove(ref)]
+        : [
+            updateProgress(ref),
+            startSession(context),
+            complete(ref),
+            abandon(ref),
+            remove(ref)
+          ];
+
+    return Flexible(
       child: dense
           ? Center(
               child: Wrap(

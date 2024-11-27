@@ -39,12 +39,15 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
         middle: Text('${_libraryBook.book.title} ($subtitle)'),
       ),
       child: SafeArea(
-        child: Column(
-          children: [
-            BookPropertiesEditor(_libraryBook),
-            BookDetailButtons(book: _libraryBook),
-            historyChart(),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              BookPropertiesEditor(_libraryBook),
+              BookDetailButtons(book: _libraryBook),
+              historyChart(),
+            ],
+          ),
         ),
       ),
     );
@@ -52,7 +55,7 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
 
   Widget historyChart() {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16),
+      margin: EdgeInsets.only(left: 16, right: 16, top: 28),
       color: Colors.grey[100],
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

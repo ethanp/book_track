@@ -34,7 +34,7 @@ class BookDetailButton extends StatelessWidget {
   ButtonStyle buttonStyle() {
     return ElevatedButton.styleFrom(
       padding: EdgeInsets.symmetric(
-        horizontal: dense ? 16.5 : 20,
+        horizontal: dense ? 10 : 20,
         vertical: dense ? 0 : 10,
       ),
       shape: FlutterHelpers.roundedRect(radius: 10),
@@ -48,13 +48,13 @@ class BookDetailButton extends StatelessWidget {
   Widget buttonBody() {
     final titleText = Text(
       title,
-      style: dense ? TextStyles().h4.copyWith(fontSize: 14) : TextStyles().h3,
+      style: dense ? TextStyles().h4.copyWith(fontSize: 13) : TextStyles().h3,
     );
     final subtitleText = Text(
       subtitle,
       style: TextStyle(
         color: CupertinoColors.black.withOpacity(.72),
-        fontSize: dense ? 10 : 14.5,
+        fontSize: dense ? 9 : 14.5,
       ),
     );
     final textColumn = Column(
@@ -69,7 +69,7 @@ class BookDetailButton extends StatelessWidget {
     final iconWidget = Icon(
       icon,
       color: CupertinoColors.black.withOpacity(.5),
-      size: dense ? 26 : 46,
+      size: dense ? 25 : 46,
     );
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

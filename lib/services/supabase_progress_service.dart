@@ -16,7 +16,7 @@ class SupabaseProgressService {
     DateTime? end,
   }) async =>
       await _progressClient.insert({
-        _SupaProgress.libraryBookIdCol: book.book.supaId,
+        _SupaProgress.libraryBookIdCol: book.supaId,
         _SupaProgress.userIdCol: SupabaseAuthService.loggedInUserId,
         _SupaProgress.formatCol: format.name,
         _SupaProgress.progressCol: userInput,
