@@ -28,6 +28,21 @@ class LibraryBook {
 
   ReadingStatus get status =>
       statusHistory.lastOrNull?.status ?? ReadingStatus.reading;
+
+  double? get progressPercentage {
+    if (status == ReadingStatus.completed) return 100;
+    if (progressHistory.lastOrNull == null) return null;
+    final latestProgress = progressHistory.last;
+    final double progress = latestProgress.progress.toDouble();
+    if (latestProgress.format == ProgressEventFormat.percent) return progress;
+    return bookLength.map((length) => progress / length);
+  }
+
+  double? progressAt(ProgressEvent p) {
+    final double progress = p.progress.toDouble();
+    if (p.format == ProgressEventFormat.percent) return progress;
+    return bookLength.map((length) => progress / length);
+  }
 }
 
 abstract class ReadingEvent {

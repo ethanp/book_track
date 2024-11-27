@@ -66,9 +66,9 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
     );
   }
 
-  /// TODO(feature) Event timeline:
-  ///  1. Shows progress & status updates in time order
-  ///  2. Allows updating/deleting each update
+  /// Event timeline:
+  ///  1. (done) Shows progress & status updates in time order
+  ///  2. TODO(feature) Allows updating/deleting each update
   Widget eventTimeline() {
     final List<ReadingEvent> progresses =
         // not sure why List.from is needed here but not for the status history.

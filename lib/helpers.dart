@@ -42,5 +42,5 @@ class SimpleLogger {
 
   /// [call] method is a special method in Dart that, when defined,
   /// allows instances of the class to be invoked like functions.
-  void call(String s) => print('${TimeHelpers.timestamp} ($prefix): $s');
+  void call(Object? s) => print('${TimeHelpers.timestamp} ($prefix): $s');
 }

@@ -24,6 +24,8 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
 
   late LibraryBook _latestBook;
 
+  // static final SimpleLogger log = SimpleLogger(prefix: 'ProgressHistoryView');
+
   @override
   void initState() {
     super.initState();
@@ -32,6 +34,10 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
 
   @override
   Widget build(BuildContext context) {
+    if (_latestBook.bookLength == null) {
+      // TODO(ui) improve the understandability of what this is saying.
+      return Text('book length unknown');
+    }
     return Column(children: [
       Text('History', style: TextStyles().h1),
       if (_latestBook.progressHistory.isEmpty)
@@ -166,10 +172,10 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
     );
   }
 
-  static FlSpot eventToSpot(ProgressEvent p) {
+  FlSpot eventToSpot(ProgressEvent progressEvent) {
     return FlSpot(
-      p.end.millisecondsSinceEpoch.toDouble(),
-      p.progress.toDouble(),
+      progressEvent.end.millisecondsSinceEpoch.toDouble(),
+      _latestBook.progressAt(progressEvent)! * 100,
     );
   }
 }

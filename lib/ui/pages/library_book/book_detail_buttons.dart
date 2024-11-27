@@ -118,7 +118,7 @@ class BookDetailButtons extends ConsumerWidget {
   Widget abandon(WidgetRef ref) {
     return BookDetailButton(
       title: abandoned ? 'Resume' : 'Abandon',
-      subtitle: '${abandoned ? 'Continue' : 'Stop'} reading this book',
+      subtitle: '${abandoned ? 'Continue' : 'Stop'} reading',
       icon: abandoned
           ? Icons.play_circle_outline
           : Icons.remove_circle_outline_outlined,

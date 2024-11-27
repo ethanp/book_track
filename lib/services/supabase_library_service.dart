@@ -16,27 +16,15 @@ class SupabaseLibraryService {
 
   static Future<List<LibraryBook>> myBooks() async {
     final List<_SupaLibrary> library = await _forLoggedInUser();
-    final libraryBooks = library.map((_SupaLibrary supaLibraryBook) async {
-      final int libBookId = supaLibraryBook.supaId;
-      final int bookId = supaLibraryBook.bookId;
-      final Book book = await SupabaseBookService.getBookById(bookId);
-      final progressHistory = await SupabaseProgressService.history(libBookId);
-      final statusHistory = await SupabaseStatusService.history(libBookId);
-      return LibraryBook(
-        supaLibraryBook.supaId,
-        book,
-        progressHistory,
-        statusHistory,
-        supaLibraryBook.format,
-        supaLibraryBook.length,
-      );
-    });
+    final Iterable<Future<LibraryBook>> libraryBooks =
+        library.map((supaBook) => supaBook.toLibraryBook);
     return Future.wait(libraryBooks);
   }
 
   static Future<void> addBook(OpenLibraryBook book, BookFormat bookType) async {
     final int bookId = await SupabaseBookService.getOrCreateBookId(book);
-    final int libraryBookId = await _getOrCreateLibraryBookId(bookId, bookType);
+    final int libraryBookId =
+        await _getOrCreateLibraryBookId(bookId, bookType, book.numPagesMedian);
     await SupabaseStatusService.add(libraryBookId, ReadingStatus.reading);
   }
 
@@ -66,9 +54,9 @@ class SupabaseLibraryService {
   }
 
   static Future<int> _getOrCreateLibraryBookId(
-          int bookId, BookFormat bookType) async =>
+          int bookId, BookFormat bookType, int? numPagesMedian) async =>
       await _existingLibraryBookId(bookId, bookType) ??
-      await _newLibraryBookId(bookId, bookType);
+      await _newLibraryBookId(bookId, bookType, numPagesMedian);
 
   static Future<int?> _existingLibraryBookId(
       int bookId, BookFormat bookType) async {
@@ -85,12 +73,14 @@ class SupabaseLibraryService {
     return preExistQuery.map(_SupaLibrary.new).map((res) => res.supaId);
   }
 
-  static Future<int> _newLibraryBookId(int bookId, BookFormat bookType) async {
+  static Future<int> _newLibraryBookId(
+      int bookId, BookFormat bookType, int? numPagesMedian) async {
     final PostgrestMap supaEntity = await _libraryClient
         .insert({
           _SupaLibrary.bookIdCol: bookId,
           _SupaLibrary.userIdCol: SupabaseAuthService.loggedInUserId,
           _SupaLibrary.formatCol: bookType.name,
+          _SupaLibrary.lengthCol: numPagesMedian,
         })
         .select(_SupaLibrary.supaIdCol)
         .limit(1)
@@ -101,6 +91,15 @@ class SupabaseLibraryService {
 }
 
 class _SupaLibrary {
+  Future<LibraryBook> get toLibraryBook async => LibraryBook(
+        supaId,
+        await SupabaseBookService.getBookById(bookId),
+        await SupabaseProgressService.history(supaId),
+        await SupabaseStatusService.history(supaId),
+        format,
+        length,
+      );
+
   int get supaId => rawData[supaIdCol];
   static final String supaIdCol = 'id';
 
