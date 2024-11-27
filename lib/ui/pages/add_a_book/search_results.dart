@@ -11,8 +11,8 @@ import 'results_count.dart';
 class SearchResults extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final BookSearchResult? searchResult = ref.watch(bookSearchResultsProvider);
-    if (searchResult == null) {
+    final BookSearchResult searchResult = ref.watch(bookSearchResultsProvider);
+    if (searchResult.isLoading) {
       return SizedBox(
         height: 400,
         child: Center(child: CircularProgressIndicator()),

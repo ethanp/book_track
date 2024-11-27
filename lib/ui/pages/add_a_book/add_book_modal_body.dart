@@ -47,6 +47,7 @@ class AddBookModalBody extends ConsumerWidget {
     print('searching for: $text');
     final BookSearchResults results =
         ref.read(bookSearchResultsProvider.notifier);
+    results.update(BookSearchResult.loading);
     BookUniverseService.search(text, results);
   }
 }
