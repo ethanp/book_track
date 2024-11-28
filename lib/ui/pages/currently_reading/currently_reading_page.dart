@@ -32,34 +32,28 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         leading: addABookButton(context),
-        middle: Text('Currently Reading'),
+        middle: Text('My Library'),
         trailing: SignOutButton(),
       ),
       // TODO use the CupertinoNavigationBar up top? Ask chatGpt.
       // bottomNavigationBar: MyBottomNavBar(),
-      child: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                color: Color.lerp(Colors.yellow, Colors.grey[100], .98),
-                // TODO(feature) add a line chart with all the currently-reading books.
-                // TODO(feature) add a line chart of the progress across all books in
-                //   the past year (and varying and customizable periods).
-                child: ref
-                    .watch(userLibraryProvider)
-                    .when(loading: loadingText, error: errorText, data: body),
-              ),
-            ),
-          ],
-        ),
-      ),
+      child: SafeArea(child: body()),
     );
   }
 
-  CupertinoButton addABookButton(BuildContext context) {
+  Widget body() => ref.watch(userLibraryProvider).when(
+        loading: loadingScreen,
+        error: errorScreen,
+        data: userLibrary,
+      );
+
+  Widget errorScreen(err, stack) =>
+      Text('Error loading your library $err $stack', style: TextStyles().h1);
+
+  Widget loadingScreen() =>
+      Text('Loading your library...', style: TextStyles().h1);
+
+  Widget addABookButton(BuildContext context) {
     return CupertinoButton(
       padding: EdgeInsets.zero,
       onPressed: () => DismissibleCupertinoBottomSheet.show(context),
@@ -67,30 +61,22 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.add, size: 20),
-          Text(
-            'Add book',
-            style: TextStyle(fontSize: 13),
-          )
+          Text('Add book', style: TextStyle(fontSize: 13))
         ],
       ),
     );
   }
 
-  Widget loadingText() =>
-      Text('Loading your library...', style: TextStyles().h1);
-
-  Widget errorText(err, stack) => Text(
-        'Error loading your library $err $stack',
-        style: TextStyles().h1,
-      );
-
-  Widget body(Iterable<LibraryBook> items) {
+  Widget userLibrary(Iterable<LibraryBook> items) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         tiles(items, 'Resume reading', ReadingStatus.reading),
         tiles(items, 'Finished reading', ReadingStatus.completed),
         tiles(items, 'Abandoned', ReadingStatus.abandoned),
+        // TODO(feature) add a line chart with all the currently-reading books.
+        // TODO(feature) add a line chart of the progress across all books in
+        //   the past year (and varying and customizable periods).
       ],
     );
   }
