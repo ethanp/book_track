@@ -24,7 +24,10 @@ class LibraryBook {
 
   DateTime get startTime => progressHistory.first.end;
 
-  String? get bookLengthPgs => bookLength.map((l) => '$l pgs');
+  String get bookLengthString {
+    final suffix = bookFormat == BookFormat.audiobook ? 'mins' : 'pgs';
+    return bookLength.map((length) => '$length $suffix') ?? 'unknown';
+  }
 
   ReadingStatus get status =>
       statusHistory.lastOrNull?.status ?? ReadingStatus.reading;

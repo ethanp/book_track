@@ -48,7 +48,9 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
                 // TODO(feature) add a line chart with all the currently-reading books.
                 // TODO(feature) add a line chart of the progress across all books in
                 //   the past year (and varying and customizable periods).
-                child: sessionUi(),
+                child: ref
+                    .watch(userLibraryProvider)
+                    .when(loading: loadingText, error: errorText, data: body),
               ),
             ),
           ],
@@ -74,37 +76,50 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
     );
   }
 
-  Widget sessionUi() {
-    Widget loadingText() =>
-        Text('Loading your library...', style: TextStyles().h1);
-    Widget errorText(err, stack) => Text(
-          'Error loading your library $err $stack',
-          style: TextStyles().h1,
-        );
-    Widget body(Iterable<LibraryBook> items) {
-      final List<Widget> listTiles = items.map(BookTile.new).mapL(
-            (tile) => Padding(
-              padding: const EdgeInsets.all(6),
-              child: SizedBox(height: 38, child: tile),
-            ),
-          );
-      return Column(
+  Widget loadingText() =>
+      Text('Loading your library...', style: TextStyles().h1);
+
+  Widget errorText(err, stack) => Text(
+        'Error loading your library $err $stack',
+        style: TextStyles().h1,
+      );
+
+  Widget body(Iterable<LibraryBook> items) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        tiles(items, 'Resume reading', ReadingStatus.reading),
+        tiles(items, 'Finished reading', ReadingStatus.completed),
+        tiles(items, 'Abandoned', ReadingStatus.abandoned),
+      ],
+    );
+  }
+
+  Widget tiles(
+    Iterable<LibraryBook> items,
+    String title,
+    ReadingStatus readingStatus,
+  ) {
+    final List<Widget> listTiles = items
+        .where((book) => book.status == readingStatus)
+        .map(BookTile.new)
+        .mapL((tile) => Padding(
+            padding: const EdgeInsets.all(6),
+            child: SizedBox(height: 38, child: tile)));
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.all(12),
-            child: Text('Resume reading', style: TextStyles().h1),
+            child: Text(title, style: TextStyles().h1),
           ),
           SizedBox(height: 4),
-          Expanded(child: ListView(children: listTiles)),
+          ListView(shrinkWrap: true, children: listTiles),
         ],
-      );
-    }
-
-    return ref.watch(userLibraryProvider).when(
-          loading: loadingText,
-          error: errorText,
-          data: body,
-        );
+      ),
+    );
   }
 }

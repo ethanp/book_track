@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:http/http.dart' as http;
 
@@ -28,6 +29,8 @@ class BookUniverseService {
 /// Another one to check out is:
 ///     https://hardcover.app/account/api?referrer_id=15017
 class OpenLibraryBookUniverseRepository {
+  static final SimpleLogger log =
+      SimpleLogger(prefix: 'OpenLibraryBookUniverseRepository');
   static final Uri apiUrl = Uri.parse('https://openlibrary.org/search.json');
 
   static Uri coverUrl(int coverId, String size) =>
@@ -42,12 +45,13 @@ class OpenLibraryBookUniverseRepository {
     print('apiUrl: $url');
     final http.Response response = await http.get(url);
     if (response.statusCode != 200) {
-      // TODO(ux): Sometimes I get 500 Internal Server Error from here.
-      //  Currently nothing is shown to user :(.
-      //  Ask user to try their search again.
-      //  Or better yet, back off then try again automagically.
-      print('search error: ${response.statusCode} ${response.reasonPhrase}');
-      return BookSearchResult.empty;
+      // NB: Sometimes I get 500 Internal Server Error from here.
+      //  TODO(ux): Instead of immediately prompting user to retry, back off,
+      //   then try again automagically.
+      final oops =
+          'search error: ${response.statusCode} ${response.reasonPhrase}';
+      log(oops);
+      return BookSearchResult.failed(oops);
     }
     final dynamic bodyJson = jsonDecode(response.body);
     final results = bodyJson['docs'] as List<dynamic>;

@@ -1,6 +1,7 @@
 import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/search_result_detail/search_result_detail_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,12 @@ class SearchResults extends ConsumerWidget {
       return SizedBox(
         height: 400,
         child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (searchResult.failure != null) {
+      return Text(
+        'Request to OpenLibrary failed. Please search again.',
+        style: TextStyles().h3,
       );
     }
     return Expanded(

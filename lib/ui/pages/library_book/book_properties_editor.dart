@@ -4,6 +4,7 @@ import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_library_service.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class BookPropertiesEditor extends ConsumerStatefulWidget {
@@ -43,26 +44,63 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [author(), bookFormat()],
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          author(),
+          length(),
+          bookFormat(),
+        ],
+      ),
     );
   }
 
   Widget author() {
+    return editableBookProperty(
+      title: 'Author',
+      value: widget.libraryBook.book.author ?? 'unknown',
+      onPressed: () => print('Author pressed'),
+    );
+  }
+
+  Widget length() {
+    return editableBookProperty(
+      title: 'Length',
+      value: widget.libraryBook.bookLengthString,
+      onPressed: () => print('Length pressed'),
+    );
+  }
+
+  Widget editableBookProperty({
+    required String title,
+    required String value,
+    required void Function() onPressed,
+  }) {
     return Padding(
-      padding: const EdgeInsets.all(18),
-      child: Text(
-        'Author: ${widget.libraryBook.book.author}',
-        textAlign: TextAlign.center,
-        style: TextStyles().h4,
+      padding: const EdgeInsets.all(8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('$title: $value', style: TextStyles().h4),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              shape: FlutterHelpers.roundedRect(radius: 10),
+              padding: EdgeInsets.zero,
+            ),
+            onPressed: onPressed,
+            child: Text('Update'),
+          ),
+        ],
       ),
     );
   }
 
   Widget bookFormat() {
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,

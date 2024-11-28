@@ -60,8 +60,6 @@ class SupabaseLibraryService {
 
   static Future<int?> _existingLibraryBookId(
       int bookId, BookFormat bookType) async {
-    // TODO there's an error getting thrown here:
-    //  (_TypeError) type 'Null' is not a subtype of type 'int'
     final PostgrestMap? preExistQuery = await _libraryClient
         .select(_SupaLibrary.supaIdCol)
         .eq(_SupaLibrary.bookIdCol, bookId)

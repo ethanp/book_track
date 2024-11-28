@@ -54,9 +54,11 @@ class BookSearchResult {
     required this.books,
     required this.fullResultCount,
     this.isLoading = false,
+    this.failure,
   });
 
   final bool isLoading;
+  final Object? failure;
   final List<OpenLibraryBook> books;
   final int fullResultCount;
 
@@ -65,6 +67,9 @@ class BookSearchResult {
 
   static const BookSearchResult loading =
       BookSearchResult(books: [], fullResultCount: 0, isLoading: true);
+
+  static BookSearchResult failed(Object? failure) =>
+      BookSearchResult(books: [], fullResultCount: 0, failure: failure);
 }
 
 @riverpod
