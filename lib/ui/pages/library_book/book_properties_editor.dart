@@ -4,8 +4,9 @@ import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_library_service.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'editable_book_property.dart';
 
 class BookPropertiesEditor extends ConsumerStatefulWidget {
   const BookPropertiesEditor(this.libraryBook);
@@ -30,12 +31,13 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    // The point of this block is to update this widget state when
+    // an inner widget (eg. the buttons) modifies the data shown here.
+    // The way it works, is the button invalidate()s the provider
+    // (internally), which triggers this to callback.
     ref.watch(userLibraryProvider).whenData((items) => setState(() {
           bool isShownBook(LibraryBook book) =>
               book.supaId == widget.libraryBook.supaId;
-          // The point of this block is to update this widget state when
-          // an inner widget like the buttons modifies the backend. The
-          // button invalidates the provider, which triggers this block.
           log('sourcing stored format');
           final LibraryBook shownBook = items.where(isShownBook).first;
           _format = shownBook.bookFormat;
@@ -59,7 +61,7 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
   }
 
   Widget author() {
-    return editableBookProperty(
+    return EditableBookProperty(
       title: 'Author',
       value: widget.libraryBook.book.author ?? 'unknown',
       onPressed: () => print('Author pressed'),
@@ -67,35 +69,20 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
   }
 
   Widget length() {
-    return editableBookProperty(
+    return EditableBookProperty(
       title: 'Length',
       value: widget.libraryBook.bookLengthString,
-      onPressed: () => print('Length pressed'),
+      onPressed: updateLength,
     );
   }
 
-  Widget editableBookProperty({
-    required String title,
-    required String value,
-    required void Function() onPressed,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('$title: $value', style: TextStyles().h4),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              shape: FlutterHelpers.roundedRect(radius: 10),
-              padding: EdgeInsets.zero,
-            ),
-            onPressed: onPressed,
-            child: Text('Update'),
-          ),
-        ],
-      ),
-    );
+  void updateLength() async {
+    /*
+    setState(() => _format = selectedFormat.bookFormat);
+    SupabaseLibraryService.updateFormat(
+        widget.libraryBook, selectedFormat.bookFormat);
+    ref.invalidate(userLibraryProvider);
+     */
   }
 
   Widget bookFormat() {
@@ -107,16 +94,33 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
         children: [
           Text('Book format: ', style: TextStyles().h4),
           SizedBox(height: 12),
-          // We have to wrap BookFormat with Renderable format because
-          // nullable types are not allowed as a type param for
-          // CupertinoSegmentedControl.
-          CupertinoSegmentedControl<RenderableFormat>(
-            onValueChanged: updateFormat,
-            groupValue: RenderableFormat(_format),
-            children: formatNames(),
-          ),
+          formatUpdater(),
         ],
       ),
+    );
+  }
+
+  Widget formatUpdater() {
+    // Note: We have to wrap BookFormat with Renderable format because
+    // nullable types are not allowed as a type param for
+    // CupertinoSegmentedControl.
+    return CupertinoSegmentedControl<RenderableFormat>(
+      onValueChanged: updateFormat,
+      groupValue: RenderableFormat(_format),
+      children: {
+        for (final BookFormat? format
+            in List.from(BookFormat.values)..add(null))
+          RenderableFormat(format): Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 4,
+              vertical: 8,
+            ),
+            child: Text(
+              format?.name ?? 'unknown',
+              style: const TextStyle(fontSize: 11),
+            ),
+          )
+      },
     );
   }
 
@@ -125,24 +129,5 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
     SupabaseLibraryService.updateFormat(
         widget.libraryBook, selectedFormat.bookFormat);
     ref.invalidate(userLibraryProvider);
-  }
-
-  Map<RenderableFormat, Widget> formatNames() => {
-        for (final BookFormat? format
-            in List.from(BookFormat.values)..add(null))
-          RenderableFormat(format): paddedText(format)
-      };
-
-  Widget paddedText(BookFormat? format) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 4,
-        vertical: 8,
-      ),
-      child: Text(
-        format?.name ?? 'unknown',
-        style: const TextStyle(fontSize: 11),
-      ),
-    );
   }
 }

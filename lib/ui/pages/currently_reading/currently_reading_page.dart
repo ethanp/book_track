@@ -35,17 +35,15 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
         middle: Text('My Library'),
         trailing: SignOutButton(),
       ),
-      // TODO use the CupertinoNavigationBar up top? Ask chatGpt.
-      // bottomNavigationBar: MyBottomNavBar(),
-      child: SafeArea(child: body()),
+      child: SafeArea(
+        child: ref.watch(userLibraryProvider).when(
+              loading: loadingScreen,
+              error: errorScreen,
+              data: userLibrary,
+            ),
+      ),
     );
   }
-
-  Widget body() => ref.watch(userLibraryProvider).when(
-        loading: loadingScreen,
-        error: errorScreen,
-        data: userLibrary,
-      );
 
   Widget errorScreen(err, stack) =>
       Text('Error loading your library $err $stack', style: TextStyles().h1);
