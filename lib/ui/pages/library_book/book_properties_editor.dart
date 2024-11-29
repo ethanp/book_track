@@ -64,7 +64,8 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
     return EditableBookProperty(
       title: 'Author',
       value: widget.libraryBook.book.author ?? 'unknown',
-      onPressed: () => print('Author pressed'),
+      // TODO(feature) implement author update
+      onPressed: (text) => print('Author pressed'),
     );
   }
 
@@ -76,7 +77,8 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
     );
   }
 
-  void updateLength() async {
+  // TODO(feature) implement length update
+  void updateLength(String text) async {
     /*
     setState(() => _format = selectedFormat.bookFormat);
     SupabaseLibraryService.updateFormat(

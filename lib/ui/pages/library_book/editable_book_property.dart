@@ -13,7 +13,7 @@ class EditableBookProperty extends ConsumerStatefulWidget {
 
   final String title;
   final String value;
-  final void Function() onPressed;
+  final void Function(String) onPressed;
 
   @override
   ConsumerState createState() => _EditableBookPropertyState();
@@ -21,6 +21,13 @@ class EditableBookProperty extends ConsumerStatefulWidget {
 
 class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
   bool _editing = false;
+  final TextEditingController _textFieldController = TextEditingController();
+
+  @override
+  void dispose() {
+    _textFieldController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,9 +41,18 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
               Text('${widget.title}: ', style: TextStyles().title),
               SizedBox(width: 10),
               if (_editing)
-                // TODO(feature) Enable editing the property,
-                //  then call [widget.onPressed].
-                Text('editing')
+                SizedBox(
+                  width: 200,
+                  child: CupertinoTextField(
+                    controller: _textFieldController,
+                    onSubmitted: (String text) {
+                      setState(() => _editing = false);
+                      if (text.isEmpty || text == widget.value) return;
+                      widget.onPressed(text);
+                    },
+                    placeholder: widget.value,
+                  ),
+                )
               else
                 Text(widget.value, style: TextStyles().h5),
             ],
