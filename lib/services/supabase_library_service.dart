@@ -26,6 +26,11 @@ class SupabaseLibraryService {
     final int libraryBookId =
         await _getOrCreateLibraryBookId(bookId, bookType, book.numPagesMedian);
     await SupabaseStatusService.add(libraryBookId, ReadingStatus.reading);
+    await SupabaseProgressService.updateProgress(
+      bookId: libraryBookId,
+      newValue: 0,
+      format: ProgressEventFormat.percent,
+    );
   }
 
   static Future<void> updateFormat(

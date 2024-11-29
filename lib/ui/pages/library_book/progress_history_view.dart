@@ -175,7 +175,7 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
   FlSpot eventToSpot(ProgressEvent progressEvent) {
     return FlSpot(
       progressEvent.end.millisecondsSinceEpoch.toDouble(),
-      _latestBook.progressAt(progressEvent)!,
+      _latestBook.percentProgressAt(progressEvent)!,
     );
   }
 }

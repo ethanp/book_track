@@ -9,17 +9,17 @@ class SupabaseProgressService {
   static final _progressClient = supabase.from('progress_events');
 
   static Future<void> updateProgress({
-    required LibraryBook book,
-    required int userInput,
+    required int bookId,
+    required int newValue,
     required ProgressEventFormat format,
     DateTime? start,
     DateTime? end,
   }) async =>
       await _progressClient.insert({
-        _SupaProgress.libraryBookIdCol: book.supaId,
+        _SupaProgress.libraryBookIdCol: bookId,
         _SupaProgress.userIdCol: SupabaseAuthService.loggedInUserId,
         _SupaProgress.formatCol: format.name,
-        _SupaProgress.progressCol: userInput,
+        _SupaProgress.progressCol: newValue,
         // This is the date-time format that works well with Supabase/Postgres.
         _SupaProgress.startCol: start?.toIso8601String(),
         _SupaProgress.endCol: end?.toIso8601String(),

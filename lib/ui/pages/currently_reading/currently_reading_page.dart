@@ -30,18 +30,29 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        leading: addABookButton(context),
-        middle: Text('My Library'),
-        trailing: SignOutButton(),
-      ),
-      child: SafeArea(
+      navigationBar: navigationBar(context),
+      child: pageBody(),
+    );
+  }
+
+  Widget pageBody() {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: ref.watch(userLibraryProvider).when(
               loading: loadingScreen,
               error: errorScreen,
               data: userLibrary,
             ),
       ),
+    );
+  }
+
+  CupertinoNavigationBar navigationBar(BuildContext context) {
+    return CupertinoNavigationBar(
+      leading: addABookButton(context),
+      middle: Text('My Library'),
+      trailing: SignOutButton(),
     );
   }
 
@@ -69,9 +80,9 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        tiles(items, 'Resume reading', ReadingStatus.reading),
-        tiles(items, 'Finished reading', ReadingStatus.completed),
-        tiles(items, 'Abandoned', ReadingStatus.abandoned),
+        librarySection(items, 'Resume reading', ReadingStatus.reading),
+        librarySection(items, 'Finished reading', ReadingStatus.completed),
+        librarySection(items, 'Abandoned', ReadingStatus.abandoned),
         // TODO(feature) add a line chart with all the currently-reading books.
         // TODO(feature) add a line chart of the progress across all books in
         //   the past year (and varying and customizable periods).
@@ -81,7 +92,7 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
     );
   }
 
-  Widget tiles(
+  Widget librarySection(
     Iterable<LibraryBook> items,
     String title,
     ReadingStatus readingStatus,
@@ -93,7 +104,7 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
             padding: const EdgeInsets.all(6),
             child: SizedBox(height: 38, child: tile)));
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.only(bottom: 22),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

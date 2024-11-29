@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'book_detail_buttons.dart';
 import 'book_properties_editor.dart';
+import 'event_timeline_item.dart';
 import 'progress_history_view.dart';
 
 class LibraryBookPage extends ConsumerStatefulWidget {
@@ -74,15 +75,7 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
       padding: const EdgeInsets.all(18),
       child: ListView(
         shrinkWrap: true,
-        children: eventsByTimeAscending().mapL(
-          (readingEvent) => switch (readingEvent) {
-            StatusEvent(:final status) => Text('Status: ${status.name}'),
-            ProgressEvent(:final progress, :final format) =>
-              Text('Progress: $progress ${format.name}'),
-            _ => throw UnsupportedError(
-                'Unknown reading event type: ${readingEvent.runtimeType}')
-          },
-        ),
+        children: eventsByTimeAscending().mapL(EventTimelineItem.new),
       ),
     );
   }
@@ -96,5 +89,5 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
   }
 
   int byTimeAscending(ReadingEvent a, ReadingEvent b) =>
-      a.dateTimeField - b.dateTimeField;
+      a.dateTimeMillis - b.dateTimeMillis;
 }

@@ -134,8 +134,8 @@ class _UpdateProgressDialogState
       return;
     }
     SupabaseProgressService.updateProgress(
-      book: widget.book,
-      userInput: userInput,
+      bookId: widget.book.supaId,
+      newValue: userInput,
       format: _selectedProgressEventFormat,
       start: widget.startTime,
       end: _selectedEndTime,

@@ -50,7 +50,8 @@ class LibraryBook {
     return bookLength.map((length) => progress / length);
   }
 
-  double? progressAt(ProgressEvent p) {
+  /// Eg. if the book is 50% complete, this method will return `50`.
+  double? percentProgressAt(ProgressEvent p) {
     final double progress = p.progress.toDouble();
     if (p.format == ProgressEventFormat.percent) return progress;
     return bookLength.map((length) => 100 * progress / length);
@@ -68,7 +69,8 @@ class LibraryBook {
 abstract class ReadingEvent {
   const ReadingEvent();
 
-  int get dateTimeField;
+  DateTime get dateTime;
+  int get dateTimeMillis => dateTime.millisecondsSinceEpoch;
 }
 
 class StatusEvent extends ReadingEvent {
@@ -78,7 +80,7 @@ class StatusEvent extends ReadingEvent {
   final ReadingStatus status;
 
   @override
-  int get dateTimeField => time.millisecondsSinceEpoch;
+  DateTime get dateTime => time;
 
   @override
   String toString() => '{time: $time, status: $status}';
@@ -98,7 +100,7 @@ class ProgressEvent extends ReadingEvent {
   final ProgressEventFormat format;
 
   @override
-  int get dateTimeField => end.millisecondsSinceEpoch;
+  DateTime get dateTime => end;
 
   @override
   String toString() =>

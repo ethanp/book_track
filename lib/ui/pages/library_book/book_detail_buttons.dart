@@ -3,6 +3,7 @@ import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_library_service.dart';
+import 'package:book_track/services/supabase_progress_service.dart';
 import 'package:book_track/services/supabase_status_service.dart';
 import 'package:book_track/ui/pages/session_timer/session_timer_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
@@ -72,6 +73,11 @@ class BookDetailButtons extends ConsumerWidget {
       icon: Icons.check_box_outlined,
       onPressed: () async {
         await SupabaseStatusService.add(book.supaId, ReadingStatus.completed);
+        await SupabaseProgressService.updateProgress(
+          bookId: book.supaId,
+          newValue: 100,
+          format: ProgressEventFormat.percent,
+        );
         ref.invalidate(userLibraryProvider);
       },
       backgroundColor: Colors.green[300]!.withOpacity(.6),
