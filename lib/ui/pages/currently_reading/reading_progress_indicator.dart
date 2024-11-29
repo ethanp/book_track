@@ -14,7 +14,6 @@ class ReadingProgressIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double? progressPercentage = book.progressPercentage;
-    log('${book.book.title} $progressPercentage ${book.bookLength}');
     if (progressPercentage == null) {
       // Nothing to show.
       return SizedBox.shrink();

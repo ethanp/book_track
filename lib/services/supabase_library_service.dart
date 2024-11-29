@@ -37,6 +37,15 @@ class SupabaseLibraryService {
           .eq(_SupaLibrary.supaIdCol, libraryBook.supaId)
           .captureStackTraceOnError();
 
+  static Future<void> updateLength(
+    LibraryBook libraryBook,
+    int updatedLength,
+  ) async =>
+      await _libraryClient
+          .update({_SupaLibrary.lengthCol: updatedLength})
+          .eq(_SupaLibrary.supaIdCol, libraryBook.supaId)
+          .captureStackTraceOnError();
+
   static Future<void> remove(LibraryBook book) async =>
       // We use ON DELETE CASCADE on foreign keys referencing this column,
       //  so the application doesn't need to worry about cleaning it up here.

@@ -38,7 +38,7 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
     ref.watch(userLibraryProvider).whenData((items) => setState(() {
           bool isShownBook(LibraryBook book) =>
               book.supaId == widget.libraryBook.supaId;
-          log('sourcing stored format');
+          log('reloaded library');
           final LibraryBook shownBook = items.where(isShownBook).first;
           _format = shownBook.bookFormat;
         }));
@@ -77,14 +77,16 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
     );
   }
 
-  // TODO(feature) implement length update
   void updateLength(String text) async {
-    /*
-    setState(() => _format = selectedFormat.bookFormat);
-    SupabaseLibraryService.updateFormat(
-        widget.libraryBook, selectedFormat.bookFormat);
+    final int? parsed = int.tryParse(text);
+    if (parsed == null) {
+      log('invalid length (should be int): $text');
+      return;
+    }
+    final int len = parsed;
+    log('updating length to $text');
+    SupabaseLibraryService.updateLength(widget.libraryBook, len);
     ref.invalidate(userLibraryProvider);
-     */
   }
 
   Widget bookFormat() {

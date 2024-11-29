@@ -24,6 +24,12 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
   final TextEditingController _textFieldController = TextEditingController();
 
   @override
+  void initState() {
+    _textFieldController.text = widget.value;
+    super.initState();
+  }
+
+  @override
   void dispose() {
     _textFieldController.dispose();
     super.dispose();
@@ -36,41 +42,55 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Text('${widget.title}: ', style: TextStyles().title),
-              SizedBox(width: 10),
-              if (_editing)
-                SizedBox(
-                  width: 200,
-                  child: CupertinoTextField(
-                    controller: _textFieldController,
-                    onSubmitted: (String text) {
-                      setState(() => _editing = false);
-                      if (text.isEmpty || text == widget.value) return;
-                      widget.onPressed(text);
-                    },
-                    placeholder: widget.value,
-                  ),
-                )
-              else
-                Text(widget.value, style: TextStyles().h5),
-            ],
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              shape: FlutterHelpers.roundedRect(radius: 10),
-              fixedSize: Size(70, 40),
-              padding: EdgeInsets.zero,
-              backgroundColor: _editing
-                  ? Colors.lightGreen.shade300
-                  : CupertinoColors.systemGrey6,
-            ),
-            onPressed: () => setState(() => _editing = !_editing),
-            child: Text(_editing ? 'Submit' : 'Update'),
-          ),
+          titleAndValue(),
+          updateButton(),
         ],
       ),
+    );
+  }
+
+  Widget titleAndValue() {
+    return Row(children: [
+      Text('${widget.title}: ', style: TextStyles().title),
+      SizedBox(width: 10),
+      if (_editing) textField() else Text(widget.value, style: TextStyles().h5),
+    ]);
+  }
+
+  Widget textField() {
+    return SizedBox(
+      width: 200,
+      child: CupertinoTextField(
+        enableSuggestions: false,
+        controller: _textFieldController,
+        onSubmitted: onSubmit,
+      ),
+    );
+  }
+
+  void onSubmit(String text) {
+    setState(() => _editing = false);
+    if (text.isEmpty || text == widget.value) return;
+    widget.onPressed(text);
+  }
+
+  Widget updateButton() {
+    return ElevatedButton(
+      style: buttonStyle(),
+      onPressed: () => _editing
+          ? onSubmit(_textFieldController.text)
+          : setState(() => _editing = true),
+      child: Text(_editing ? 'Submit' : 'Update'),
+    );
+  }
+
+  ButtonStyle buttonStyle() {
+    return ElevatedButton.styleFrom(
+      shape: FlutterHelpers.roundedRect(radius: 10),
+      fixedSize: Size(70, 40),
+      padding: EdgeInsets.zero,
+      backgroundColor:
+          _editing ? Colors.lightGreen.shade300 : CupertinoColors.systemGrey6,
     );
   }
 }

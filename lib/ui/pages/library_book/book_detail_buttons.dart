@@ -27,7 +27,6 @@ class BookDetailButtons extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(userLibraryProvider);
-    log('running build()');
 
     final List<Widget> children = completed
         ? [remove(ref)]

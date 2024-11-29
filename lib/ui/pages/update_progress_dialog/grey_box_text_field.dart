@@ -34,26 +34,25 @@ class _GreyBoxTextFieldState extends ConsumerState<GreyBoxTextField> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: CupertinoTextField(
+        focusNode: _focusNode,
+        enableSuggestions: false,
+        placeholder: 'Enter progress here',
         controller: _controller,
         onChanged: (String newText) => widget.textChanged(newText),
-        focusNode: _focusNode,
-        placeholder: 'Enter progress here',
-        decoration: BoxDecoration(
-          color: _focusNode.hasFocus
-              ? CupertinoColors.systemGrey4
-              : CupertinoColors.systemGrey5,
-          borderRadius: BorderRadius.circular(8),
-          border: _focusNode.hasFocus
-              ? Border.all(
-                  color: CupertinoColors.systemGrey,
-                  width: 1.5,
-                )
-              : Border.all(
-                  color: CupertinoColors.white.withOpacity(0),
-                  width: 0,
-                ),
-        ),
+        decoration: styleSearchBox(),
       ),
+    );
+  }
+
+  BoxDecoration styleSearchBox() {
+    return BoxDecoration(
+      color: _focusNode.hasFocus
+          ? CupertinoColors.systemGrey4
+          : CupertinoColors.systemGrey5,
+      borderRadius: BorderRadius.circular(8),
+      border: _focusNode.hasFocus
+          ? Border.all(color: CupertinoColors.systemGrey, width: 1.5)
+          : Border.all(color: CupertinoColors.white.withOpacity(0), width: 0),
     );
   }
 }
