@@ -116,6 +116,15 @@ class SupabaseBookService {
       return null;
     }
   }
+
+  static Future<void> updateAuthor(
+    Book book,
+    String updatedAuthor,
+  ) async =>
+      await _booksClient
+          .update({_SupaBook.authorCol: updatedAuthor})
+          .eq(_SupaBook.idCol, book.supaId!)
+          .captureStackTraceOnError();
 }
 
 class _SupaBook {

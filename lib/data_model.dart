@@ -25,9 +25,18 @@ class LibraryBook {
   DateTime get startTime => progressHistory.first.end;
 
   String get bookLengthString {
-    final suffix = bookFormat == BookFormat.audiobook ? 'mins' : 'pgs';
-    return bookLength.map((length) => '$length $suffix') ?? 'unknown';
+    final String suffix = switch (bookFormat) {
+      null => '(unknown format)',
+      BookFormat.audiobook => 'hrs:mins',
+      _ => 'pgs'
+    };
+    return '${bookLengthCount ?? 'unknown'} $suffix';
   }
+
+  String? get bookLengthCount => bookLength.map((a) => switch (bookFormat) {
+        BookFormat.audiobook => '${(a / 60).floor()}:${a % 60}',
+        _ => a.toString()
+      });
 
   ReadingStatus get status =>
       statusHistory.lastOrNull?.status ?? ReadingStatus.reading;
@@ -44,13 +53,22 @@ class LibraryBook {
   double? progressAt(ProgressEvent p) {
     final double progress = p.progress.toDouble();
     if (p.format == ProgressEventFormat.percent) return progress;
-    return bookLength.map((length) => progress / length);
+    return bookLength.map((length) => 100 * progress / length);
+  }
+
+  static int? parseBookLength(String text) {
+    final List<String> split = text.split(':');
+    final int? hrs = int.tryParse(split[0]);
+    final int? mins = int.tryParse(split[1]);
+    if (hrs == null || mins == null) return null;
+    return hrs * 60 + mins;
   }
 }
 
 abstract class ReadingEvent {
   const ReadingEvent();
-  int get sortKey;
+
+  int get dateTimeField;
 }
 
 class StatusEvent extends ReadingEvent {
@@ -60,7 +78,7 @@ class StatusEvent extends ReadingEvent {
   final ReadingStatus status;
 
   @override
-  int get sortKey => time.millisecondsSinceEpoch;
+  int get dateTimeField => time.millisecondsSinceEpoch;
 
   @override
   String toString() => '{time: $time, status: $status}';
@@ -80,7 +98,7 @@ class ProgressEvent extends ReadingEvent {
   final ProgressEventFormat format;
 
   @override
-  int get sortKey => end.millisecondsSinceEpoch;
+  int get dateTimeField => end.millisecondsSinceEpoch;
 
   @override
   String toString() =>

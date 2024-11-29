@@ -9,10 +9,12 @@ class EditableBookProperty extends ConsumerStatefulWidget {
     required this.title,
     required this.value,
     required this.onPressed,
+    this.defaultValue,
   });
 
   final String title;
   final String value;
+  final String? defaultValue;
   final void Function(String) onPressed;
 
   @override
@@ -25,7 +27,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
 
   @override
   void initState() {
-    _textFieldController.text = widget.value;
+    _textFieldController.text = widget.defaultValue ?? widget.value;
     super.initState();
   }
 

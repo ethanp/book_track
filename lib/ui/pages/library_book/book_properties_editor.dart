@@ -1,6 +1,7 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
+import 'package:book_track/services/supabase_book_service.dart';
 import 'package:book_track/services/supabase_library_service.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
@@ -35,13 +36,13 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
     // an inner widget (eg. the buttons) modifies the data shown here.
     // The way it works, is the button invalidate()s the provider
     // (internally), which triggers this to callback.
-    ref.watch(userLibraryProvider).whenData((items) => setState(() {
-          bool isShownBook(LibraryBook book) =>
-              book.supaId == widget.libraryBook.supaId;
-          log('reloaded library');
-          final LibraryBook shownBook = items.where(isShownBook).first;
-          _format = shownBook.bookFormat;
-        }));
+    ref.watch(userLibraryProvider).whenData(
+          (libraryBooks) => setState(() {
+            bool isThisBook(LibraryBook book) =>
+                book.supaId == widget.libraryBook.supaId;
+            _format = libraryBooks.firstWhere(isThisBook).bookFormat;
+          }),
+        );
   }
 
   @override
@@ -64,28 +65,34 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
     return EditableBookProperty(
       title: 'Author',
       value: widget.libraryBook.book.author ?? 'unknown',
-      // TODO(feature) implement author update
-      onPressed: (text) => print('Author pressed'),
+      onPressed: updateAuthor,
     );
+  }
+
+  void updateAuthor(String text) async {
+    log('updating author to $text');
+    await SupabaseBookService.updateAuthor(widget.libraryBook.book, text);
+    ref.invalidate(userLibraryProvider);
   }
 
   Widget length() {
     return EditableBookProperty(
       title: 'Length',
       value: widget.libraryBook.bookLengthString,
+      defaultValue: widget.libraryBook.bookLengthCount,
       onPressed: updateLength,
     );
   }
 
   void updateLength(String text) async {
-    final int? parsed = int.tryParse(text);
-    if (parsed == null) {
-      log('invalid length (should be int): $text');
-      return;
-    }
-    final int len = parsed;
+    // Somehow I feel this logic should be elsewhere, but not sure where yet.
+    final int? len = switch (widget.libraryBook.bookFormat) {
+      BookFormat.audiobook => LibraryBook.parseBookLength(text),
+      _ => int.tryParse(text),
+    };
+    if (len == null) return log('invalid length: $text');
     log('updating length to $text');
-    SupabaseLibraryService.updateLength(widget.libraryBook, len);
+    await SupabaseLibraryService.updateLength(widget.libraryBook, len);
     ref.invalidate(userLibraryProvider);
   }
 

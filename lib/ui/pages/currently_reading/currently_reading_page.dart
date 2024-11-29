@@ -75,6 +75,8 @@ class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
         // TODO(feature) add a line chart with all the currently-reading books.
         // TODO(feature) add a line chart of the progress across all books in
         //   the past year (and varying and customizable periods).
+        // TODO(feature) add an indicator of pages read in the past week, and a chart
+        //  of pages read per week, across time.
       ],
     );
   }

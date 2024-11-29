@@ -70,28 +70,31 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
   ///  1. (done) Shows progress & status updates in time order
   ///  2. TODO(feature) Allows updating/deleting each update
   Widget eventTimeline() {
-    final List<ReadingEvent> progresses =
-        // not sure why List.from is needed here but not for the status history.
-        List.from(_libraryBook.progressHistory);
-    final List<ReadingEvent> statuses = _libraryBook.statusHistory;
-    final List<ReadingEvent> events = progresses + statuses;
-    events.sort((a, b) => a.sortKey - b.sortKey);
     return Padding(
       padding: const EdgeInsets.all(18),
       child: ListView(
         shrinkWrap: true,
-        children: events.mapL((e) {
-          switch (e) {
-            case StatusEvent(:var status):
-              return Text('Status: ${status.name}');
-            case ProgressEvent(:var progress):
-              return Text('Progress: $progress');
-            default:
-              throw UnsupportedError(
-                  'Unknown reading event type: ${e.runtimeType}');
-          }
-        }),
+        children: eventsByTimeAscending().mapL(
+          (readingEvent) => switch (readingEvent) {
+            StatusEvent(:final status) => Text('Status: ${status.name}'),
+            ProgressEvent(:final progress, :final format) =>
+              Text('Progress: $progress ${format.name}'),
+            _ => throw UnsupportedError(
+                'Unknown reading event type: ${readingEvent.runtimeType}')
+          },
+        ),
       ),
     );
   }
+
+  List<ReadingEvent> eventsByTimeAscending() {
+    final List<ReadingEvent> progresses =
+        // not sure why List.from is needed here but not for the status history.
+        List.from(_libraryBook.progressHistory);
+    final List<ReadingEvent> statuses = _libraryBook.statusHistory;
+    return (progresses + statuses)..sort(byTimeAscending);
+  }
+
+  int byTimeAscending(ReadingEvent a, ReadingEvent b) =>
+      a.dateTimeField - b.dateTimeField;
 }
