@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_progress_service.dart';
 import 'package:flutter/cupertino.dart';
@@ -8,16 +9,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'grey_box_text_field.dart';
 import 'update_format_selector.dart';
 
+final SimpleLogger log = SimpleLogger(prefix: 'UpdateProgressDialogPage');
+
 class UpdateProgressDialogPage extends ConsumerStatefulWidget {
   const UpdateProgressDialogPage({
     required this.book,
     this.startTime,
     this.initialEndTime,
+    this.progressEvent,
   });
 
   final LibraryBook book;
   final DateTime? startTime;
   final DateTime? initialEndTime;
+  final ProgressEvent? progressEvent;
 
   @override
   ConsumerState createState() => _UpdateProgressDialogState();
@@ -28,7 +33,7 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
     DateTime? startTime,
     DateTime? initialEndTime,
   }) async {
-    await showCupertinoDialog(
+    final bool? res = await showCupertinoDialog(
       context: ref.context,
       builder: (context) => UpdateProgressDialogPage(
         book: book,
@@ -36,8 +41,25 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
         initialEndTime: initialEndTime,
       ),
     );
-    ref.invalidate(userLibraryProvider);
+    log('res was $res ${res.runtimeType}');
+    if (res ?? false) ref.invalidate(userLibraryProvider);
     return false; // <- This means *don't* remove the book from the ListView.
+  }
+
+  static Future<void> update(
+    WidgetRef ref,
+    LibraryBook libraryBook,
+    ProgressEvent progressEvent,
+  ) async {
+    final bool? res = await showCupertinoDialog(
+      context: ref.context,
+      builder: (context) => UpdateProgressDialogPage(
+        book: libraryBook,
+        progressEvent: progressEvent,
+      ),
+    );
+    log('res was $res ${res.runtimeType}');
+    if (res ?? false) ref.invalidate(userLibraryProvider);
   }
 }
 
@@ -114,7 +136,7 @@ class _UpdateProgressDialogState
     return [
       CupertinoButton(
         // color: Colors.deepOrangeAccent[100]!.withOpacity(.22),
-        onPressed: context.pop,
+        onPressed: () => context.pop(false),
         child: Text('Cancel'),
       ),
       CupertinoButton(
@@ -129,9 +151,15 @@ class _UpdateProgressDialogState
     final int? userInput = int.tryParse(_textFieldInput);
     if (userInput == null) {
       // TODO(ui) this should be a form validation instead.
-      context.showSnackBar('invalid number: $_textFieldInput');
-      context.pop();
+      log('invalid number: $_textFieldInput');
+      context.pop(false);
       return;
+    }
+    if (widget.progressEvent != null) {
+      // TODO(feature) Show the existing progress modal, but in edit mode,
+      //  with an addn'l option to delete the event.
+      log('TODO implement this feature');
+      context.pop(false);
     }
     SupabaseProgressService.updateProgress(
       bookId: widget.book.supaId,
@@ -140,7 +168,7 @@ class _UpdateProgressDialogState
       start: widget.startTime,
       end: _selectedEndTime,
     );
-    context.showSnackBar('updating to: $userInput');
-    context.pop();
+    log('updating to: $userInput');
+    context.pop(true);
   }
 }

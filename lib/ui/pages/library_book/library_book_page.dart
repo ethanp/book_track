@@ -75,7 +75,8 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
       padding: const EdgeInsets.all(18),
       child: ListView(
         shrinkWrap: true,
-        children: eventsByTimeAscending().mapL(EventTimelineItem.new),
+        children: eventsByTimeAscending()
+            .mapL((e) => EventTimelineItem(_libraryBook, e)),
       ),
     );
   }
