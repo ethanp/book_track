@@ -85,11 +85,7 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
   }
 
   void updateLength(String text) async {
-    // Somehow I feel this logic should be elsewhere, but not sure where yet.
-    final int? len = switch (widget.libraryBook.bookFormat) {
-      BookFormat.audiobook => LibraryBook.parseBookLength(text),
-      _ => int.tryParse(text),
-    };
+    final int? len = widget.libraryBook.parseLengthText(text);
     if (len == null) return log('invalid length: $text');
     log('updating length to $text');
     await SupabaseLibraryService.updateLength(widget.libraryBook, len);

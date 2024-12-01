@@ -57,7 +57,12 @@ class LibraryBook {
     return bookLength.map((length) => 100 * progress / length);
   }
 
-  static int? parseBookLength(String text) {
+  int? parseLengthText(String text) => switch (bookFormat) {
+        BookFormat.audiobook => tryParseAudiobookLength(text),
+        _ => int.tryParse(text),
+      };
+
+  static int? tryParseAudiobookLength(String text) {
     final List<String> split = text.split(':');
     final int? hrs = int.tryParse(split[0]);
     final int? mins = int.tryParse(split[1]);
@@ -70,6 +75,7 @@ abstract class ReadingEvent {
   const ReadingEvent();
 
   DateTime get dateTime;
+
   int get dateTimeMillis => dateTime.millisecondsSinceEpoch;
 }
 

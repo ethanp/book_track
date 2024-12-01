@@ -31,14 +31,7 @@ class SupabaseProgressService {
         .eq(_SupaProgress.libraryBookIdCol, bookId)
         .eq(_SupaProgress.userIdCol, SupabaseAuthService.loggedInUserId!)
         .captureStackTraceOnError();
-    return queryResults
-        .map(_SupaProgress.new)
-        .mapL((supaProgress) => ProgressEvent(
-              end: supaProgress.endSafe,
-              progress: supaProgress.progress,
-              format: supaProgress.format,
-              start: supaProgress.start,
-            ));
+    return queryResults.mapL((result) => _SupaProgress(result).toProgressEvent);
   }
 }
 
@@ -47,7 +40,19 @@ class _SupaProgress {
 
   final PostgrestMap rawData;
 
-  DateTime get createdAt => DateTime.parse(rawData[createdAtCol]);
+  // static SimpleLogger log = SimpleLogger(prefix: '_SupaProgress');
+
+  ProgressEvent get toProgressEvent => ProgressEvent(
+        end: endSafe,
+        progress: progress,
+        format: format,
+        start: start,
+      );
+
+  /// Returns [createdAt] in device-local timezone.
+  /// Original field set by Postgres to UTC.
+  DateTime get createdAt => DateTime.parse(rawData[createdAtCol]).toLocal();
+
   static final String createdAtCol = 'created_at';
 
   int get libraryBookId => rawData[libraryBookIdCol];

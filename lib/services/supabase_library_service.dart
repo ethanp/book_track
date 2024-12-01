@@ -115,7 +115,7 @@ class _SupaLibrary {
   int get supaId => rawData[supaIdCol];
   static final String supaIdCol = 'id';
 
-  DateTime get createdAt => DateTime.parse(rawData[createdAtCol]);
+  DateTime get createdAt => DateTime.parse(rawData[createdAtCol]).toLocal();
   static final String createdAtCol = 'created_at';
 
   int get bookId => rawData[bookIdCol];

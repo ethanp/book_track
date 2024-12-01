@@ -109,38 +109,34 @@ class _UpdateProgressDialogState
   }
 
   Widget endTimePicker() {
-    return Column(
-      children: [
-        Text('Set progress update\'s timestamp:'),
+    return Column(children: [
+      Text('Set progress update\'s timestamp:'),
+      Transform.scale(
         // Flutter doesn’t allow direct styling of CupertinoDatePicker text,
         // but you can just scale the whole widget.
-        Transform.scale(
-          scale: .78,
-          child: SizedBox(
-            height: 110,
-            child: CupertinoDatePicker(
-              mode: CupertinoDatePickerMode.time,
-              minimumDate: widget.startTime,
-              maximumDate: widget.startTime?.add(const Duration(hours: 12)),
-              initialDateTime: DateTime.now(),
-              onDateTimeChanged: (DateTime newDateTime) =>
-                  setState(() => _selectedEndTime = newDateTime),
-            ),
+        scale: .78,
+        child: SizedBox(
+          height: 110,
+          child: CupertinoDatePicker(
+            mode: CupertinoDatePickerMode.time,
+            minimumDate: widget.startTime,
+            maximumDate: widget.startTime?.add(const Duration(hours: 12)),
+            initialDateTime: DateTime.now(),
+            onDateTimeChanged: (DateTime newEndTime) =>
+                setState(() => _selectedEndTime = newEndTime),
           ),
         ),
-      ],
-    );
+      ),
+    ]);
   }
 
   List<Widget> submitAndCancel() {
     return [
       CupertinoButton(
-        // color: Colors.deepOrangeAccent[100]!.withOpacity(.22),
         onPressed: () => context.pop(false),
         child: Text('Cancel'),
       ),
       CupertinoButton(
-        // color: Colors.green[100]!.withOpacity(.5),
         onPressed: _submit,
         child: Text('Submit'),
       ),
@@ -148,27 +144,28 @@ class _UpdateProgressDialogState
   }
 
   void _submit() {
-    final int? userInput = int.tryParse(_textFieldInput);
-    if (userInput == null) {
+    final int? newLen = widget.book.parseLengthText(_textFieldInput);
+    if (newLen == null) {
       // TODO(ui) this should be a form validation instead.
-      log('invalid number: $_textFieldInput');
+      log('invalid length: $_textFieldInput');
       context.pop(false);
       return;
     }
     if (widget.progressEvent != null) {
-      // TODO(feature) Show the existing progress modal, but in edit mode,
-      //  with an addn'l option to delete the event.
+      // TODO(feature) Show the existing progress modal, but in edit mode:
+      //  1. Prefill inputs with status quo values
+      //  2. Provide the option to delete the event
       log('TODO implement this feature');
       context.pop(false);
     }
     SupabaseProgressService.updateProgress(
       bookId: widget.book.supaId,
-      newValue: userInput,
+      newValue: newLen,
       format: _selectedProgressEventFormat,
       start: widget.startTime,
       end: _selectedEndTime,
     );
-    log('updating to: $userInput');
+    log('updating to: $newLen');
     context.pop(true);
   }
 }
