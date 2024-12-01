@@ -10,22 +10,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'book_tile.dart';
 import 'dismissible_cupertino_bottom_sheet.dart';
 
-class CurrentlyReadingPage extends ConsumerStatefulWidget {
-  const CurrentlyReadingPage({super.key});
+class MyLibraryPage extends ConsumerStatefulWidget {
+  const MyLibraryPage({super.key});
 
   @override
-  ConsumerState createState() => _CurrentlyReadingPageState();
+  ConsumerState createState() => _MyLibraryPageState();
 }
 
-class _CurrentlyReadingPageState extends ConsumerState<CurrentlyReadingPage> {
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    ref.watch(userLibraryProvider).whenData((items) => setState(() {
-          print('currently reading: sourcing stored format');
-        }));
-  }
+class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
+  // static final SimpleLogger log = SimpleLogger(prefix: 'MyLibraryPage');
 
   @override
   Widget build(BuildContext context) {

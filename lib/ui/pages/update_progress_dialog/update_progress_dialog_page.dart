@@ -143,7 +143,7 @@ class _UpdateProgressDialogState
     ];
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final int? newLen = widget.book.parseLengthText(_textFieldInput);
     if (newLen == null) {
       // TODO(ui) this should be a form validation instead.
@@ -158,14 +158,14 @@ class _UpdateProgressDialogState
       log('TODO implement this feature');
       context.pop(false);
     }
-    SupabaseProgressService.updateProgress(
+    log('updating to: $newLen');
+    await SupabaseProgressService.updateProgress(
       bookId: widget.book.supaId,
       newValue: newLen,
       format: _selectedProgressEventFormat,
       start: widget.startTime,
       end: _selectedEndTime,
     );
-    log('updating to: $newLen');
-    context.pop(true);
+    if (mounted) context.pop(true);
   }
 }

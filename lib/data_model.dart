@@ -44,10 +44,7 @@ class LibraryBook {
   double? get progressPercentage {
     if (status == ReadingStatus.completed) return 100;
     if (progressHistory.lastOrNull == null) return null;
-    final latestProgress = progressHistory.last;
-    final double progress = latestProgress.progress.toDouble();
-    if (latestProgress.format == ProgressEventFormat.percent) return progress;
-    return bookLength.map((length) => progress / length);
+    return percentProgressAt(progressHistory.last);
   }
 
   /// Eg. if the book is 50% complete, this method will return `50`.
@@ -57,10 +54,13 @@ class LibraryBook {
     return bookLength.map((length) => 100 * progress / length);
   }
 
-  int? parseLengthText(String text) => switch (bookFormat) {
-        BookFormat.audiobook => tryParseAudiobookLength(text),
-        _ => int.tryParse(text),
-      };
+  int? parseLengthText(String text) {
+    if (bookFormat == BookFormat.audiobook) {
+      final int? hoursMins = tryParseAudiobookLength(text);
+      if (hoursMins != null) return hoursMins;
+    }
+    return int.tryParse(text);
+  }
 
   static int? tryParseAudiobookLength(String text) {
     final List<String> split = text.split(':');

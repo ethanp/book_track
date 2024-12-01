@@ -73,8 +73,5 @@ class BookSearchResult {
 }
 
 @riverpod
-Future<List<LibraryBook>> userLibrary(Ref ref) async {
-  final results = await SupabaseLibraryService.myBooks();
-  print('fetched ${results.length} books in library');
-  return results;
-}
+Future<List<LibraryBook>> userLibrary(Ref ref) async =>
+    await SupabaseLibraryService.myBooks();

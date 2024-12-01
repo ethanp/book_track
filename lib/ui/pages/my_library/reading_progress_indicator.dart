@@ -1,8 +1,10 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/helpers.dart';
+import 'package:book_track/riverpods.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ReadingProgressIndicator extends StatelessWidget {
+class ReadingProgressIndicator extends ConsumerWidget {
   ReadingProgressIndicator(this.book)
       : latestProgress = book.progressHistory.lastOrNull;
 
@@ -12,7 +14,9 @@ class ReadingProgressIndicator extends StatelessWidget {
   static SimpleLogger log = SimpleLogger(prefix: 'ReadingProgressIndicator');
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    log('building');
+    ref.watch(userLibraryProvider);
     final double? progressPercentage = book.progressPercentage;
     if (progressPercentage == null) {
       // Nothing to show.
@@ -43,6 +47,7 @@ class ReadingProgressIndicator extends StatelessWidget {
     final double scale = .94;
     final double scaledWidthPerPercent = width / 100 * scale;
     final percent = book.progressPercentage!;
+    log('${book.book.title} $percent%');
     final double readWidth = percent * scaledWidthPerPercent;
     final double unreadWidth = (100 - percent) * scaledWidthPerPercent;
     return Padding(

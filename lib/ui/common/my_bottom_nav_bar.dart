@@ -1,6 +1,6 @@
 import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/ui/pages/currently_reading/currently_reading_page.dart';
+import 'package:book_track/ui/pages/my_library/my_library_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,7 +15,7 @@ class BottomNavBarElement {
 class MyBottomNavBar extends ConsumerWidget {
   static final List<BottomNavBarElement> elements = [
     BottomNavBarElement(
-      page: CurrentlyReadingPage(),
+      page: MyLibraryPage(),
       item: BottomNavigationBarItem(
         icon: Icon(Icons.book),
         label: 'Session',
