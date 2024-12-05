@@ -39,6 +39,7 @@ class TimeHelpers {
 
 class SimpleLogger {
   const SimpleLogger({required this.prefix});
+
   final String prefix;
 
   /// [call] method is a special method in Dart that, when defined,

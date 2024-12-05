@@ -79,6 +79,16 @@ extension NumExtension on num {
   double get deg2rad => this * math.pi / 180;
 }
 
+extension IntExtension on int {
+  String get pad2 => toString().padLeft(2, '0');
+
+  String get minsToHhMm {
+    final hours = (this ~/ 60).pad2;
+    final minutes = (this % 60).pad2;
+    return '$hours:$minutes';
+  }
+}
+
 extension DateTimeExtension on DateTime {
   bool sameDayAs(DateTime other) =>
       year == other.year && month == other.month && day == other.day;

@@ -24,19 +24,22 @@ class LibraryBook {
 
   DateTime get startTime => progressHistory.first.end;
 
-  String get bookLengthString {
-    final String suffix = switch (bookFormat) {
-      null => '(unknown format)',
-      BookFormat.audiobook => 'hrs:mins',
-      _ => 'pgs'
-    };
-    return '${bookLengthCount ?? 'unknown'} $suffix';
-  }
+  String get _suffix => switch (bookFormat) {
+        null => '(unknown format)',
+        BookFormat.audiobook => 'hrs:mins',
+        _ => 'pgs'
+      };
 
-  String? get bookLengthCount => bookLength.map((a) => switch (bookFormat) {
-        BookFormat.audiobook => '${(a / 60).floor()}:${a % 60}',
-        _ => a.toString()
-      });
+  String bookProgressString(ProgressEvent ev) =>
+      '${_format(ev.progress)} $_suffix';
+
+  String get bookLengthString => '${bookLengthCount ?? 'unknown'} $_suffix';
+
+  String? get bookLengthCount => bookLength.map(_format);
+
+  String _format(int length) => bookFormat == BookFormat.audiobook
+      ? length.minsToHhMm
+      : length.toString();
 
   ReadingStatus get status =>
       statusHistory.lastOrNull?.status ?? ReadingStatus.reading;
@@ -56,13 +59,13 @@ class LibraryBook {
 
   int? parseLengthText(String text) {
     if (bookFormat == BookFormat.audiobook) {
-      final int? hoursMins = tryParseAudiobookLength(text);
+      final int? hoursMins = _tryParseAudiobookLength(text);
       if (hoursMins != null) return hoursMins;
     }
     return int.tryParse(text);
   }
 
-  static int? tryParseAudiobookLength(String text) {
+  static int? _tryParseAudiobookLength(String text) {
     final List<String> split = text.split(':');
     final int? hrs = int.tryParse(split[0]);
     final int? mins = int.tryParse(split[1]);

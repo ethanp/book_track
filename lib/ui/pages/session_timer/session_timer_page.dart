@@ -168,13 +168,13 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
   String duration(DateTime? currStartTime) {
     if (!sessionInProgress) return '**:**';
     final duration = DateTime.now().difference(currStartTime!);
-    String padded(int i) => i.toString().padLeft(2, '0');
-    return '${padded(duration.inMinutes)}:${padded(duration.inSeconds % 60)}';
+    final minutes = duration.inMinutes.pad2;
+    final seconds = (duration.inSeconds % 60).pad2;
+    return '$minutes:$seconds';
   }
 
   Widget sessionsToday() {
     final List<ProgressEvent> progressEvents = widget.book.progressHistory;
-    var progressToday = progressEvents.where((e) => e.end.isToday);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Card(
@@ -184,16 +184,20 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
           height: 200,
           width: double.infinity,
           child: Column(children: [
-            Text('Sessions today:', style: TextStyles().h1),
-            if (progressToday.isEmpty)
+            Text('Progress Events:', style: TextStyles().h1),
+            if (progressEvents.isEmpty)
               Text('None', style: TextStyles().h2)
             else
               Table(
-                children: progressToday.mapL((ev) {
+                columnWidths: {0: FixedColumnWidth(110)},
+                children: progressEvents.mapL((ev) {
+                  final percentage =
+                      widget.book.percentProgressAt(ev)?.floor() ?? '?';
                   return TableRow(children: [
                     Text(TimeHelpers.monthDayYear(ev.end)),
                     Text(TimeHelpers.hourMinuteAmPm(ev.end)),
-                    Text('${ev.progress}%'),
+                    Text('$percentage%'),
+                    Text(widget.book.bookProgressString(ev)),
                   ]);
                 }),
               ),
