@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
@@ -44,5 +46,9 @@ class SimpleLogger {
 
   /// [call] method is a special method in Dart that, when defined,
   /// allows instances of the class to be invoked like functions.
-  void call(Object? s) => print('${TimeHelpers.timestamp} ($prefix): $s');
+  void call(Object? s) => stdout.writeln(msg(s));
+
+  void error(Object? s) => stderr.writeln('\x1B[31m${msg(s)}\x1B[0m');
+
+  String msg(Object? s) => '${TimeHelpers.timestamp} $prefix: $s';
 }

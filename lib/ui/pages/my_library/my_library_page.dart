@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/sign_out_button.dart';
@@ -18,28 +19,15 @@ class MyLibraryPage extends ConsumerStatefulWidget {
 }
 
 class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
-  // static final SimpleLogger log = SimpleLogger(prefix: 'MyLibraryPage');
+  static final SimpleLogger log = SimpleLogger(prefix: 'MyLibraryPage');
+
+  bool _showingArchived = false;
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: navigationBar(context),
       child: pageBody(),
-    );
-  }
-
-  Widget pageBody() {
-    return SafeArea(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: ref.watch(userLibraryProvider).when(
-                loading: loadingScreen,
-                error: errorScreen,
-                data: userLibraryByStatus,
-              ),
-        ),
-      ),
     );
   }
 
@@ -51,8 +39,57 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     );
   }
 
-  Widget errorScreen(err, stack) =>
-      Text('Error loading your library $err $stack', style: TextStyles().h1);
+  Widget pageBody() {
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: ref.watch(userLibraryProvider).when(
+                loading: loadingScreen,
+                error: errorScreen,
+                data: libraryScreen,
+              ),
+        ),
+      ),
+    );
+  }
+
+  Widget libraryScreen(List<LibraryBook> library) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        userLibraryByStatus(library),
+        if (library.any((b) => b.archived)) archivedSection(library),
+      ],
+    );
+  }
+
+  Widget archivedSection(List<LibraryBook> library) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        showArchivedToggleButton(),
+        if (_showingArchived)
+          bookSection('Archived', library.where((b) => b.archived)),
+      ],
+    );
+  }
+
+  Widget showArchivedToggleButton() {
+    return CupertinoButton(
+      child: Text(
+        '${_showingArchived ? 'Hide' : 'See'} archived books...',
+        style: TextStyles().h3.copyWith(color: CupertinoColors.activeBlue),
+      ),
+      onPressed: () => setState(() => _showingArchived = !_showingArchived),
+    );
+  }
+
+  Widget errorScreen(err, stack) {
+    final String errorMessage = 'Error loading your library $err $stack';
+    log.error(errorMessage);
+    return Text(errorMessage, style: TextStyles().h1);
+  }
 
   Widget loadingScreen() =>
       Text('Loading your library...', style: TextStyles().h1);
@@ -81,14 +118,15 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: ReadingStatus.values.mapL(
-        (readingStatus) => statusSection(readingStatus, liveBooks),
+        (readingStatus) => bookSection(readingStatus.name,
+            liveBooks.where((b) => b.readingStatus == readingStatus)),
       ),
     );
   }
 
-  Widget statusSection(
-    ReadingStatus readingStatus,
-    Iterable<LibraryBook> fullLibrary,
+  Widget bookSection(
+    String name,
+    Iterable<LibraryBook> books,
   ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -96,30 +134,18 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          statusTitle(readingStatus),
-          booksWithStatus(fullLibrary, readingStatus),
+          statusTitle(name),
+          ListView(shrinkWrap: true, children: books.mapL(BookTile.new)),
         ],
       ),
     );
   }
 
-  Widget booksWithStatus(
-    Iterable<LibraryBook> fullLibrary,
-    ReadingStatus readingStatus,
-  ) {
-    return ListView(
-      shrinkWrap: true,
-      children: fullLibrary
-          .where((book) => book.readingStatus == readingStatus)
-          .mapL(BookTile.new),
-    );
-  }
-
-  Widget statusTitle(ReadingStatus readingStatus) {
+  Widget statusTitle(String name) {
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Text(
-        readingStatus.name.capitalize,
+        name.capitalize,
         style: TextStyles().h1,
       ),
     );
