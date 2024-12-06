@@ -21,9 +21,9 @@ class BookDetailButtons extends ConsumerWidget {
 
   static final SimpleLogger log = SimpleLogger(prefix: 'BookDetailButtons');
 
-  bool get completed => book.status == ReadingStatus.completed;
+  bool get completed => book.readingStatus == ReadingStatus.finished;
 
-  bool get abandoned => book.status == ReadingStatus.abandoned;
+  bool get abandoned => book.readingStatus == ReadingStatus.abandoned;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -72,7 +72,7 @@ class BookDetailButtons extends ConsumerWidget {
       subtitle: 'Mark book as finished',
       icon: Icons.check_box_outlined,
       onPressed: () async {
-        await SupabaseStatusService.add(book.supaId, ReadingStatus.completed);
+        await SupabaseStatusService.add(book.supaId, ReadingStatus.finished);
         await SupabaseProgressService.updateProgress(
           bookId: book.supaId,
           newValue: 100,

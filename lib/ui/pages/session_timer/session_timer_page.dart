@@ -167,9 +167,9 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
 
   String duration(DateTime? currStartTime) {
     if (!sessionInProgress) return '**:**';
-    final duration = DateTime.now().difference(currStartTime!);
-    final minutes = duration.inMinutes.pad2;
-    final seconds = (duration.inSeconds % 60).pad2;
+    final Duration elapsedTime = DateTime.now().difference(currStartTime!);
+    final String minutes = elapsedTime.inMinutes.pad2;
+    final String seconds = (elapsedTime.inSeconds % 60).pad2;
     return '$minutes:$seconds';
   }
 

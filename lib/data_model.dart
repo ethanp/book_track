@@ -41,11 +41,11 @@ class LibraryBook {
       ? length.minsToHhMm
       : length.toString();
 
-  ReadingStatus get status =>
+  ReadingStatus get readingStatus =>
       statusHistory.lastOrNull?.status ?? ReadingStatus.reading;
 
   double? get progressPercentage {
-    if (status == ReadingStatus.completed) return 100;
+    if (readingStatus == ReadingStatus.finished) return 100;
     if (progressHistory.lastOrNull == null) return null;
     return percentProgressAt(progressHistory.last);
   }
@@ -152,7 +152,7 @@ enum BookFormat {
 enum ReadingStatus {
   reading,
   abandoned,
-  completed,
+  finished,
 }
 
 /// Special handling for no known book format

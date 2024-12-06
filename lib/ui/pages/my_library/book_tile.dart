@@ -16,24 +16,31 @@ class BookTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Dismissible(
-      key: Key(book.book.supaId.toString()),
-      confirmDismiss: (direction) => UpdateProgressDialogPage.show(ref, book),
-      background: Container(
-        color: Colors.green,
-        child: Text(
-          'Add progress',
-          style: TextStyle(color: Colors.grey[100], fontSize: 18),
+    return Padding(
+      padding: const EdgeInsets.all(6),
+      child: SizedBox(
+        height: 38,
+        child: Dismissible(
+          key: Key(book.book.supaId.toString()),
+          confirmDismiss: (direction) =>
+              UpdateProgressDialogPage.show(ref, book),
+          background: Container(
+            color: Colors.green,
+            child: Text(
+              'Add progress',
+              style: TextStyle(color: Colors.grey[100], fontSize: 18),
+            ),
+          ),
+          child: CupertinoListTile(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            title: Text(book.book.title, style: TextStyles().title),
+            subtitle: Text(book.book.author ?? 'Author unknown'),
+            leading: book.book.coverArtS.map(Image.memory) ??
+                Icon(Icons.question_mark),
+            trailing: ReadingProgressIndicator(book),
+            onTap: () => context.push(LibraryBookPage(book)),
+          ),
         ),
-      ),
-      child: CupertinoListTile(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        title: Text(book.book.title, style: TextStyles().title),
-        subtitle: Text(book.book.author ?? 'Author unknown'),
-        leading:
-            book.book.coverArtS.map(Image.memory) ?? Icon(Icons.question_mark),
-        trailing: ReadingProgressIndicator(book),
-        onTap: () => context.push(LibraryBookPage(book)),
       ),
     );
   }

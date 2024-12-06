@@ -31,9 +31,9 @@ class TimeHelpers {
   static String get timestamp => timestampFormatter(DateTime.now());
 
   static String timestampFormatter(DateTime dateTime) {
-    final time = DateFormat('hh:mm:ss').format(dateTime);
+    final time = DateFormat('hha:mm:ss').format(dateTime);
     final millis = dateTime.millisecond.toString().padLeft(3, '0');
-    return '$time:$millis';
+    return '$time.$millis';
   }
 }
 

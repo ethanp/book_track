@@ -35,7 +35,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
         child: ref.watch(userLibraryProvider).when(
               loading: loadingScreen,
               error: errorScreen,
-              data: userLibrary,
+              data: userLibraryByStatus,
             ),
       ),
     );
@@ -69,46 +69,55 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     );
   }
 
-  Widget userLibrary(Iterable<LibraryBook> items) {
+  Widget userLibraryByStatus(Iterable<LibraryBook> fullLibrary) {
+    // TODO(feature) add a line chart with all the currently-reading books.
+    // TODO(feature) add a line chart of the progress across all books in
+    //   the past year (and varying and customizable periods).
+    // TODO(feature) add an indicator of pages read in the past week, and a chart
+    //  of pages read per week, across time.
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: [
-        librarySection(items, 'Resume reading', ReadingStatus.reading),
-        librarySection(items, 'Finished reading', ReadingStatus.completed),
-        librarySection(items, 'Abandoned', ReadingStatus.abandoned),
-        // TODO(feature) add a line chart with all the currently-reading books.
-        // TODO(feature) add a line chart of the progress across all books in
-        //   the past year (and varying and customizable periods).
-        // TODO(feature) add an indicator of pages read in the past week, and a chart
-        //  of pages read per week, across time.
-      ],
+      children: ReadingStatus.values.mapL(
+        (readingStatus) => statusSection(readingStatus, fullLibrary),
+      ),
     );
   }
 
-  Widget librarySection(
-    Iterable<LibraryBook> items,
-    String title,
+  Widget statusSection(
     ReadingStatus readingStatus,
+    Iterable<LibraryBook> fullLibrary,
   ) {
-    final List<Widget> listTiles = items
-        .where((book) => book.status == readingStatus)
-        .map(BookTile.new)
-        .mapL((tile) => Padding(
-            padding: const EdgeInsets.all(6),
-            child: SizedBox(height: 38, child: tile)));
     return Padding(
-      padding: const EdgeInsets.only(bottom: 22),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Text(title, style: TextStyles().h1),
-          ),
-          SizedBox(height: 4),
-          ListView(shrinkWrap: true, children: listTiles),
+          statusTitle(readingStatus),
+          booksWithStatus(fullLibrary, readingStatus),
         ],
+      ),
+    );
+  }
+
+  Widget booksWithStatus(
+    Iterable<LibraryBook> fullLibrary,
+    ReadingStatus readingStatus,
+  ) {
+    return ListView(
+      shrinkWrap: true,
+      children: fullLibrary
+          .where((book) => book.readingStatus == readingStatus)
+          .mapL(BookTile.new),
+    );
+  }
+
+  Widget statusTitle(ReadingStatus readingStatus) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Text(
+        readingStatus.name.capitalize,
+        style: TextStyles().h1,
       ),
     );
   }
