@@ -46,9 +46,14 @@ class SimpleLogger {
 
   /// [call] method is a special method in Dart that, when defined,
   /// allows instances of the class to be invoked like functions.
-  void call(Object? s) => stdout.writeln(msg(s));
+  void call(Object? s) => stdout.writeln(_msg(s));
 
-  void error(Object? s) => stderr.writeln('\x1B[31m${msg(s)}\x1B[0m');
+  void error(Object? obj) => stderr.writeln(_red(_msg(obj)));
 
-  String msg(Object? s) => '${TimeHelpers.timestamp} $prefix: $s';
+  String _msg(Object? s) => '${TimeHelpers.timestamp} $prefix: $s';
+
+  static const String _redColor = '\x1B[31m';
+  static const String _defaultColor = '\x1B[0m';
+
+  String _red(String string) => '$_redColor$string$_defaultColor';
 }
