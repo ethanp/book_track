@@ -104,21 +104,11 @@ class BookDetailButtons extends ConsumerWidget {
       title: 'Remove',
       subtitle: 'Remove book from app',
       icon: Icons.delete_forever_outlined,
-      onPressed: () {
-        showBookActionDialog(
-          ref.context,
-          book.book.title,
-          () {
-            // We explicitly use `then` (instead of `await`) to ensure the
-            // context.pop happens on the same thread as this callback was
-            // called on.
-            SupabaseLibraryService.remove(book)
-                .then((_) => ref.invalidate(userLibraryProvider));
-            ref.context.pop();
-          },
-          'remove',
-        );
-      },
+      onPressed: () => showBookActionDialog(
+        ref: ref,
+        actionName: 'remove',
+        onConfirm: SupabaseLibraryService.remove,
+      ),
       backgroundColor: Colors.red[300]!.withOpacity(.6),
       dense: dense,
     );
@@ -129,20 +119,11 @@ class BookDetailButtons extends ConsumerWidget {
       title: 'Archive',
       subtitle: 'Hide from home screen',
       icon: Icons.archive,
-      onPressed: () {
-        showBookActionDialog(
-          ref.context,
-          book.book.title,
-          () {
-            // Using `then` (instead of `await`) ensures context.pop() happens
-            // on the same thread as this callback.
-            SupabaseLibraryService.archive(book)
-                .then((_) => ref.invalidate(userLibraryProvider));
-            ref.context.pop();
-          },
-          'archive',
-        );
-      },
+      onPressed: () => showBookActionDialog(
+        ref: ref,
+        actionName: 'archive',
+        onConfirm: SupabaseLibraryService.archive,
+      ),
       backgroundColor: Colors.orange[300]!.withOpacity(.6),
       dense: dense,
     );
@@ -169,39 +150,54 @@ class BookDetailButtons extends ConsumerWidget {
     );
   }
 
-  static void showBookActionDialog(
-    BuildContext context,
-    String bookTitle,
-    VoidCallback onConfirm,
-    String name,
-  ) =>
+  void showBookActionDialog({
+    required WidgetRef ref,
+    required String actionName,
+    required Future<void> Function(LibraryBook) onConfirm,
+  }) =>
       showCupertinoDialog(
-        context: context,
+        context: ref.context,
         builder: (BuildContext context) {
           return CupertinoAlertDialog(
-            title: Text('${name.capitalize} Book'),
+            title: Text('${actionName.capitalize} Book'),
             content: Text(
-              'Are you sure you want to $name "$bookTitle" from your library?',
+              'Are you sure you want to $actionName "${book.book.title}" from your library?',
             ),
             actions: [
-              CupertinoDialogAction(
-                onPressed: () => Navigator.pop(context),
-                isDefaultAction: true,
-                child: Text('Cancel'),
-              ),
-              CupertinoDialogAction(
-                onPressed: () {
-                  Navigator.pop(context);
-                  onConfirm();
-                },
-                isDestructiveAction: true,
-                child: Text(
-                  name.capitalize,
-                  style: TextStyle(color: CupertinoColors.destructiveRed),
-                ),
-              ),
+              cancelButton(context),
+              confirmButton(ref, onConfirm, actionName),
             ],
           );
         },
       );
+
+  CupertinoDialogAction confirmButton(
+    WidgetRef ref,
+    Future<void> Function(LibraryBook) onConfirm,
+    String actionName,
+  ) {
+    return CupertinoDialogAction(
+      onPressed: () {
+        Navigator.pop(ref.context);
+        onConfirm(book)
+            // Using `then` (instead of `await`) ensures context.pop()
+            // happens on the same thread as this callback.
+            .then((_) => ref.invalidate(userLibraryProvider));
+        ref.context.pop();
+      },
+      isDestructiveAction: true,
+      child: Text(
+        actionName.capitalize,
+        style: TextStyle(color: CupertinoColors.destructiveRed),
+      ),
+    );
+  }
+
+  CupertinoDialogAction cancelButton(BuildContext context) {
+    return CupertinoDialogAction(
+      onPressed: () => Navigator.pop(context),
+      isDefaultAction: true,
+      child: Text('Cancel'),
+    );
+  }
 }

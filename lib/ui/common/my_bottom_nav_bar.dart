@@ -18,21 +18,21 @@ class MyBottomNavBar extends ConsumerWidget {
       page: MyLibraryPage(),
       item: BottomNavigationBarItem(
         icon: Icon(Icons.book),
-        label: 'Session',
+        label: 'Library',
       ),
     ),
     BottomNavBarElement(
       page: CupertinoPageScaffold(
         navigationBar: CupertinoNavigationBar(
-          middle: Text('Progress'),
+          middle: Text('Stats'),
         ),
         // TODO make it cupertino style.
         // bottomNavigationBar: MyBottomNavBar(),
-        child: Text('Progress page does not exist yet'),
+        child: Text('Stats page does not exist yet'),
       ),
       item: BottomNavigationBarItem(
         icon: Icon(Icons.ssid_chart),
-        label: 'Progress',
+        label: 'Stats',
       ),
     ),
   ];
