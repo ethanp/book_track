@@ -43,6 +43,8 @@ class SupabaseStatusService {
 }
 
 class _SupaStatus {
+  // static final SimpleLogger log = SimpleLogger(prefix: '_SupaStatus');
+
   int get supaId => rawData[supaIdCol];
   static final String supaIdCol = 'id';
 
@@ -55,8 +57,11 @@ class _SupaStatus {
   DateTime get time => DateTime.parse(rawData[timeCol]);
   static final String timeCol = 'time';
 
-  ReadingStatus get status => (rawData[statusCol] as String?)
-      .map((str) => ReadingStatus.values.firstWhere((v) => v.name == str))!;
+  ReadingStatus get status => (rawData[statusCol] as String?).map((str) {
+        // Backward compatibility.
+        if (str == 'completed') return ReadingStatus.finished;
+        return ReadingStatus.values.firstWhere((v) => v.name == str);
+      })!;
   static final String statusCol = 'status';
 
   int get libraryBookId => rawData[libraryBookIdCol];

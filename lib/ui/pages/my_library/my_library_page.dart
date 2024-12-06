@@ -30,13 +30,15 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
 
   Widget pageBody() {
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ref.watch(userLibraryProvider).when(
-              loading: loadingScreen,
-              error: errorScreen,
-              data: userLibraryByStatus,
-            ),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: ref.watch(userLibraryProvider).when(
+                loading: loadingScreen,
+                error: errorScreen,
+                data: userLibraryByStatus,
+              ),
+        ),
       ),
     );
   }
@@ -75,10 +77,11 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     //   the past year (and varying and customizable periods).
     // TODO(feature) add an indicator of pages read in the past week, and a chart
     //  of pages read per week, across time.
+    final liveBooks = fullLibrary.where((b) => !b.archived);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: ReadingStatus.values.mapL(
-        (readingStatus) => statusSection(readingStatus, fullLibrary),
+        (readingStatus) => statusSection(readingStatus, liveBooks),
       ),
     );
   }

@@ -30,7 +30,10 @@ class BookDetailButtons extends ConsumerWidget {
     ref.watch(userLibraryProvider);
 
     final List<Widget> children = completed
-        ? [remove(ref)]
+        ? [
+            archive(ref),
+            remove(ref),
+          ]
         : [
             updateProgress(ref),
             startSession(context),
@@ -102,7 +105,7 @@ class BookDetailButtons extends ConsumerWidget {
       subtitle: 'Remove book from app',
       icon: Icons.delete_forever_outlined,
       onPressed: () {
-        showRemoveBookDialog(
+        showBookActionDialog(
           ref.context,
           book.book.title,
           () {
@@ -113,9 +116,34 @@ class BookDetailButtons extends ConsumerWidget {
                 .then((_) => ref.invalidate(userLibraryProvider));
             ref.context.pop();
           },
+          'remove',
         );
       },
       backgroundColor: Colors.red[300]!.withOpacity(.6),
+      dense: dense,
+    );
+  }
+
+  Widget archive(WidgetRef ref) {
+    return BookDetailButton(
+      title: 'Archive',
+      subtitle: 'Hide from home screen',
+      icon: Icons.archive,
+      onPressed: () {
+        showBookActionDialog(
+          ref.context,
+          book.book.title,
+          () {
+            // Using `then` (instead of `await`) ensures context.pop() happens
+            // on the same thread as this callback.
+            SupabaseLibraryService.archive(book)
+                .then((_) => ref.invalidate(userLibraryProvider));
+            ref.context.pop();
+          },
+          'archive',
+        );
+      },
+      backgroundColor: Colors.orange[300]!.withOpacity(.6),
       dense: dense,
     );
   }
@@ -141,18 +169,19 @@ class BookDetailButtons extends ConsumerWidget {
     );
   }
 
-  static void showRemoveBookDialog(
+  static void showBookActionDialog(
     BuildContext context,
     String bookTitle,
     VoidCallback onConfirm,
+    String name,
   ) =>
       showCupertinoDialog(
         context: context,
         builder: (BuildContext context) {
           return CupertinoAlertDialog(
-            title: Text('Remove Book'),
+            title: Text('${name.capitalize} Book'),
             content: Text(
-              'Are you sure you want to remove "$bookTitle" from your library?',
+              'Are you sure you want to $name "$bookTitle" from your library?',
             ),
             actions: [
               CupertinoDialogAction(
@@ -167,7 +196,7 @@ class BookDetailButtons extends ConsumerWidget {
                 },
                 isDestructiveAction: true,
                 child: Text(
-                  'Remove',
+                  name.capitalize,
                   style: TextStyle(color: CupertinoColors.destructiveRed),
                 ),
               ),

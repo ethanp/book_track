@@ -10,6 +10,7 @@ class LibraryBook {
     this.statusHistory,
     this.bookFormat,
     this.bookLength,
+    this.archived,
   );
 
   final int supaId;
@@ -21,6 +22,8 @@ class LibraryBook {
   /// Only if [bookFormat] is [BookFormat.audiobook], then this represents the
   /// number of minutes in the audiobook.
   final int? bookLength;
+
+  final bool archived;
 
   DateTime get startTime => progressHistory.first.end;
 
