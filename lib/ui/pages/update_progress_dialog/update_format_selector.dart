@@ -46,11 +46,11 @@ class UpdateFormatSelector extends StatelessWidget {
 
   List<ButtonSegment<ProgressEventFormat>> segments() {
     final Map<ProgressEventFormat, String> formatLabels = {
-      ProgressEventFormat.percent: '%',
       if (book.bookFormat == BookFormat.audiobook)
         ProgressEventFormat.minutes: 'audio hh:mm'
       else
         ProgressEventFormat.pageNum: 'pages',
+      ProgressEventFormat.percent: '%',
     };
     return formatLabels.entries.mapL((format) => ButtonSegment(
         value: format.key,

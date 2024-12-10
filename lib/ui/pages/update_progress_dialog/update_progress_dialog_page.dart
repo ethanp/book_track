@@ -41,7 +41,6 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
         initialEndTime: initialEndTime,
       ),
     );
-    log('res was $res ${res.runtimeType}');
     if (res ?? false) ref.invalidate(userLibraryProvider);
     return false; // <- This means *don't* remove the book from the ListView.
   }
@@ -58,7 +57,6 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
         progressEvent: progressEvent,
       ),
     );
-    log('res was $res ${res.runtimeType}');
     if (res ?? false) ref.invalidate(userLibraryProvider);
   }
 }

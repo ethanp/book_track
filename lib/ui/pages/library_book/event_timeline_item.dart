@@ -63,9 +63,12 @@ class EventTimelineItem extends ConsumerWidget {
 
   Widget eventInfo() {
     return switch (readingEvent) {
-      StatusEvent(:final status) => Text('Status: ${status.name}'),
-      ProgressEvent(:final progress, :final format) =>
-        Text('Progress: $progress ${format.name}'),
+      StatusEvent ev => Text('Status: ${ev.status.name}'),
+      ProgressEvent ev => () {
+          final progressString = libraryBook.bookProgressString(ev);
+          final percentString = libraryBook.percentProgressAt(ev)?.floor();
+          return Text('Progress: $progressString ($percentString%)');
+        }(),
       _ => throw UnsupportedError(
           'Unknown reading event type: ${readingEvent.runtimeType}')
     };
