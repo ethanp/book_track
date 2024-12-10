@@ -27,9 +27,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
   Widget build(BuildContext context) {
     updateTimer();
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text('Session'),
-      ),
+      navigationBar: CupertinoNavigationBar(middle: Text('Session')),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(top: 40),
@@ -38,7 +36,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
             SizedBox(height: 30),
             toggleButtons(),
             SizedBox(height: 80),
-            sessionsToday(),
+            progressHistory(),
           ]),
         ),
       ),
@@ -173,7 +171,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
     return '$minutes:$seconds';
   }
 
-  Widget sessionsToday() {
+  Widget progressHistory() {
     final List<ProgressEvent> progressEvents = widget.book.progressHistory;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -192,7 +190,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
                 columnWidths: {0: FixedColumnWidth(110)},
                 children: progressEvents.mapL((ev) {
                   final percentage =
-                      widget.book.percentProgressAt(ev)?.floor() ?? '?';
+                      widget.book.intPercentProgressAt(ev) ?? '?';
                   return TableRow(children: [
                     Text(TimeHelpers.monthDayYear(ev.end)),
                     Text(TimeHelpers.hourMinuteAmPm(ev.end)),

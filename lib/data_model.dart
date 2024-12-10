@@ -47,17 +47,18 @@ class LibraryBook {
   ReadingStatus get readingStatus =>
       statusHistory.lastOrNull?.status ?? ReadingStatus.reading;
 
-  double? get progressPercentage {
+  int? get progressPercentage {
     if (readingStatus == ReadingStatus.finished) return 100;
     if (progressHistory.lastOrNull == null) return null;
-    return percentProgressAt(progressHistory.last);
+    return intPercentProgressAt(progressHistory.last);
   }
+
+  int? intPercentProgressAt(ProgressEvent p) => percentProgressAt(p)?.floor();
 
   /// Eg. if the book is 50% complete, this method will return `50`.
   double? percentProgressAt(ProgressEvent p) {
-    final double progress = p.progress.toDouble();
-    if (p.format == ProgressEventFormat.percent) return progress;
-    return bookLength.map((length) => 100 * progress / length);
+    if (p.format == ProgressEventFormat.percent) return p.progress.toDouble();
+    return bookLength.map((len) => 100.0 * p.progress / len);
   }
 
   int? parseLengthText(String text) {

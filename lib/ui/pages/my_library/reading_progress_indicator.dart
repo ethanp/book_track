@@ -15,9 +15,8 @@ class ReadingProgressIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    log('building');
     ref.watch(userLibraryProvider);
-    final double? progressPercentage = book.progressPercentage;
+    final int? progressPercentage = book.progressPercentage;
     if (progressPercentage == null) {
       // Nothing to show.
       return SizedBox.shrink();
@@ -29,7 +28,7 @@ class ReadingProgressIndicator extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           progressBar(width),
-          Text('${progressPercentage.floor()}%'),
+          Text('$progressPercentage%'),
         ],
       ),
     );

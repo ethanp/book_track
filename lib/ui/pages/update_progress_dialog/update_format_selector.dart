@@ -37,11 +37,11 @@ class UpdateFormatSelector extends StatelessWidget {
   }
 
   static WidgetStateProperty<Color?> ifSelected(
-    Color? blue, {
+    Color? selectedColor, {
     required Color? otw,
   }) =>
       WidgetStateProperty.resolveWith(
-        (states) => states.contains(WidgetState.selected) ? blue : otw,
+        (states) => states.contains(WidgetState.selected) ? selectedColor : otw,
       );
 
   List<ButtonSegment<ProgressEventFormat>> segments() {

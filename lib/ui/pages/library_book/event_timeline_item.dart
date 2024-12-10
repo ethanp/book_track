@@ -26,36 +26,33 @@ class EventTimelineItem extends ConsumerWidget {
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.only(left: 12, top: 6, bottom: 6),
-        child: content(ref),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [dateTimeString(), eventInfo()],
+            ),
+            IconButton(
+              onPressed: () => update(ref),
+              icon: Icon(Icons.edit_note, size: 28),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget content(WidgetRef ref) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [dateTimeString(), eventInfo()],
-        ),
-        IconButton(
-          onPressed: () async {
-            if (readingEvent is ProgressEvent) {
-              await UpdateProgressDialogPage.update(
-                ref,
-                libraryBook,
-                readingEvent as ProgressEvent,
-              );
-            } else {
-              // TODO(feature) Show a similar modal, but for status updates,
-              //  so you can update the datetime or delete only.
-            }
-          },
-          icon: Icon(Icons.edit_note, size: 28),
-        ),
-      ],
-    );
+  Future<void> update(WidgetRef ref) async {
+    return switch (readingEvent) {
+      ProgressEvent ev =>
+        await UpdateProgressDialogPage.update(ref, libraryBook, ev),
+      StatusEvent _ =>
+        // TODO(feature) Show a similar modal, but for status updates,
+        //  so you can update the datetime or delete only.
+        'a',
+      _ => log('unknown event ${readingEvent.runtimeType} $readingEvent'),
+    };
   }
 
   Widget dateTimeString() =>
@@ -66,7 +63,7 @@ class EventTimelineItem extends ConsumerWidget {
       StatusEvent ev => Text('Status: ${ev.status.name}'),
       ProgressEvent ev => () {
           final progressString = libraryBook.bookProgressString(ev);
-          final percentString = libraryBook.percentProgressAt(ev)?.floor();
+          final percentString = libraryBook.intPercentProgressAt(ev);
           return Text('Progress: $progressString ($percentString%)');
         }(),
       _ => throw UnsupportedError(
