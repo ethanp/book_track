@@ -65,8 +65,8 @@ class _UpdateProgressDialogState
     extends ConsumerState<UpdateProgressDialogPage> {
   String _textFieldInput = '';
 
-  ProgressEventFormat _selectedProgressEventFormat =
-      ProgressEventFormat.percent;
+  late ProgressEventFormat _selectedProgressEventFormat =
+      widget.book.defaultProgressFormat;
   DateTime _selectedEndTime = DateTime.now();
 
   @override

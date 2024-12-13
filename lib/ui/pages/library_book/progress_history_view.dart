@@ -12,6 +12,7 @@ import 'timespan.dart';
 
 class ProgressHistoryView extends ConsumerStatefulWidget {
   const ProgressHistoryView(this.useLocalInstead);
+
   final LibraryBook useLocalInstead;
 
   @override
@@ -38,46 +39,50 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
       // TODO(ui) improve the understandability of what this is saying.
       return Text('book length unknown');
     }
-    return Column(children: [
-      Text('History', style: TextStyles().h1),
-      if (_latestBook.progressHistory.isEmpty)
-        Text('No progress updates yet')
-      else
-        SizedBox(
-            height: 300,
-            child: ref.watch(userLibraryProvider).when(
-                loading: () => const CircularProgressIndicator(),
-                error: (err, trace) => Text(err.toString()),
-                data: body))
-    ]);
+    return Card(
+      margin: EdgeInsets.only(left: 16, right: 16, top: 28),
+      color: Colors.grey[100],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Column(children: [
+          Text('History', style: TextStyles().h1),
+          if (_latestBook.progressHistory.isEmpty)
+            Text('No progress updates yet')
+          else
+            SizedBox(
+                height: 300,
+                child: ref.watch(userLibraryProvider).when(
+                    loading: () => const CircularProgressIndicator(),
+                    error: (err, trace) => Text(err.toString()),
+                    data: body))
+        ]),
+      ),
+    );
   }
 
   Widget? body(List<LibraryBook> library) {
-    final Widget deletedNote = Text(
-      'The book ${widget.useLocalInstead.book.title} was deleted from '
-      'user\'s library. We probably have to pop this screen '
-      'now?',
-    );
     final LibraryBook? updatedBook = library
         .where((book) => book.supaId == widget.useLocalInstead.supaId)
         .singleOrNull;
-    updatedBook.map((book) => _latestBook = book);
-    return updatedBook.map(content) ?? deletedNote;
-  }
-
-  Widget content(LibraryBook updatedBook) {
-    final eventTimes = updatedBook.progressHistory.mapL((e) => e.end);
-    final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
-    final widget = Padding(
+    if (updatedBook == null) {
+      return Text(
+        'The book ${widget.useLocalInstead.book.title} was deleted from '
+        'user\'s library. We probably have to pop this screen '
+        'now?',
+      );
+    }
+    _latestBook = updatedBook;
+    return Padding(
       padding: const EdgeInsets.only(right: 24, bottom: 12, left: 4, top: 8),
-      child: lineChart(timespan),
+      child: lineChart(),
     );
-    return widget;
   }
 
   static final double horizontalInterval = 25;
 
-  LineChart lineChart(TimeSpan timespan) {
+  LineChart lineChart() {
+    final eventTimes = _latestBook.progressHistory.mapL((e) => e.end);
+    final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
     return LineChart(
       LineChartData(
         minY: 0,
@@ -110,18 +115,11 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
     );
   }
 
-  static double? verticalInterval(TimeSpan timespan) {
-    final Duration? intervalDuration =
-        timespan.duration < Duration(hours: 10) ? null : Duration(minutes: 30);
-    return intervalDuration?.inMilliseconds.toDouble();
-  }
-
   static FlTitlesData labelAxes(TimeSpan timespan) {
     return FlTitlesData(
       leftTitles: percentageAxisTitles(shiftTitle: Offset(20, -10)),
       rightTitles: noAxisTitles,
-      bottomTitles:
-          DateAxis(timespan, verticalInterval(timespan)).dateAxisTitles(),
+      bottomTitles: DateAxis(timespan).titles(),
       topTitles: noAxisTitles,
     );
   }

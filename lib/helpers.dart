@@ -26,7 +26,7 @@ class FlutterHelpers {
 }
 
 class TimeHelpers {
-  static final monthDayYear = DateFormat('MMM d, y').format;
+  static final monthDayYear = DateFormat('MM/dd/yy').format;
   static final hourMinuteAmPm = DateFormat('h:mma').format;
   static final dateAndTime = DateFormat('MM/dd/yy h:mma').format;
 

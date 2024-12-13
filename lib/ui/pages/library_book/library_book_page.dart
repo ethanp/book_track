@@ -2,7 +2,6 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'book_detail_buttons.dart';
@@ -47,22 +46,11 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
             children: [
               BookPropertiesEditor(_libraryBook),
               BookDetailButtons(book: _libraryBook),
-              historyChart(),
+              ProgressHistoryView(_libraryBook),
               eventTimeline(),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget historyChart() {
-    return Card(
-      margin: EdgeInsets.only(left: 16, right: 16, top: 28),
-      color: Colors.grey[100],
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: ProgressHistoryView(_libraryBook),
       ),
     );
   }
@@ -73,8 +61,7 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
   Widget eventTimeline() {
     return Padding(
       padding: const EdgeInsets.all(18),
-      child: ListView(
-        shrinkWrap: true,
+      child: Column(
         children: eventsByTimeAscending()
             .mapL((e) => EventTimelineItem(_libraryBook, e)),
       ),

@@ -6,12 +6,11 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class DateAxis {
-  const DateAxis(this.timespan, this.verticalInterval);
+  const DateAxis(this.timespan);
 
   final TimeSpan timespan;
-  final double? verticalInterval;
 
-  AxisTitles dateAxisTitles() {
+  AxisTitles titles() {
     return AxisTitles(
       axisNameWidget: dateAxisName(),
       sideTitles: dateAxisSideTitles(),
@@ -44,8 +43,8 @@ class DateAxis {
     return SideTitles(
       showTitles: true,
       reservedSize: 36,
-      interval: verticalInterval,
-      getTitlesWidget: (double value, TitleMeta meta) {
+      interval: verticalInterval.inMilliseconds.toDouble(),
+      getTitlesWidget: (double value, TitleMeta _) {
         return FlutterHelpers.transform(
           shift: Offset(8, 0),
           angleDegrees: 35,
@@ -55,8 +54,18 @@ class DateAxis {
     );
   }
 
+  Duration get verticalInterval {
+    if (timespan.duration < Duration(hours: 10)) {
+      return Duration(minutes: 30);
+    } else if (timespan.duration < Duration(days: 1)) {
+      return Duration(hours: 3);
+    } else {
+      return Duration(days: 1);
+    }
+  }
+
   Widget dateText(double value) {
-    final formatter = timespan.duration > Duration(days: 2)
+    final formatter = verticalInterval >= Duration(days: 1)
         ? TimeHelpers.monthDayYear
         : TimeHelpers.hourMinuteAmPm;
     final dateTime = DateTime.fromMillisecondsSinceEpoch(value.floor());

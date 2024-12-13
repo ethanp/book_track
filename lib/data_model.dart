@@ -25,6 +25,12 @@ class LibraryBook {
 
   final bool archived;
 
+  ProgressEventFormat get defaultProgressFormat => switch (bookFormat) {
+        null => ProgressEventFormat.percent,
+        BookFormat.audiobook => ProgressEventFormat.minutes,
+        _ => ProgressEventFormat.pageNum,
+      };
+
   DateTime get startTime => progressHistory.first.end;
 
   String get _suffix => switch (bookFormat) {
