@@ -33,6 +33,11 @@ class SupabaseProgressService {
         .captureStackTraceOnError();
     return queryResults.mapL((result) => _SupaProgress(result).toProgressEvent);
   }
+
+  static Future<void> delete(ProgressEvent ev) async => await _progressClient
+      .delete()
+      .eq(_SupaProgress.supaIdCol, ev.supaId)
+      .captureStackTraceOnError();
 }
 
 class _SupaProgress {
@@ -43,11 +48,15 @@ class _SupaProgress {
   // static SimpleLogger log = SimpleLogger(prefix: '_SupaProgress');
 
   ProgressEvent get toProgressEvent => ProgressEvent(
+        supaId: supaId,
         end: endSafe,
         progress: progress,
         format: format,
         start: start,
       );
+
+  int get supaId => rawData[supaIdCol];
+  static final String supaIdCol = 'id';
 
   /// Returns [createdAt] in device-local timezone.
   /// Original field set by Postgres to UTC.

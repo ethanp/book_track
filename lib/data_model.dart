@@ -90,11 +90,19 @@ abstract class ReadingEvent {
   DateTime get dateTime;
 
   int get dateTimeMillis => dateTime.millisecondsSinceEpoch;
+
+  int get supaId;
 }
 
 class StatusEvent extends ReadingEvent {
-  const StatusEvent({required this.time, required this.status});
+  const StatusEvent({
+    required this.supaId,
+    required this.time,
+    required this.status,
+  });
 
+  @override
+  final int supaId;
   final DateTime time;
   final ReadingStatus status;
 
@@ -107,12 +115,15 @@ class StatusEvent extends ReadingEvent {
 
 class ProgressEvent extends ReadingEvent {
   const ProgressEvent({
+    required this.supaId,
     required this.end,
     required this.progress,
     required this.format,
     this.start,
   });
 
+  @override
+  final int supaId;
   final int progress;
   final DateTime? start;
   final DateTime end;

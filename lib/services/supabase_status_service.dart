@@ -34,12 +34,18 @@ class SupabaseStatusService {
         .captureStackTraceOnError();
     final supaStatus = queryResults.map(_SupaStatus.new);
     final statuses = supaStatus.mapL((supaStatus) => StatusEvent(
+          supaId: supaStatus.supaId,
           time: supaStatus.time,
           status: supaStatus.status,
         ));
     statuses.sort((a, b) => a.time.difference(b.time).inSeconds);
     return statuses;
   }
+
+  static Future<void> delete(StatusEvent ev) async => await _statusClient
+      .delete()
+      .eq(_SupaStatus.supaIdCol, ev.supaId)
+      .captureStackTraceOnError();
 }
 
 class _SupaStatus {

@@ -1,6 +1,8 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
+import 'package:book_track/services/supabase_progress_service.dart';
+import 'package:book_track/services/supabase_status_service.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -76,14 +78,11 @@ class _EventTimelineItem extends ConsumerWidget {
     );
   }
 
-  Future<void> delete(WidgetRef ref) async {
-    return switch (readingEvent) {
-      // TODO(high priority feature) implement.
-      ProgressEvent _ => 'b',
-      StatusEvent _ => 'a',
-      _ => log('unknown event ${readingEvent.runtimeType} $readingEvent'),
-    };
-  }
+  Future<void> delete(WidgetRef ref) async => switch (readingEvent) {
+        ProgressEvent ev => await SupabaseProgressService.delete(ev),
+        StatusEvent ev => await SupabaseStatusService.delete(ev),
+        _ => log('unknown event ${readingEvent.runtimeType} $readingEvent'),
+      };
 
   Future<void> update(WidgetRef ref) async {
     return switch (readingEvent) {
