@@ -59,12 +59,10 @@ class SupabaseLibraryService {
           .eq(_SupaLibrary.supaIdCol, book.supaId)
           .captureStackTraceOnError();
 
-  // TODO(feature) Implement unarchive (ie. remove from archive)
-  static Future<void> archive(LibraryBook book, {bool? unarchive}) async =>
-      await _libraryClient
-          .update({_SupaLibrary.archivedCol: !(unarchive ?? false)})
-          .eq(_SupaLibrary.supaIdCol, book.supaId)
-          .captureStackTraceOnError();
+  static Future<void> archive(LibraryBook book) async => await _libraryClient
+      .update({_SupaLibrary.archivedCol: !book.archived})
+      .eq(_SupaLibrary.supaIdCol, book.supaId)
+      .captureStackTraceOnError();
 
   static Future<List<_SupaLibrary>> _forLoggedInUser() async {
     final PostgrestList rawData = await _libraryClient

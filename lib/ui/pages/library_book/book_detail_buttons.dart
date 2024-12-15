@@ -115,13 +115,14 @@ class BookDetailButtons extends ConsumerWidget {
   }
 
   Widget archive(WidgetRef ref) {
+    final String actionName = book.archived ? 'unarchive' : 'archive';
     return BookDetailButton(
-      title: 'Archive',
-      subtitle: 'Hide from home screen',
+      title: actionName,
+      subtitle: '${book.archived ? 'Show on' : 'Hide from'} home screen',
       icon: Icons.archive,
       onPressed: () => showBookActionDialog(
         ref: ref,
-        actionName: 'archive',
+        actionName: actionName,
         onConfirm: SupabaseLibraryService.archive,
       ),
       backgroundColor: Colors.orange[300]!.withValues(alpha: .6),

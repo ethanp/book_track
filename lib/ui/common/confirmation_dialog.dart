@@ -23,14 +23,12 @@ class ConfirmationDialog extends ConsumerWidget {
     required Future<void> Function() onConfirm,
   }) =>
       showCupertinoDialog(
-        context: context,
-        builder: (_) => ConfirmationDialog(
-          text: text,
-          title: title,
-          actionName: actionName,
-          onConfirm: onConfirm,
-        ),
-      );
+          context: context,
+          builder: (_) => ConfirmationDialog(
+              text: text,
+              title: title,
+              actionName: actionName,
+              onConfirm: onConfirm));
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,7 +39,7 @@ class ConfirmationDialog extends ConsumerWidget {
     );
   }
 
-  CupertinoDialogAction confirmButton(WidgetRef ref) {
+  Widget confirmButton(WidgetRef ref) {
     return CupertinoDialogAction(
       onPressed: () {
         Navigator.pop(ref.context);
@@ -55,7 +53,7 @@ class ConfirmationDialog extends ConsumerWidget {
     );
   }
 
-  CupertinoDialogAction cancelButton(BuildContext context) {
+  Widget cancelButton(BuildContext context) {
     return CupertinoDialogAction(
       onPressed: () => Navigator.pop(context),
       isDefaultAction: true,
