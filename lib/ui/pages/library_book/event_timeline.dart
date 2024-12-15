@@ -66,10 +66,23 @@ class _EventTimelineItem extends ConsumerWidget {
               onPressed: () => update(ref),
               icon: Icon(Icons.edit_note, size: 28),
             ),
+            IconButton(
+              onPressed: () => delete(ref),
+              icon: Icon(Icons.delete, size: 28),
+            )
           ],
         ),
       ),
     );
+  }
+
+  Future<void> delete(WidgetRef ref) async {
+    return switch (readingEvent) {
+      // TODO(high priority feature) implement.
+      ProgressEvent _ => 'b',
+      StatusEvent _ => 'a',
+      _ => log('unknown event ${readingEvent.runtimeType} $readingEvent'),
+    };
   }
 
   Future<void> update(WidgetRef ref) async {

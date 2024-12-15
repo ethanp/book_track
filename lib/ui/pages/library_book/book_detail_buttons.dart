@@ -5,9 +5,9 @@ import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_library_service.dart';
 import 'package:book_track/services/supabase_progress_service.dart';
 import 'package:book_track/services/supabase_status_service.dart';
+import 'package:book_track/ui/common/confirmation_dialog.dart';
 import 'package:book_track/ui/pages/session_timer/session_timer_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -64,7 +64,7 @@ class BookDetailButtons extends ConsumerWidget {
       subtitle: 'Sync with reality',
       icon: Icons.list_alt_outlined,
       onPressed: () => UpdateProgressDialogPage.show(ref, book),
-      backgroundColor: Colors.pink[100]!.withOpacity(.75),
+      backgroundColor: Colors.pink[100]!.withValues(alpha: .75),
       dense: dense,
     );
   }
@@ -83,7 +83,7 @@ class BookDetailButtons extends ConsumerWidget {
         );
         ref.invalidate(userLibraryProvider);
       },
-      backgroundColor: Colors.green[300]!.withOpacity(.6),
+      backgroundColor: Colors.green[300]!.withValues(alpha: .6),
       dense: dense,
     );
   }
@@ -94,7 +94,7 @@ class BookDetailButtons extends ConsumerWidget {
       subtitle: 'Reading timer',
       icon: Icons.timer_outlined,
       onPressed: () => context.push(SessionTimerPage(book)),
-      backgroundColor: Colors.blue[100]!.withOpacity(0.7),
+      backgroundColor: Colors.blue[100]!.withValues(alpha: 0.7),
       dense: dense,
     );
   }
@@ -109,7 +109,7 @@ class BookDetailButtons extends ConsumerWidget {
         actionName: 'remove',
         onConfirm: SupabaseLibraryService.remove,
       ),
-      backgroundColor: Colors.red[300]!.withOpacity(.6),
+      backgroundColor: Colors.red[300]!.withValues(alpha: .6),
       dense: dense,
     );
   }
@@ -124,7 +124,7 @@ class BookDetailButtons extends ConsumerWidget {
         actionName: 'archive',
         onConfirm: SupabaseLibraryService.archive,
       ),
-      backgroundColor: Colors.orange[300]!.withOpacity(.6),
+      backgroundColor: Colors.orange[300]!.withValues(alpha: .6),
       dense: dense,
     );
   }
@@ -144,8 +144,8 @@ class BookDetailButtons extends ConsumerWidget {
         ref.invalidate(userLibraryProvider);
       },
       backgroundColor: abandoned
-          ? Colors.tealAccent[700]!.withOpacity(.2)
-          : Colors.orange[300]!.withOpacity(.6),
+          ? Colors.tealAccent[700]!.withValues(alpha: .2)
+          : Colors.orange[300]!.withValues(alpha: .6),
       dense: dense,
     );
   }
@@ -155,49 +155,18 @@ class BookDetailButtons extends ConsumerWidget {
     required String actionName,
     required Future<void> Function(LibraryBook) onConfirm,
   }) =>
-      showCupertinoDialog(
+      ConfirmationDialog.show(
         context: ref.context,
-        builder: (BuildContext context) {
-          return CupertinoAlertDialog(
-            title: Text('${actionName.capitalize} Book'),
-            content: Text(
-              'Are you sure you want to $actionName "${book.book.title}" from your library?',
-            ),
-            actions: [
-              cancelButton(context),
-              confirmButton(ref, onConfirm, actionName),
-            ],
-          );
+        text: 'Are you sure you want to $actionName '
+            '"${book.book.title}" from your library?',
+        title: '${actionName.capitalize} Book',
+        actionName: actionName,
+        onConfirm: () async {
+          onConfirm(book)
+              // Using `then` (instead of `await`) ensures context.pop()
+              // happens on the same thread as this callback.
+              .then((_) => ref.invalidate(userLibraryProvider));
+          ref.context.pop();
         },
       );
-
-  CupertinoDialogAction confirmButton(
-    WidgetRef ref,
-    Future<void> Function(LibraryBook) onConfirm,
-    String actionName,
-  ) {
-    return CupertinoDialogAction(
-      onPressed: () {
-        Navigator.pop(ref.context);
-        onConfirm(book)
-            // Using `then` (instead of `await`) ensures context.pop()
-            // happens on the same thread as this callback.
-            .then((_) => ref.invalidate(userLibraryProvider));
-        ref.context.pop();
-      },
-      isDestructiveAction: true,
-      child: Text(
-        actionName.capitalize,
-        style: TextStyle(color: CupertinoColors.destructiveRed),
-      ),
-    );
-  }
-
-  CupertinoDialogAction cancelButton(BuildContext context) {
-    return CupertinoDialogAction(
-      onPressed: () => Navigator.pop(context),
-      isDefaultAction: true,
-      child: Text('Cancel'),
-    );
-  }
 }
