@@ -1,11 +1,40 @@
 import 'package:book_track/data_model.dart';
+import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class EventTimelineItem extends ConsumerWidget {
-  const EventTimelineItem(this.libraryBook, this.readingEvent);
+class EventTimeline extends StatelessWidget {
+  const EventTimeline(this.libraryBook);
+
+  final LibraryBook libraryBook;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        children: eventsByTimeAscending()
+            .mapL((e) => _EventTimelineItem(libraryBook, e)),
+      ),
+    );
+  }
+
+  List<ReadingEvent> eventsByTimeAscending() {
+    final List<ReadingEvent> progresses =
+        // not sure why List.from is needed here but not for the status history.
+        List.from(libraryBook.progressHistory);
+    final List<ReadingEvent> statuses = libraryBook.statusHistory;
+    return (progresses + statuses)..sort(byTimeAscending);
+  }
+
+  int byTimeAscending(ReadingEvent a, ReadingEvent b) =>
+      a.dateTimeMillis - b.dateTimeMillis;
+}
+
+class _EventTimelineItem extends ConsumerWidget {
+  const _EventTimelineItem(this.libraryBook, this.readingEvent);
 
   final LibraryBook libraryBook;
   final ReadingEvent readingEvent;

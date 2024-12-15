@@ -1,12 +1,11 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'book_detail_buttons.dart';
 import 'book_properties_editor.dart';
-import 'event_timeline_item.dart';
+import 'event_timeline.dart';
 import 'progress_history_view.dart';
 
 class LibraryBookPage extends ConsumerStatefulWidget {
@@ -47,35 +46,11 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
               BookPropertiesEditor(_libraryBook),
               BookDetailButtons(book: _libraryBook),
               ProgressHistoryView(_libraryBook),
-              eventTimeline(),
+              EventTimeline(_libraryBook),
             ],
           ),
         ),
       ),
     );
   }
-
-  /// Event timeline:
-  ///  1. (done) Shows progress & status updates in time order
-  ///  2. TODO(feature) Allows updating/deleting each update
-  Widget eventTimeline() {
-    return Padding(
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        children: eventsByTimeAscending()
-            .mapL((e) => EventTimelineItem(_libraryBook, e)),
-      ),
-    );
-  }
-
-  List<ReadingEvent> eventsByTimeAscending() {
-    final List<ReadingEvent> progresses =
-        // not sure why List.from is needed here but not for the status history.
-        List.from(_libraryBook.progressHistory);
-    final List<ReadingEvent> statuses = _libraryBook.statusHistory;
-    return (progresses + statuses)..sort(byTimeAscending);
-  }
-
-  int byTimeAscending(ReadingEvent a, ReadingEvent b) =>
-      a.dateTimeMillis - b.dateTimeMillis;
 }

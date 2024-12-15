@@ -69,7 +69,9 @@ class DateAxis {
         ? TimeHelpers.monthDayYear
         : TimeHelpers.hourMinuteAmPm;
     final dateTime = DateTime.fromMillisecondsSinceEpoch(value.floor());
-    final dateString = formatter(dateTime);
-    return Text(dateString, style: TextStyle(letterSpacing: -.4, fontSize: 11));
+    return Text(
+      formatter(dateTime),
+      style: TextStyle(letterSpacing: -.4, fontSize: 11),
+    );
   }
 }
