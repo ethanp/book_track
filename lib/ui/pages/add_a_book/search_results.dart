@@ -26,20 +26,20 @@ class SearchResults extends ConsumerWidget {
       );
     }
     return Expanded(
-      child: Column(
-        children: [
-          ResultsCount(searchResult),
-          Expanded(
-            child: ListView(
-              children: searchResult.books.mapL((book) => item(book, ref)),
+      child: Column(children: [
+        ResultsCount(searchResult),
+        Expanded(
+          child: ListView(
+            children: searchResult.books.mapL(
+              (book) => resultBook(book, ref),
             ),
           ),
-        ],
-      ),
+        ),
+      ]),
     );
   }
 
-  Widget item(OpenLibraryBook book, WidgetRef ref) {
+  Widget resultBook(OpenLibraryBook book, WidgetRef ref) {
     return Container(
       margin: const EdgeInsets.all(1),
       child: CupertinoListTile(
