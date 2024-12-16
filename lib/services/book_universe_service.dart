@@ -59,7 +59,7 @@ class OpenLibraryBookUniverseRepository {
       fullResultCount: bodyJson['numFound'] ?? -777,
       books: await Future.wait(
         results.map(
-          (openLibBookDoc) async {
+          (dynamic openLibBookDoc) async {
             final List? authorNames = openLibBookDoc['author_name'];
             return OpenLibraryBook(
               openLibBookDoc['title'],

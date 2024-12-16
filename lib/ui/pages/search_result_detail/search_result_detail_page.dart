@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
@@ -10,6 +8,8 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'cover_art.dart';
 
 class SearchResultDetailPage extends ConsumerStatefulWidget {
   const SearchResultDetailPage(this.book);
@@ -35,7 +35,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(children: [
-            coverArt(),
+            CoverArt(widget.book),
             bookMetadata(),
             formatButtons(),
           ]),
@@ -68,11 +68,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
     return Padding(
       padding: const EdgeInsets.all(6),
       child: CupertinoButton(
-        onPressed: () async {
-          await addBookToLibrary(bookType);
-          if (mounted) context.popUntilFirst();
-          ref.invalidate(userLibraryProvider);
-        },
+        onPressed: () => addBookToLibrary(bookType),
         padding: const EdgeInsets.symmetric(horizontal: 6),
         color: switch (bookType) {
           BookFormat.audiobook => Colors.orange[400],
@@ -95,7 +91,11 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
     } catch (error, stack) {
       log('(${error.runtimeType}) $error $stack');
     } finally {
-      if (mounted) setState(() => _saving = false);
+      if (mounted) {
+        setState(() => _saving = false);
+        context.popUntilFirst();
+      }
+      ref.invalidate(userLibraryProvider);
     }
   }
 
@@ -107,70 +107,6 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
       if (widget.book.numPagesMedian != null)
         keyValueText('Pages (est): ', widget.book.numPagesMedian!.toString()),
     ]);
-  }
-
-  late final Future<Uint8List?> futureCoverArtMedSize;
-
-  @override
-  void initState() {
-    super.initState();
-    futureCoverArtMedSize =
-        BookUniverseService.downloadMedSizeCover(widget.book);
-  }
-
-  @override
-  void dispose() {
-    futureCoverArtMedSize.ignore();
-    super.dispose();
-  }
-
-  Widget coverArt() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: FutureBuilder(
-        future: futureCoverArtMedSize,
-        builder: (context, snapshot) {
-          // Show loading indicator while waiting for the data
-          // Render the image if data is not null
-          // Show a blank box if the data is null
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return coverArtMissingPlaceholder(loading: true);
-          } else if (snapshot.hasData && snapshot.data != null) {
-            return snapshot.data.map(Image.memory) ?? SizedBox.shrink();
-          } else {
-            return coverArtMissingPlaceholder(loading: false);
-          }
-        },
-      ),
-    );
-  }
-
-  Container coverArtMissingPlaceholder({required bool loading}) {
-    return Container(
-      height: 200,
-      width: 150,
-      margin: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Center(
-        child: loading
-            ? CircularProgressIndicator()
-            : SizedBox(
-                width: 110,
-                child: Text(
-                  'No cover art found',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-      ),
-    );
   }
 
   Widget keyValueText(String key, String value) {
