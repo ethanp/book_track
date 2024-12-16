@@ -30,6 +30,7 @@ class SupabaseProgressService {
         .select()
         .eq(_SupaProgress.libraryBookIdCol, bookId)
         .eq(_SupaProgress.userIdCol, SupabaseAuthService.loggedInUserId!)
+        .order(_SupaProgress.endCol)
         .captureStackTraceOnError();
     return queryResults.mapL((result) => _SupaProgress(result).toProgressEvent);
   }

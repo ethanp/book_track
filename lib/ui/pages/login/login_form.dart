@@ -1,18 +1,13 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/cupertino.dart';
 
-class LoginForm extends StatelessWidget {
-  const LoginForm(
-    this._emailController,
-    this._passwordController,
-    this._tokenController,
-    this._buttonPressed,
-  );
+import 'login_form_controllers.dart';
 
-  final TextEditingController _emailController;
-  final TextEditingController _passwordController;
-  final TextEditingController _tokenController;
-  final Future<void> Function() _buttonPressed;
+class LoginForm extends StatelessWidget {
+  const LoginForm(this.loginFormC, this.onSubmit);
+
+  final LoginFormControllers loginFormC;
+  final Future<void> Function() onSubmit;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +23,7 @@ class LoginForm extends StatelessWidget {
 
   Widget emailField() {
     return CupertinoTextFormFieldRow(
-      controller: _emailController,
+      controller: loginFormC.emailC,
       prefix: fieldPrefixText('Email'),
       placeholder: 'email',
       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -39,7 +34,7 @@ class LoginForm extends StatelessWidget {
   }
 
   Widget passwordField() => submittableField(
-        controller: _passwordController,
+        controller: loginFormC.passwordC,
         name: 'Password',
         obscureText: true,
         validator: (input) =>
@@ -47,7 +42,7 @@ class LoginForm extends StatelessWidget {
       );
 
   Widget tokenField() => submittableField(
-        controller: _tokenController,
+        controller: loginFormC.tokenC,
         name: 'Token (optional)',
         validator: (input) =>
             input == null || input.isEmpty || input.length == 6
@@ -66,7 +61,7 @@ class LoginForm extends StatelessWidget {
       placeholder: name,
       obscureText: obscureText,
       prefix: fieldPrefixText(name),
-      onFieldSubmitted: (_) => _buttonPressed(),
+      onFieldSubmitted: (_) => onSubmit(),
       // Show "done" button on keyboard
       textInputAction: TextInputAction.done,
       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -76,11 +71,15 @@ class LoginForm extends StatelessWidget {
   }
 
   Widget fieldPrefixText(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        color: CupertinoColors.systemFill,
-        fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: CupertinoColors.systemFill,
+        ),
       ),
     );
   }

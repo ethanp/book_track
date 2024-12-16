@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'login_form.dart';
+import 'login_form_controllers.dart';
 import 'sign_up_toggle.dart';
 
 class LoginPage extends StatefulWidget {
@@ -26,16 +27,8 @@ class _LoginPageState extends State<LoginPage> {
   String get _reverseSignUpText => !_isSignUpMode ? 'Sign Up' : 'Sign In';
   bool _processingSignIn = false;
   bool _redirectingToLoggedInApp = false;
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _tokenController = TextEditingController();
+  final LoginFormControllers loginFormC = LoginFormControllers();
   late final StreamSubscription<AuthState> _authStateSubscription;
-
-  String get emailInput => _emailController.text.trim();
-
-  String get passwordInput => _passwordController.text.trim();
-
-  String get tokenInput => _tokenController.text.trim();
 
   @override
   void initState() {
@@ -66,18 +59,15 @@ class _LoginPageState extends State<LoginPage> {
         child: Form(
           key: formKey,
           autovalidateMode: AutovalidateMode.always,
-          onChanged: () {
-            Form.maybeOf(primaryFocus!.context!)?.save();
-          },
+          // TODO(simplify) remove this? Not sure if it's used or not.
+          onChanged: () => Form.maybeOf(primaryFocus!.context!)?.save(),
           child: ListView(
-            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+            padding: const EdgeInsets.symmetric(
+              vertical: 18,
+              horizontal: 12,
+            ),
             children: [
-              LoginForm(
-                _emailController,
-                _passwordController,
-                _tokenController,
-                _doSignIn,
-              ),
+              LoginForm(loginFormC, _doSignIn),
               const SizedBox(height: 18),
               signInButton(),
               signInUpToggle(),
@@ -120,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> sendPasswordResetLink(BuildContext context) async {
     try {
-      await SupabaseAuthService.sentPasswordResetLink(emailInput);
+      await SupabaseAuthService.sentPasswordResetLink(loginFormC.emailInput);
       if (context.mounted) context.showSnackBar('Reset email sent');
     } catch (error) {
       if (context.mounted) {
@@ -130,13 +120,13 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _doSignIn() async {
-    if (tokenInput.isNotEmpty) return await updatePassword();
+    if (loginFormC.tokenInput.isNotEmpty) return await updatePassword();
     try {
       setState(() => _processingSignIn = true);
       final serviceFunc = _isSignUpMode
           ? SupabaseAuthService.signUp
           : SupabaseAuthService.signIn;
-      await serviceFunc(emailInput, passwordInput);
+      await serviceFunc(loginFormC.emailInput, loginFormC.passwordInput);
       if (mounted) context.showSnackBar('Success');
     } catch (error) {
       if (mounted) context.authError(error);
@@ -148,9 +138,9 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> updatePassword() async {
     try {
       await SupabaseAuthService.resetPassword(
-        emailInput: emailInput,
-        passwordInput: passwordInput,
-        tokenInput: tokenInput,
+        emailInput: loginFormC.emailInput,
+        passwordInput: loginFormC.passwordInput,
+        tokenInput: loginFormC.tokenInput,
       );
       if (mounted) context.showSnackBar('Password updated');
     } catch (e) {
@@ -161,9 +151,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    _tokenController.dispose();
+    loginFormC.dispose();
     _authStateSubscription.cancel();
     super.dispose();
   }
