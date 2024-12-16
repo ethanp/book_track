@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/main.dart';
 import 'package:book_track/services/supabase_auth_service.dart';
-import 'package:email_validator/email_validator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'login_form.dart';
 import 'sign_up_toggle.dart';
 
 class LoginPage extends StatefulWidget {
@@ -72,13 +72,11 @@ class _LoginPageState extends State<LoginPage> {
           child: ListView(
             padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
             children: [
-              CupertinoFormSection.insetGrouped(
-                header: const Text('Fill this out'),
-                children: [
-                  emailField(),
-                  passwordField(),
-                  tokenField(),
-                ],
+              LoginForm(
+                _emailController,
+                _passwordController,
+                _tokenController,
+                _doSignIn,
               ),
               const SizedBox(height: 18),
               signInButton(),
@@ -91,63 +89,9 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget emailField() {
-    return CupertinoTextFormFieldRow(
-      controller: _emailController,
-      prefix: fieldPrefixText('Email'),
-      placeholder: 'email',
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      validator: (value) =>
-          !EmailValidator.validate(value!) ? 'Incorrect email format' : null,
-      // decoration: textFieldDecoration(),
-    );
-  }
-
-  Widget passwordField() => submittableField(
-        controller: _passwordController,
-        name: 'Password',
-        validator: (value) =>
-            (value?.length ?? 0) < 6 ? 'Must have at least 6 characters' : null,
-      );
-
-  Widget tokenField() => submittableField(
-        controller: _tokenController,
-        name: 'Token (optional)',
-        validator: (value) =>
-            (value?.length ?? 0) != 6 ? 'Must have 6 numbers' : null,
-      );
-
-  CupertinoTextFormFieldRow submittableField({
-    required TextEditingController controller,
-    required String name,
-    required String? Function(String?) validator,
-  }) {
-    return CupertinoTextFormFieldRow(
-      controller: controller,
-      placeholder: name,
-      prefix: fieldPrefixText(name),
-      onFieldSubmitted: (_) => _buttonPressed(),
-      // Show "done" button on keyboard
-      textInputAction: TextInputAction.done,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      validator: validator,
-      // decoration: textFieldDecoration(),
-    );
-  }
-
-  Widget fieldPrefixText(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        color: Colors.grey[600],
-        fontWeight: FontWeight.bold,
-      ),
-    );
-  }
-
   Widget signInButton() {
     return ElevatedButton(
-      onPressed: _processingSignIn ? null : _buttonPressed,
+      onPressed: _processingSignIn ? null : _doSignIn,
       child: Text(_processingSignIn ? 'Processing...' : _signUpText),
     );
   }
@@ -185,7 +129,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> _buttonPressed() async {
+  Future<void> _doSignIn() async {
     if (tokenInput.isNotEmpty) return await updatePassword();
     try {
       setState(() => _processingSignIn = true);
@@ -208,11 +152,9 @@ class _LoginPageState extends State<LoginPage> {
         passwordInput: passwordInput,
         tokenInput: tokenInput,
       );
-      if (mounted) {
-        context.showSnackBar('Password updated, log in again.');
-      }
+      if (mounted) context.showSnackBar('Password updated');
     } catch (e) {
-      if (mounted) context.showSnackBar(e.toString());
+      if (mounted) context.showSnackBar("Couldn't update password: $e");
     }
     return;
   }
