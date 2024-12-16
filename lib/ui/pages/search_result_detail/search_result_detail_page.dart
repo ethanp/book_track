@@ -136,7 +136,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return coverArtMissingPlaceholder(loading: true);
           } else if (snapshot.hasData && snapshot.data != null) {
-            return Image.memory(snapshot.data!);
+            return snapshot.data.map(Image.memory) ?? SizedBox.shrink();
           } else {
             return coverArtMissingPlaceholder(loading: false);
           }

@@ -66,14 +66,22 @@ class _EventTimelineItem extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [dateTimeString(), eventInfo()],
             ),
-            IconButton(
-              onPressed: () => update(ref),
-              icon: Icon(Icons.edit_note, size: 28),
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () => update(ref),
+                  icon: Icon(Icons.edit_note, size: 28),
+                ),
+                IconButton(
+                  onPressed: () => delete(ref),
+                  icon: Icon(
+                    Icons.delete,
+                    size: 22,
+                    color: Colors.red[900],
+                  ),
+                ),
+              ],
             ),
-            IconButton(
-              onPressed: () => delete(ref),
-              icon: Icon(Icons.delete, size: 28),
-            )
           ],
         ),
       ),

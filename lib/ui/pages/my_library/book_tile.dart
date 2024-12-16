@@ -35,8 +35,10 @@ class BookTile extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 4),
             title: Text(book.book.title, style: TextStyles().title),
             subtitle: Text(book.book.author ?? 'Author unknown'),
-            leading: book.book.coverArtS.map(Image.memory) ??
-                Icon(Icons.question_mark),
+            leading: junkCover
+                ? Text('?')
+                : book.book.coverArtS.map(Image.memory) ??
+                    Icon(Icons.question_mark),
             trailing: ReadingProgressIndicator(book),
             onTap: () => context.push(LibraryBookPage(book)),
           ),
@@ -44,4 +46,10 @@ class BookTile extends ConsumerWidget {
       ),
     );
   }
+
+  bool get junkCover => !(true &&
+      book.book.coverArtS?[0] == 255 &&
+      book.book.coverArtS?[1] == 216 &&
+      book.book.coverArtS?[2] == 255 &&
+      book.book.coverArtS?[3] == 224);
 }
