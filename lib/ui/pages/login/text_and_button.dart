@@ -1,31 +1,28 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-class SignInUpToggle extends StatelessWidget {
-  const SignInUpToggle({
-    required this.signUpMode,
-    required this.reverseSignUpText,
-    required this.onTap,
-  });
+class TextAndButton extends StatelessWidget {
+  const TextAndButton(
+      {required this.title, required this.buttonText, required this.onTap});
 
-  final bool signUpMode;
-  final String reverseSignUpText;
-  final VoidCallback onTap;
+  final String title;
+  final String buttonText;
+  final void Function() onTap;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 30, top: 10),
+      padding: const EdgeInsets.only(left: 30, top: 20),
       child: RichText(
         text: TextSpan(
-          text: '${signUpMode ? "Already" : "Don't"} have an account? ',
-          style: TextStyle(
+          text: title,
+          style: const TextStyle(
             color: Colors.black, // Regular text color
             fontSize: 16,
           ),
           children: [
             TextSpan(
-              text: reverseSignUpText,
+              text: buttonText,
               style: TextStyle(
                 color: Colors.blue[900],
                 fontWeight: FontWeight.bold,

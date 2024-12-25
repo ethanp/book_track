@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class GreyBoxTextField extends ConsumerStatefulWidget {
@@ -54,11 +55,7 @@ class _GreyBoxTextFieldState extends ConsumerState<GreyBoxTextField> {
       borderRadius: BorderRadius.circular(8),
       border: _focusNode.hasFocus
           ? Border.all(color: CupertinoColors.systemGrey, width: 1.5)
-          : Border.all(
-              // TODO(simplifry) is there some simpler color like "clear" which is see-through?
-              color: CupertinoColors.white.withValues(alpha: 0),
-              width: 0,
-            ),
+          : Border.all(color: Colors.transparent, width: 0),
     );
   }
 }

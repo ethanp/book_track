@@ -5,13 +5,12 @@ import 'package:book_track/helpers.dart';
 import 'package:book_track/main.dart';
 import 'package:book_track/services/supabase_auth_service.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'login_form.dart';
 import 'login_form_controllers.dart';
-import 'sign_up_toggle.dart';
+import 'text_and_button.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -102,37 +101,18 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget signInUpToggle() {
-    return SignInUpToggle(
-      signUpMode: _isSignUpMode,
-      reverseSignUpText: _reverseSignUpText,
+    return TextAndButton(
+      title: '${_isSignUpMode ? "Already" : "Don't"} have an account? ',
+      buttonText: _reverseSignUpText,
       onTap: () => setState(() => _isSignUpMode = !_isSignUpMode),
     );
   }
 
   Widget resetPassword(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 30, top: 20),
-      child: RichText(
-        text: TextSpan(
-          text: 'Forgot your password? ',
-          style: const TextStyle(
-            color: Colors.black, // Regular text color
-            fontSize: 16,
-          ),
-          children: [
-            TextSpan(
-              text: 'Email reset link',
-              style: TextStyle(
-                color: Colors.blue[900],
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-              recognizer: TapGestureRecognizer()
-                ..onTap = () => sendPasswordResetLink(context),
-            ),
-          ],
-        ),
-      ),
+    return TextAndButton(
+      title: 'Forgot your password? ',
+      buttonText: 'Email reset link',
+      onTap: () => sendPasswordResetLink(context),
     );
   }
 
