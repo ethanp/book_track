@@ -2,16 +2,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class GreyBoxTextField extends ConsumerStatefulWidget {
-  const GreyBoxTextField({required this.textChanged});
+  const GreyBoxTextField({required this.textChanged, this.initialValue});
 
   final void Function(String) textChanged;
+  final String? initialValue;
 
   @override
   ConsumerState createState() => _GreyBoxTextFieldState();
 }
 
 class _GreyBoxTextFieldState extends ConsumerState<GreyBoxTextField> {
-  final TextEditingController _controller = TextEditingController();
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initialValue);
   final FocusNode _focusNode = FocusNode();
 
   @override
@@ -52,7 +54,11 @@ class _GreyBoxTextFieldState extends ConsumerState<GreyBoxTextField> {
       borderRadius: BorderRadius.circular(8),
       border: _focusNode.hasFocus
           ? Border.all(color: CupertinoColors.systemGrey, width: 1.5)
-          : Border.all(color: CupertinoColors.white.withOpacity(0), width: 0),
+          : Border.all(
+              // TODO(simplifry) is there some simpler color like "clear" which is see-through?
+              color: CupertinoColors.white.withValues(alpha: 0),
+              width: 0,
+            ),
     );
   }
 }

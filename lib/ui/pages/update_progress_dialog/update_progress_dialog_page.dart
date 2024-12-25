@@ -106,40 +106,40 @@ class _UpdateProgressDialogState
     );
   }
 
+  // TODO(ux) Consider using eg.
+  //  https://github.com/Team-Picky/flutter_datetime_picker_plus instead
   Widget endTimePicker() {
+    final dateTimeNow = DateTime.now();
     return Column(children: [
       Text('Set progress update\'s timestamp:'),
       Transform.scale(
         // Flutter doesn’t allow direct styling of CupertinoDatePicker text,
         // but you can just scale the whole widget.
-        scale: .78,
+        scale: 1,
         child: SizedBox(
           height: 110,
           child: CupertinoDatePicker(
-            mode: CupertinoDatePickerMode.time,
-            minimumDate: widget.startTime,
-            maximumDate: widget.startTime?.add(const Duration(hours: 12)),
-            initialDateTime: DateTime.now(),
-            onDateTimeChanged: (DateTime newEndTime) =>
-                setState(() => _selectedEndTime = newEndTime),
+            mode: CupertinoDatePickerMode.dateAndTime,
+            minimumDate: dateTimeNow.copyWith(year: dateTimeNow.year - 20),
+            maximumDate: dateTimeNow.add(const Duration(days: 12)),
+            initialDateTime: widget.progressEvent?.dateTime ?? dateTimeNow,
+            onDateTimeChanged: (t) => setState(() => _selectedEndTime = t),
           ),
         ),
       ),
     ]);
   }
 
-  List<Widget> submitAndCancel() {
-    return [
-      CupertinoButton(
-        onPressed: () => context.pop(false),
-        child: Text('Cancel'),
-      ),
-      CupertinoButton(
-        onPressed: _submit,
-        child: Text('Submit'),
-      ),
-    ];
-  }
+  List<Widget> submitAndCancel() => [
+        CupertinoButton(
+          onPressed: () => context.pop(false),
+          child: Text('Cancel'),
+        ),
+        CupertinoButton(
+          onPressed: _submit,
+          child: Text('Submit'),
+        ),
+      ];
 
   Future<void> _submit() async {
     final int? newLen = widget.book.parseLengthText(_textFieldInput);

@@ -15,7 +15,7 @@ class SignInUpToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.only(left: 30, top: 10),
       child: RichText(
         text: TextSpan(
           text: '${signUpMode ? "Already" : "Don't"} have an account? ',
@@ -27,7 +27,7 @@ class SignInUpToggle extends StatelessWidget {
             TextSpan(
               text: reverseSignUpText,
               style: TextStyle(
-                color: Colors.blue,
+                color: Colors.blue[900],
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),

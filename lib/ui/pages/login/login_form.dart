@@ -1,5 +1,6 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import 'login_form_controllers.dart';
 
@@ -12,7 +13,7 @@ class LoginForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoFormSection.insetGrouped(
-      header: const Text('Fill this out'),
+      backgroundColor: Colors.grey,
       children: [
         emailField(),
         passwordField(),
@@ -50,7 +51,7 @@ class LoginForm extends StatelessWidget {
                 : 'Must have 6 numbers',
       );
 
-  CupertinoTextFormFieldRow submittableField({
+  Widget submittableField({
     required TextEditingController controller,
     required String name,
     required String? Function(String?) validator,
@@ -78,7 +79,7 @@ class LoginForm extends StatelessWidget {
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: CupertinoColors.systemFill,
+          color: Colors.black54,
         ),
       ),
     );
