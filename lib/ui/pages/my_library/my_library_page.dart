@@ -87,7 +87,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
 
   Widget errorScreen(err, stack) {
     final String errorMessage = 'Error loading your library $err $stack';
-    log.error(errorMessage);
+    log(errorMessage, error: true);
     return Text(errorMessage, style: TextStyles().h1);
   }
 

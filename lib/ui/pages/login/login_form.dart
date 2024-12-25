@@ -13,7 +13,12 @@ class LoginForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoFormSection.insetGrouped(
-      backgroundColor: Colors.grey,
+      backgroundColor: Colors.grey[400]!,
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.grey[800]!, width: .5)),
+        color: Colors.white.withValues(alpha: .75),
+        borderRadius: BorderRadius.circular(10),
+      ),
       children: [
         emailField(),
         passwordField(),
@@ -29,7 +34,7 @@ class LoginForm extends StatelessWidget {
       placeholder: 'email',
       autovalidateMode: AutovalidateMode.onUserInteraction,
       validator: (value) =>
-          !EmailValidator.validate(value!) ? 'Incorrect email format' : null,
+          !EmailValidator.validate(value!) ? 'Requires valid email' : null,
       // decoration: textFieldDecoration(),
     );
   }
@@ -39,7 +44,7 @@ class LoginForm extends StatelessWidget {
         name: 'Password',
         obscureText: true,
         validator: (input) =>
-            (input?.length ?? 0) < 6 ? 'Must have at least 6 characters' : null,
+            (input?.length ?? 0) < 6 ? 'Requires at least 6 characters' : null,
       );
 
   Widget tokenField() => submittableField(
@@ -79,7 +84,7 @@ class LoginForm extends StatelessWidget {
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.black54,
+          color: Colors.grey[800],
         ),
       ),
     );

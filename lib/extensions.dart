@@ -1,18 +1,13 @@
 import 'dart:math' as math;
 
+import 'package:book_track/helpers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 extension BuildContextExtension on BuildContext {
+  static SimpleLogger log = SimpleLogger(prefix: 'BuildContextExtension');
   void showSnackBar(String message, {bool isError = false}) =>
-      print('snack bar: $message');
-
-  void authError(Object error) {
-    final String message = error is AuthException
-        ? error.message
-        : 'Unexpected error occurred: $error';
-    showSnackBar(message, isError: true);
-  }
+      log('snack bar: $message', error: isError);
 
   void pushReplacementPage(Widget widget) => Navigator.of(this)
       .pushReplacement(CupertinoPageRoute(builder: (context) => widget));

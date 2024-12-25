@@ -21,22 +21,26 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   static SimpleLogger log = SimpleLogger(prefix: 'LoginPage');
-
-  bool _isSignUpMode = false;
   final formKey = GlobalKey<FormState>();
 
-  String get _signUpText => _isSignUpMode ? 'Sign Up' : 'Sign In';
-
-  String get _reverseSignUpText => !_isSignUpMode ? 'Sign Up' : 'Sign In';
-  bool _processingSignIn = false;
-  bool _redirectingToLoggedInApp = false;
   final LoginFormControllers loginFormC = LoginFormControllers();
   late final StreamSubscription<AuthState> _authStateSubscription;
+
+  bool _isSignUpMode = false;
+  bool _processingSignIn = false;
+  bool _redirectingToLoggedInApp = false;
+  String? _authError;
 
   @override
   void initState() {
     pushLoggedInAppUponLogin();
     super.initState();
+  }
+
+  String signUpText({bool reverse = false}) {
+    bool which = _isSignUpMode;
+    if (reverse) which = !which;
+    return which ? 'Sign Up' : 'Sign In';
   }
 
   void pushLoggedInAppUponLogin() {
@@ -50,17 +54,16 @@ class _LoginPageState extends State<LoginPage> {
           if (mounted) context.pushReplacementPage(const WholeAppWidget());
         }
       },
-      onError: (Object error) {
-        if (mounted) context.authError(error);
-      },
+      onError: (Object error) =>
+          log('Unexpected error occurred: $error', error: true),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: Colors.grey,
-      navigationBar: CupertinoNavigationBar(middle: Text(_signUpText)),
+      backgroundColor: Colors.grey[400],
+      navigationBar: CupertinoNavigationBar(middle: Text(signUpText())),
       child: SafeArea(
         child: Form(
           key: formKey,
@@ -76,11 +79,24 @@ class _LoginPageState extends State<LoginPage> {
               LoginForm(loginFormC, _doSignIn),
               const SizedBox(height: 10),
               signInButton(),
-              const SizedBox(height: 18),
+              showAuthErrorIfPresent(),
               signInUpToggle(),
               resetPassword(context),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget showAuthErrorIfPresent() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 28, top: 10),
+      child: Text(
+        _authError ?? '',
+        style: TextStyle(
+          color: Colors.red[800],
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -95,7 +111,7 @@ class _LoginPageState extends State<LoginPage> {
           shape: FlutterHelpers.roundedRect(radius: 8),
         ),
         onPressed: _processingSignIn ? null : _doSignIn,
-        child: Text(_processingSignIn ? 'Processing...' : _signUpText),
+        child: Text(_processingSignIn ? 'Processing...' : signUpText()),
       ),
     );
   }
@@ -103,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget signInUpToggle() {
     return TextAndButton(
       title: '${_isSignUpMode ? "Already" : "Don't"} have an account? ',
-      buttonText: _reverseSignUpText,
+      buttonText: signUpText(reverse: true),
       onTap: () => setState(() => _isSignUpMode = !_isSignUpMode),
     );
   }
@@ -143,8 +159,10 @@ class _LoginPageState extends State<LoginPage> {
           : SupabaseAuthService.signIn;
       await serviceFunc(loginFormC.emailInput, loginFormC.passwordInput);
       if (mounted) context.showSnackBar('Success');
+    } on AuthException catch (error) {
+      _authError = error.message;
     } catch (error) {
-      if (mounted) context.authError(error);
+      log('Unexpected error occurred: $error', error: true);
     } finally {
       if (mounted) setState(() => _processingSignIn = false);
     }

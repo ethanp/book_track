@@ -2,8 +2,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class TextAndButton extends StatelessWidget {
-  const TextAndButton(
-      {required this.title, required this.buttonText, required this.onTap});
+  const TextAndButton({
+    required this.title,
+    required this.buttonText,
+    required this.onTap,
+  });
 
   final String title;
   final String buttonText;
@@ -16,10 +19,7 @@ class TextAndButton extends StatelessWidget {
       child: RichText(
         text: TextSpan(
           text: title,
-          style: const TextStyle(
-            color: Colors.black, // Regular text color
-            fontSize: 16,
-          ),
+          style: const TextStyle(color: Colors.black, fontSize: 16),
           children: [
             TextSpan(
               text: buttonText,

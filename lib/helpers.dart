@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
@@ -46,14 +44,18 @@ class SimpleLogger {
 
   /// [call] method is a special method in Dart that, when defined,
   /// allows instances of the class to be invoked like functions.
-  void call(Object? s) => stdout.writeln(_msg(s));
+  void call(Object? s, {bool error = false}) =>
+      error ? _error(s) : debugPrint(_msg(s));
 
-  void error(Object? obj) => stderr.writeln(_red(_msg(obj)));
+  // The emoji is a workaround, since ANSI color-codes are not working with the
+  // iOS simulator, so I can't just print it in red :(
+  void _error(Object? obj) => debugPrint(_msg('⛔ERROR⛔: $obj'));
 
   String _msg(Object? s) => '${TimeHelpers.timestamp} $prefix: $s';
 
+/*
   static const String _redColor = '\x1B[31m';
   static const String _defaultColor = '\x1B[0m';
-
   String _red(String string) => '$_redColor$string$_defaultColor';
+  */
 }
