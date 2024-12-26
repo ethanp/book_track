@@ -17,8 +17,6 @@ class ReadingProgressIndicator extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(userLibraryProvider);
     final int? progressPercentage = book.progressPercentage;
-    // TODO(bug) I'm seeing percentage == 0% for all audiobooks here. Sim only!
-    log('${book.book.title} progressPercentage: $progressPercentage');
     // Nothing to show.
     if (progressPercentage == null) return SizedBox.shrink();
     final double width = 60;

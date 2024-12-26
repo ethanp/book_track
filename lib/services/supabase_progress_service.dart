@@ -8,6 +8,7 @@ import 'supabase_service.dart';
 class SupabaseProgressService {
   static final _progressClient = supabase.from('progress_events');
 
+  /// [end] defaults to [DateTime.now].
   static Future<void> updateProgress({
     required int bookId,
     required int newValue,
@@ -22,7 +23,7 @@ class SupabaseProgressService {
         _SupaProgress.progressCol: newValue,
         // This is the date-time format that works well with Supabase/Postgres.
         _SupaProgress.startCol: start?.toIso8601String(),
-        _SupaProgress.endCol: end?.toIso8601String(),
+        _SupaProgress.endCol: (end ?? DateTime.now()).toIso8601String(),
       }).captureStackTraceOnError();
 
   static Future<List<ProgressEvent>> history(int bookId) async {
@@ -30,7 +31,7 @@ class SupabaseProgressService {
         .select()
         .eq(_SupaProgress.libraryBookIdCol, bookId)
         .eq(_SupaProgress.userIdCol, SupabaseAuthService.loggedInUserId!)
-        .order(_SupaProgress.endCol)
+        .order(_SupaProgress.endCol, ascending: true)
         .captureStackTraceOnError();
     return queryResults.mapL((result) => _SupaProgress(result).toProgressEvent);
   }
@@ -50,7 +51,7 @@ class _SupaProgress {
 
   ProgressEvent get toProgressEvent => ProgressEvent(
         supaId: supaId,
-        end: endSafe,
+        end: end,
         progress: progress,
         format: format,
         start: start,
@@ -81,8 +82,6 @@ class _SupaProgress {
   DateTime? get start => parseDateCol(rawData[startCol]);
   static final String startCol = 'start';
 
-  DateTime? get end => parseDateCol(rawData[endCol]);
+  DateTime get end => parseDateCol(rawData[endCol])!;
   static final String endCol = 'end';
-
-  DateTime get endSafe => end ?? createdAt;
 }
