@@ -69,6 +69,9 @@ class LibraryBook {
 
   int? parseLengthText(String text) {
     if (bookFormat == BookFormat.audiobook) {
+      // TODO(ux) Make it more clear to the user what the semantics of this are.
+      // TODO(ux) Make the semantics of this more user friendly.
+      // Right now, just putting a single number defaults to a count of MINUTES.
       final int? hoursMins = _tryParseAudiobookLength(text);
       if (hoursMins != null) return hoursMins;
     }
@@ -77,6 +80,7 @@ class LibraryBook {
 
   static int? _tryParseAudiobookLength(String text) {
     final List<String> split = text.split(':');
+    if (split.length < 2) return null;
     final int? hrs = int.tryParse(split[0]);
     final int? mins = int.tryParse(split[1]);
     if (hrs == null || mins == null) return null;

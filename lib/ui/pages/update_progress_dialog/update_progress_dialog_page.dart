@@ -87,6 +87,8 @@ class _UpdateProgressDialogState
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('Book: "$title" ($format)'),
+          // TODO(ux) When updating an existing progress event, we should default
+          //  to the original input value here, instead of defaulting to empty.
           GreyBoxTextField(textChanged: (input) => _textFieldInput = input),
           updateFormatSelector(),
           SizedBox(height: 15),

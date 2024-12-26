@@ -127,7 +127,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
 
     final clockFace = SevenSegmentDisplay(
       value: duration(currStartTime),
-      backgroundColor: Colors.white.withOpacity(0),
+      backgroundColor: Colors.white.withValues(alpha: 0),
       segmentStyle: HexSegmentStyle(
         segmentBaseSize: const Size(.85, 3.0),
         disabledColor: Color.lerp(backgroundColor, Colors.grey[400], .3),

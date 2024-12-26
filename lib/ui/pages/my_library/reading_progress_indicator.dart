@@ -35,7 +35,7 @@ class ReadingProgressIndicator extends ConsumerWidget {
   Widget progressBar(double width) {
     return SizedBox(
       height: 12,
-      // Recall: latter children are placed *on top* of prior children.
+      // Recall: latter children are "stacked" *on top* of prior children.
       child: Stack(children: [colors(width), border(width)]),
     );
   }

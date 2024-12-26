@@ -53,7 +53,7 @@ class BookDetailButton extends StatelessWidget {
     final subtitleText = Text(
       subtitle,
       style: TextStyle(
-        color: CupertinoColors.black.withOpacity(.72),
+        color: CupertinoColors.black.withValues(alpha: .72),
         fontSize: dense ? 9 : 14.5,
       ),
     );
@@ -68,7 +68,7 @@ class BookDetailButton extends StatelessWidget {
     );
     final iconWidget = Icon(
       icon,
-      color: CupertinoColors.black.withOpacity(.5),
+      color: CupertinoColors.black.withValues(alpha: .5),
       size: dense ? 25 : 46,
     );
     return Row(

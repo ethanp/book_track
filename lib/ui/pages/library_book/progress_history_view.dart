@@ -125,6 +125,10 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
   }
 
   List<LineChartBarData> plotLines() {
+    // TODO(ux) If there are multiple spots on a single day, and the whole book's
+    //  been read over many days, it would make sense to only show the LAST
+    //  spot of each day on the chart, to avoid weird and hard-to-interpret
+    //  visuals.
     final readingProgressLine = LineChartBarData(
         spots: _latestBook.progressHistory.mapL(eventToSpot),
         belowBarData: gradientFill(),
@@ -134,7 +138,7 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
 
   static LinearGradient lineGradient() {
     return LinearGradient(
-      colors: [Colors.grey[600]!, Colors.blue.withOpacity(.2)],
+      colors: [Colors.grey[600]!, Colors.blue.withValues(alpha: .2)],
       stops: [.4, 1],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
@@ -145,7 +149,7 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
     return BarAreaData(
       show: true,
       gradient: LinearGradient(
-        colors: [Colors.teal[400]!, Colors.blue.withOpacity(.2)],
+        colors: [Colors.teal[400]!, Colors.blue.withValues(alpha: .2)],
         stops: [.4, 1],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
