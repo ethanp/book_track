@@ -44,9 +44,10 @@ class LibraryBook {
   String bookProgressStringWSuffix(ProgressEvent ev) =>
       '${_format(ev.progress)} $_suffix';
 
-  String get bookLengthString => '${bookLengthCount ?? 'unknown'} $_suffix';
+  String get bookLengthStringWSuffix =>
+      '${bookLengthString ?? 'unknown'} $_suffix';
 
-  String? get bookLengthCount => bookLength.map(_format);
+  String? get bookLengthString => bookLength.map(_format);
 
   String _format(int length) => bookFormat == BookFormat.audiobook
       ? length.minsToHhMm

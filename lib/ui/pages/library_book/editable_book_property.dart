@@ -23,13 +23,9 @@ class EditableBookProperty extends ConsumerStatefulWidget {
 
 class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
   bool _editing = false;
-  final TextEditingController _textFieldController = TextEditingController();
 
-  @override
-  void initState() {
-    _textFieldController.text = widget.defaultValue ?? widget.value;
-    super.initState();
-  }
+  late final TextEditingController _textFieldController =
+      TextEditingController(text: widget.defaultValue ?? widget.value);
 
   @override
   void dispose() {
@@ -60,7 +56,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
     );
   }
 
-  // This is a separate inner Row so that this groups is left-aligned,
+  // This is a separate inner Row so that the widgets within are left-aligned,
   // while the button is right-aligned.
   Widget titleAndValue() {
     return Row(children: [
@@ -74,7 +70,6 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
     return SizedBox(
       width: 130,
       child: CupertinoTextField(
-        enableSuggestions: false,
         controller: _textFieldController,
         onSubmitted: onSubmit,
       ),

@@ -78,8 +78,8 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
   Widget length() {
     return EditableBookProperty(
       title: 'Length',
-      value: widget.libraryBook.bookLengthString,
-      defaultValue: widget.libraryBook.bookLengthCount,
+      value: widget.libraryBook.bookLengthStringWSuffix,
+      defaultValue: widget.libraryBook.bookLengthString,
       onPressed: updateLength,
     );
   }
