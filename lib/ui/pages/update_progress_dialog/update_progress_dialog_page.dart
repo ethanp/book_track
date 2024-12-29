@@ -16,13 +16,13 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
     required this.book,
     this.startTime,
     this.initialEndTime,
-    this.progressEvent,
+    this.preexistingProgressEvent,
   });
 
   final LibraryBook book;
   final DateTime? startTime;
   final DateTime? initialEndTime;
-  final ProgressEvent? progressEvent;
+  final ProgressEvent? preexistingProgressEvent;
 
   @override
   ConsumerState createState() => _UpdateProgressDialogState();
@@ -54,7 +54,7 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
       context: ref.context,
       builder: (context) => UpdateProgressDialogPage(
         book: libraryBook,
-        progressEvent: progressEvent,
+        preexistingProgressEvent: progressEvent,
       ),
     );
     if (res ?? false) ref.invalidate(userLibraryProvider);
@@ -63,39 +63,36 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
 
 class _UpdateProgressDialogState
     extends ConsumerState<UpdateProgressDialogPage> {
-  String _textFieldInput = '';
+  late String _textFieldInput =
+      widget.preexistingProgressEvent?.map(widget.book.bookProgressString) ??
+          '';
 
   late ProgressEventFormat _selectedProgressEventFormat =
-      widget.book.defaultProgressFormat;
-  DateTime _selectedEndTime = DateTime.now();
+      widget.preexistingProgressEvent?.format ??
+          widget.book.progressHistory.lastOrNull?.format ??
+          widget.book.defaultProgressFormat;
 
-  @override
-  void initState() {
-    super.initState();
-    widget.book.progressHistory.lastOrNull?.format.map((lastSelectedFormat) =>
-        _selectedProgressEventFormat = lastSelectedFormat);
-    widget.initialEndTime.map((endTime) => _selectedEndTime = endTime);
-  }
+  late DateTime _selectedEndTime = widget.preexistingProgressEvent?.end ??
+      widget.initialEndTime ??
+      DateTime.now();
 
   @override
   Widget build(BuildContext context) {
-    final String title = widget.book.book.title;
-    final String format = widget.book.bookFormat?.name ?? '';
     return CupertinoAlertDialog(
       title: Text('Update Progress'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Book: "$title" ($format)'),
-          // TODO(ux) When updating an existing progress event, we should default
-          //  to the original input value here, instead of defaulting to empty.
-          GreyBoxTextField(textChanged: (input) => _textFieldInput = input),
+          GreyBoxTextField(
+            textChanged: (input) => _textFieldInput = input,
+            initialValue: _textFieldInput,
+          ),
           updateFormatSelector(),
           SizedBox(height: 15),
           endTimePicker(),
         ],
       ),
-      actions: submitAndCancel(),
+      actions: submitAndCancelButtons(),
     );
   }
 
@@ -108,8 +105,9 @@ class _UpdateProgressDialogState
     );
   }
 
-  // TODO(ux) Consider using eg.
-  //  https://github.com/Team-Picky/flutter_datetime_picker_plus instead
+  // TODO(ux) This looks bad and is cumbersome. Consider using eg.
+  //  https://github.com/Team-Picky/flutter_datetime_picker_plus instead.
+  //  Or I'm sure there are countless alternatives.
   Widget endTimePicker() {
     final dateTimeNow = DateTime.now();
     return Column(children: [
@@ -124,7 +122,8 @@ class _UpdateProgressDialogState
             mode: CupertinoDatePickerMode.dateAndTime,
             minimumDate: dateTimeNow.copyWith(year: dateTimeNow.year - 20),
             maximumDate: dateTimeNow.add(const Duration(days: 12)),
-            initialDateTime: widget.progressEvent?.dateTime ?? dateTimeNow,
+            initialDateTime:
+                widget.preexistingProgressEvent?.dateTime ?? dateTimeNow,
             onDateTimeChanged: (t) => setState(() => _selectedEndTime = t),
           ),
         ),
@@ -132,7 +131,7 @@ class _UpdateProgressDialogState
     ]);
   }
 
-  List<Widget> submitAndCancel() => [
+  List<Widget> submitAndCancelButtons() => [
         CupertinoButton(
           onPressed: () => context.pop(false),
           child: Text('Cancel'),
@@ -143,29 +142,31 @@ class _UpdateProgressDialogState
         ),
       ];
 
+  /// Pop [true] iff UI needs to reload to see updated data.
   Future<void> _submit() async {
     final int? newLen = widget.book.parseLengthText(_textFieldInput);
     if (newLen == null) {
-      // TODO(ui) this should be a form validation instead.
-      log('invalid length: $_textFieldInput');
+      // TODO(feature) this should be a form validation instead.
+      log.error('invalid length: $_textFieldInput');
       context.pop(false);
       return;
     }
-    if (widget.progressEvent != null) {
-      // TODO(feature) Show the existing progress modal, but in edit mode:
-      //  1. Prefill inputs with status quo values
-      //  2. Provide the option to delete the event
-      log('TODO implement this feature');
-      context.pop(false);
+    if (widget.preexistingProgressEvent != null) {
+      await SupabaseProgressService.updateProgressEvent(
+        preexistingEvent: widget.preexistingProgressEvent!,
+        updatedValue: newLen,
+        start: widget.startTime,
+        end: _selectedEndTime,
+      );
+    } else {
+      await SupabaseProgressService.addProgressEvent(
+        bookId: widget.book.supaId,
+        newValue: newLen,
+        format: _selectedProgressEventFormat,
+        start: widget.startTime,
+        end: _selectedEndTime,
+      );
     }
-    log('updating to: $newLen');
-    await SupabaseProgressService.updateProgress(
-      bookId: widget.book.supaId,
-      newValue: newLen,
-      format: _selectedProgressEventFormat,
-      start: widget.startTime,
-      end: _selectedEndTime,
-    );
     if (mounted) context.pop(true);
   }
 }

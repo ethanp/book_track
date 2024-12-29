@@ -25,8 +25,6 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
 
   late LibraryBook _latestBook;
 
-  static final SimpleLogger log = SimpleLogger(prefix: 'ProgressHistoryView');
-
   @override
   void initState() {
     super.initState();
@@ -175,7 +173,6 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
   }
 
   FlSpot eventToSpot(ProgressEvent progressEvent) {
-    log(progressEvent);
     return FlSpot(
       progressEvent.end.millisecondsSinceEpoch.toDouble(),
       _latestBook.percentProgressAt(progressEvent)!,

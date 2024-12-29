@@ -39,7 +39,9 @@ class LibraryBook {
         _ => 'pgs'
       };
 
-  String bookProgressString(ProgressEvent ev) =>
+  String bookProgressString(ProgressEvent ev) => _format(ev.progress);
+
+  String bookProgressStringWSuffix(ProgressEvent ev) =>
       '${_format(ev.progress)} $_suffix';
 
   String get bookLengthString => '${bookLengthCount ?? 'unknown'} $_suffix';

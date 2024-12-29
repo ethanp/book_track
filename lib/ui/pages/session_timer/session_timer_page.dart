@@ -153,9 +153,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
 
   Timer repaintEverySecond() => Timer.periodic(Duration(seconds: 1), repaint);
 
-  void repaint([dynamic _]) {
-    if (mounted) setState(() {});
-  }
+  void repaint([dynamic _]) => mounted ? setState(() {}) : {};
 
   @override
   void dispose() {
@@ -195,7 +193,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
                     Text(TimeHelpers.monthDayYear(ev.end)),
                     Text(TimeHelpers.hourMinuteAmPm(ev.end)),
                     Text('$percentage%'),
-                    Text(widget.book.bookProgressString(ev)),
+                    Text(widget.book.bookProgressStringWSuffix(ev)),
                   ]);
                 }),
               ),

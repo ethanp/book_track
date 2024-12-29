@@ -122,7 +122,7 @@ class _EventTimelineItem extends ConsumerWidget {
     return switch (readingEvent) {
       StatusEvent ev => Text('Status: ${ev.status.name}'),
       ProgressEvent ev => () {
-          final progressString = libraryBook.bookProgressString(ev);
+          final progressString = libraryBook.bookProgressStringWSuffix(ev);
           final percentString = libraryBook.intPercentProgressAt(ev);
           return Text('Progress: $progressString ($percentString%)');
         }(),

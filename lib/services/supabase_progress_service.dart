@@ -9,7 +9,7 @@ class SupabaseProgressService {
   static final _progressClient = supabase.from('progress_events');
 
   /// [end] defaults to [DateTime.now].
-  static Future<void> updateProgress({
+  static Future<void> addProgressEvent({
     required int bookId,
     required int newValue,
     required ProgressEventFormat format,
@@ -25,6 +25,22 @@ class SupabaseProgressService {
         _SupaProgress.startCol: start?.toIso8601String(),
         _SupaProgress.endCol: (end ?? DateTime.now()).toIso8601String(),
       }).captureStackTraceOnError();
+
+  static Future<void> updateProgressEvent({
+    required ProgressEvent preexistingEvent,
+    required int updatedValue,
+    DateTime? start,
+    required DateTime end,
+  }) async =>
+      await _progressClient
+          .update({
+            _SupaProgress.progressCol: updatedValue,
+            _SupaProgress.startCol: start?.toIso8601String(),
+            _SupaProgress.endCol: end.toIso8601String(),
+            // Out of lack of need thus far, we don't store "updated-at timestamp".
+          })
+          .eq(_SupaProgress.supaIdCol, preexistingEvent.supaId)
+          .captureStackTraceOnError();
 
   static Future<List<ProgressEvent>> history(int bookId) async {
     final queryResults = await _progressClient

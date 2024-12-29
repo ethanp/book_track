@@ -47,6 +47,8 @@ class SimpleLogger {
   void call(Object? s, {bool error = false}) =>
       error ? _error(s) : debugPrint(_msg(s));
 
+  void error(Object? s) => call(s, error: true);
+
   // The emoji is a workaround, since ANSI color-codes are not working with the
   // iOS simulator, so I can't just print it in red :(
   void _error(Object? obj) => debugPrint(_msg('⛔ERROR⛔: $obj'));

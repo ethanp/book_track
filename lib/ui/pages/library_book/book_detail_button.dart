@@ -12,6 +12,7 @@ class BookDetailButton extends StatelessWidget {
     required this.backgroundColor,
     required this.dense,
   });
+
   final String title;
   final String subtitle;
   final IconData icon;

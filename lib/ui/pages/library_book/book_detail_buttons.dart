@@ -76,7 +76,7 @@ class BookDetailButtons extends ConsumerWidget {
       icon: Icons.check_box_outlined,
       onPressed: () async {
         await SupabaseStatusService.add(book.supaId, ReadingStatus.finished);
-        await SupabaseProgressService.updateProgress(
+        await SupabaseProgressService.addProgressEvent(
           bookId: book.supaId,
           newValue: 100,
           format: ProgressEventFormat.percent,

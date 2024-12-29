@@ -44,7 +44,6 @@ class ReadingProgressIndicator extends ConsumerWidget {
     final double scale = .94;
     final double scaledWidthPerPercent = width / 100 * scale;
     final percent = book.progressPercentage!;
-    log('${book.book.title} $percent%');
     final double readWidth = percent * scaledWidthPerPercent;
     final double unreadWidth = (100 - percent) * scaledWidthPerPercent;
     return Padding(
