@@ -177,7 +177,11 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
         color: Colors.blueGrey[100],
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
+          // TODO(ui) This height limit makes no sense:
+          //  When there are too many items, it just overflows out.
           height: 200,
+          // TODO(simplify) Not sure -- what's the default width semantics?
+          //  Is it something different than using infinity here?
           width: double.infinity,
           child: Column(children: [
             Text('Progress Events:', style: TextStyles().h1),
