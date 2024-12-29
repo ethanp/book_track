@@ -79,6 +79,21 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
     );
   }
 
+  Widget bookFormat() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          SizedBox(width: 9),
+          Text('Format: ', style: TextStyles().title),
+          formatUpdater(),
+        ],
+      ),
+    );
+  }
+
   void updateLength(String text) async {
     final int? len = widget.libraryBook.parseLengthText(text);
     if (len == null) return log('invalid length: $text');
@@ -87,21 +102,8 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
     ref.invalidate(userLibraryProvider);
   }
 
-  Widget bookFormat() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Text('Book format: ', style: TextStyles().h4),
-          SizedBox(height: 12),
-          formatUpdater(),
-        ],
-      ),
-    );
-  }
-
+  // TODO(ui) This shouldn't be a segmented control, it should be a dropdown, with
+  //  the current format as the shown value, and a little arrow as an affordance
   Widget formatUpdater() {
     // Note: We have to wrap BookFormat with Renderable format because
     // nullable types are not allowed as a type param for
@@ -119,7 +121,7 @@ class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
             ),
             child: Text(
               format?.name ?? 'unknown',
-              style: const TextStyle(fontSize: 11),
+              style: const TextStyle(fontSize: 10),
             ),
           )
       },

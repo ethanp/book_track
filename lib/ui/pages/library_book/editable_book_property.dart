@@ -62,14 +62,23 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
     return Row(children: [
       Text('${widget.title}: ', style: TextStyles().title),
       SizedBox(width: 10),
-      _editing ? textField() : Text(widget.value, style: TextStyles().h5),
+      _editing ? textField() : Text(widget.value, style: TextStyles().value),
     ]);
   }
 
   Widget textField() {
     return SizedBox(
       width: 130,
+      height: 28,
       child: CupertinoTextField(
+        decoration: BoxDecoration(
+          color: Colors.grey[100]!.withValues(alpha: .8),
+          border: Border.all(color: Colors.grey[400]!, width: 1),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        padding: EdgeInsets.only(top: 5, left: 4),
+        style: TextStyle(fontSize: 14, color: Colors.grey[900]),
+        autocorrect: false,
         controller: _textFieldController,
         onSubmitted: onSubmit,
       ),
@@ -98,7 +107,9 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
   ButtonStyle buttonStyle({required Color color}) {
     return ElevatedButton.styleFrom(
       shape: FlutterHelpers.roundedRect(radius: 10),
-      fixedSize: Size(70, 40),
+      elevation: 0.3,
+      visualDensity: VisualDensity.compact,
+      fixedSize: Size(70, /* ignored :( */ 10),
       padding: EdgeInsets.zero,
       backgroundColor: color,
     );
