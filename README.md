@@ -18,7 +18,6 @@ tracking reading progress specifically.
 
 ## Development notes
 
-During development, it may be important to get the generators going via
-`dart run build_runner watch` as recommended on the riverpod
+After updating Riverpod code, the generators should be run with eg. `dart run build_runner watch`.
 
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Consider looking at the [Flutter Cookbook](https://docs.flutter.dev/cookbook) for ideas.
