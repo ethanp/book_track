@@ -44,15 +44,14 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: Column(children: [
           Text('History', style: TextStyles().h1),
-          if (_latestBook.progressHistory.isEmpty)
-            Text('No progress updates yet')
-          else
-            SizedBox(
-                height: 300,
-                child: ref.watch(userLibraryProvider).when(
-                    loading: () => const CircularProgressIndicator(),
-                    error: (err, trace) => Text(err.toString()),
-                    data: body))
+          _latestBook.progressHistory.isEmpty
+              ? Text('No progress updates yet')
+              : SizedBox(
+                  height: 300,
+                  child: ref.watch(userLibraryProvider).when(
+                      loading: () => const CircularProgressIndicator(),
+                      error: (err, trace) => Text(err.toString()),
+                      data: body))
         ]),
       ),
     );

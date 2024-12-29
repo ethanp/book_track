@@ -46,22 +46,33 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
         children: [
           titleAndValue(),
           updateButton(),
+          if (_editing) cancelEditingButton(),
         ],
       ),
     );
   }
 
+  Widget cancelEditingButton() {
+    return ElevatedButton(
+      style: buttonStyle(color: Colors.red[300]!),
+      onPressed: () => setState(() => _editing = false),
+      child: Text('Cancel'),
+    );
+  }
+
+  // This is a separate inner Row so that this groups is left-aligned,
+  // while the button is right-aligned.
   Widget titleAndValue() {
     return Row(children: [
       Text('${widget.title}: ', style: TextStyles().title),
       SizedBox(width: 10),
-      if (_editing) textField() else Text(widget.value, style: TextStyles().h5),
+      _editing ? textField() : Text(widget.value, style: TextStyles().h5),
     ]);
   }
 
   Widget textField() {
     return SizedBox(
-      width: 200,
+      width: 130,
       child: CupertinoTextField(
         enableSuggestions: false,
         controller: _textFieldController,
@@ -78,7 +89,10 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
 
   Widget updateButton() {
     return ElevatedButton(
-      style: buttonStyle(),
+      style: buttonStyle(
+          color: _editing
+              ? Colors.lightGreen.shade300
+              : CupertinoColors.systemGrey6),
       onPressed: () => _editing
           ? onSubmit(_textFieldController.text)
           : setState(() => _editing = true),
@@ -86,13 +100,12 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
     );
   }
 
-  ButtonStyle buttonStyle() {
+  ButtonStyle buttonStyle({required Color color}) {
     return ElevatedButton.styleFrom(
       shape: FlutterHelpers.roundedRect(radius: 10),
       fixedSize: Size(70, 40),
       padding: EdgeInsets.zero,
-      backgroundColor:
-          _editing ? Colors.lightGreen.shade300 : CupertinoColors.systemGrey6,
+      backgroundColor: color,
     );
   }
 }
