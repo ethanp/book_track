@@ -19,14 +19,9 @@ class BookPropertiesEditor extends ConsumerStatefulWidget {
 }
 
 class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
-  BookFormat? _format;
   static final SimpleLogger log = SimpleLogger(prefix: 'BookPropertiesEditor');
 
-  @override
-  void initState() {
-    super.initState();
-    _format = widget.libraryBook.bookFormat;
-  }
+  late BookFormat? _format = widget.libraryBook.bookFormat;
 
   @override
   void didChangeDependencies() {
