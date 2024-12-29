@@ -31,6 +31,8 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     );
   }
 
+  // TODO(feature) Add view to see books listed by date started
+  // TODO(feature) Add view to see books listed by date finished
   CupertinoNavigationBar navigationBar(BuildContext context) {
     return CupertinoNavigationBar(
       leading: addABookButton(context),
