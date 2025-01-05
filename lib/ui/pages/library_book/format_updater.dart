@@ -17,6 +17,11 @@ class FormatUpdater extends ConsumerStatefulWidget {
 }
 
 class _FormatUpdaterState extends ConsumerState<FormatUpdater> {
+  // TODO(ux) This isn't going to look good if the current format is `null`.
+  //  Instead of fixing this, remove the capability for the user to select
+  //  `null` as their format, and remove all the ?'s associated with the
+  //  current BookFormat. It's not worth the effort. Adding a new type in
+  //  would be easy if necessary.
   late BookFormat? _currFormat = widget.initialBookFormat;
   bool _editing = false;
 
