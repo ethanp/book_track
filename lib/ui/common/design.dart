@@ -1,3 +1,4 @@
+import 'package:book_track/helpers.dart';
 import 'package:flutter/material.dart';
 
 /// These could all be `static`, except then they couldn't be hot-reloaded.
@@ -29,4 +30,17 @@ class TextStyles {
 
   TextStyle get h2Skinny => h2.copyWith(fontWeight: FontWeight.w300);
   TextStyle get h2Fat => h2.copyWith(fontWeight: FontWeight.w600);
+}
+
+class Buttons {
+  static ButtonStyle updateButtonStyle({required Color color}) {
+    return ElevatedButton.styleFrom(
+      shape: FlutterHelpers.roundedRect(radius: 10),
+      elevation: 0.3,
+      visualDensity: VisualDensity.compact,
+      fixedSize: Size(70, /* ignored :( */ 10),
+      padding: EdgeInsets.zero,
+      backgroundColor: color,
+    );
+  }
 }

@@ -1,4 +1,3 @@
-import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -50,7 +49,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
 
   Widget cancelEditingButton() {
     return ElevatedButton(
-      style: buttonStyle(color: Colors.red[300]!),
+      style: Buttons.updateButtonStyle(color: Colors.red[300]!),
       onPressed: () => setState(() => _editing = false),
       child: Text('Cancel'),
     );
@@ -93,7 +92,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
 
   Widget updateButton() {
     return ElevatedButton(
-      style: buttonStyle(
+      style: Buttons.updateButtonStyle(
           color: _editing
               ? Colors.lightGreen.shade300
               : CupertinoColors.systemGrey6),
@@ -101,17 +100,6 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
           ? onSubmit(_textFieldController.text)
           : setState(() => _editing = true),
       child: Text(_editing ? 'Submit' : 'Update'),
-    );
-  }
-
-  ButtonStyle buttonStyle({required Color color}) {
-    return ElevatedButton.styleFrom(
-      shape: FlutterHelpers.roundedRect(radius: 10),
-      elevation: 0.3,
-      visualDensity: VisualDensity.compact,
-      fixedSize: Size(70, /* ignored :( */ 10),
-      padding: EdgeInsets.zero,
-      backgroundColor: color,
     );
   }
 }

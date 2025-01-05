@@ -183,7 +183,8 @@ enum ReadingStatus {
   finished,
 }
 
-/// Special handling for no known book format
+/// Special handling for no known book format. Only use this as the type of the
+/// `CupertinoSegmentedControl` in `_FormatUpdaterState`.
 class RenderableFormat {
   const RenderableFormat(this.bookFormat);
 
