@@ -11,88 +11,74 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'editable_book_property.dart';
 import 'format_updater.dart';
 
-class BookPropertiesEditor extends ConsumerStatefulWidget {
+class BookPropertiesEditor extends ConsumerWidget {
   const BookPropertiesEditor(this.libraryBook);
 
   final LibraryBook libraryBook;
 
-  @override
-  ConsumerState createState() => _EditableBookPropertiesState();
-}
-
-class _EditableBookPropertiesState extends ConsumerState<BookPropertiesEditor> {
   static final SimpleLogger log = SimpleLogger(prefix: 'BookPropertiesEditor');
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Re-build() whenever an inner widget (eg. the buttons) invalidate()s the
+    // user-library.
+    ref.watch(userLibraryProvider);
 
-    // The point of this block is to re-render this widget when
-    // an inner widget (eg. the buttons) modifies the data shown by this widget.
-    // The way it works, is anyone (e.g. field-updater) `invalidate()`s the
-    // provider, which triggers `setState()` in this callback.
-    ref.watch(userLibraryProvider).whenData((library) => setState(() {}));
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          author(),
-          length(),
+          author(ref),
+          length(ref),
           bookFormat(),
         ],
       ),
     );
   }
 
-  Widget author() {
+  Widget author(WidgetRef ref) {
     return EditableBookProperty(
       title: 'Author',
-      value: widget.libraryBook.book.author ?? 'unknown',
-      onPressed: updateAuthor,
+      value: libraryBook.book.author ?? 'unknown',
+      onPressed: (String text) async {
+        log('updating author to $text');
+        await SupabaseBookService.updateAuthor(libraryBook.book, text);
+        ref.invalidate(userLibraryProvider);
+      },
     );
   }
 
-  void updateAuthor(String text) async {
-    log('updating author to $text');
-    await SupabaseBookService.updateAuthor(widget.libraryBook.book, text);
-    ref.invalidate(userLibraryProvider);
-  }
-
-  Widget length() {
+  Widget length(WidgetRef ref) {
     return EditableBookProperty(
       title: 'Length',
-      value: widget.libraryBook.bookLengthStringWSuffix,
-      defaultValue: widget.libraryBook.bookLengthString,
-      onPressed: updateLength,
+      value: libraryBook.bookLengthStringWSuffix,
+      defaultValue: libraryBook.bookLengthString,
+      onPressed: (String text) => updateLength(text, ref),
     );
   }
 
-  void updateLength(String text) async {
-    final int? len = widget.libraryBook.parseLengthText(text);
+  void updateLength(String text, WidgetRef ref) async {
+    final int? len = libraryBook.parseLengthText(text);
     if (len == null) return log('invalid length: $text');
     log('updating length to $text');
-    await SupabaseLibraryService.updateLength(widget.libraryBook, len);
+    await SupabaseLibraryService.updateLength(libraryBook, len);
     ref.invalidate(userLibraryProvider);
   }
 
   Widget bookFormat() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: 3.4),
       child: Row(
         children: [
           SizedBox(width: 9),
           Text('Format: ', style: TextStyles().title),
           SizedBox(width: 7.3),
           FormatUpdater(
-            widget.libraryBook.bookFormat,
-            (BookFormat format) =>
-                SupabaseLibraryService.updateFormat(widget.libraryBook, format),
+            libraryBook.bookFormat,
+            (BookFormat newFormat) =>
+                SupabaseLibraryService.updateFormat(libraryBook, newFormat),
           ),
         ],
       ),

@@ -35,39 +35,31 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          titleAndValue(),
-          updateButton(),
-          if (_editing) cancelEditingButton(),
+          titleAndValueLeft(),
+          trailingButtonsRight(),
         ],
       ),
     );
   }
 
-  Widget cancelEditingButton() {
-    return ElevatedButton(
-      style: Buttons.updateButtonStyle(color: Colors.red[300]!),
-      onPressed: () => setState(() => _editing = false),
-      child: Text('Cancel'),
-    );
-  }
-
-  // This is a separate inner Row so that the widgets within are left-aligned,
-  // while the button is right-aligned.
-  Widget titleAndValue() {
+  Widget titleAndValueLeft() {
     return Row(children: [
       Text('${widget.title}: ', style: TextStyles().title),
       SizedBox(width: 10),
-      _editing ? textField() : Text(widget.value, style: TextStyles().value),
+      if (_editing)
+        textField()
+      else
+        Text(widget.value, style: TextStyles().value),
     ]);
   }
 
   Widget textField() {
     return SizedBox(
-      width: 130,
+      width: 70,
       height: 28,
       child: CupertinoTextField(
         decoration: BoxDecoration(
@@ -90,6 +82,13 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
     widget.onPressed(text);
   }
 
+  Widget trailingButtonsRight() {
+    return Row(children: [
+      updateButton(),
+      if (_editing) cancelEditingButton(),
+    ]);
+  }
+
   Widget updateButton() {
     return ElevatedButton(
       style: Buttons.updateButtonStyle(
@@ -100,6 +99,17 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
           ? onSubmit(_textFieldController.text)
           : setState(() => _editing = true),
       child: Text(_editing ? 'Submit' : 'Update'),
+    );
+  }
+
+  Widget cancelEditingButton() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 10),
+      child: ElevatedButton(
+        style: Buttons.updateButtonStyle(color: Colors.red[300]!),
+        onPressed: () => setState(() => _editing = false),
+        child: Text('Cancel'),
+      ),
     );
   }
 }

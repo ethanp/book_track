@@ -72,9 +72,7 @@ class LibraryBook {
 
   int? parseLengthText(String text) {
     if (bookFormat == BookFormat.audiobook) {
-      // TODO(ux) Make it more clear to the user what the semantics of this are.
-      // TODO(ux) Make the semantics of this more user friendly.
-      // Right now, just putting a single number defaults to a count of MINUTES.
+      // TODO(ux) Audiobook length should have TWO text-fields ([hrs]:[mins])
       final int? hoursMins = _tryParseAudiobookLength(text);
       if (hoursMins != null) return hoursMins;
     }
