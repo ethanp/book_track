@@ -10,7 +10,7 @@ class FormatUpdater extends ConsumerStatefulWidget {
 
   final BookFormat initialBookFormat;
 
-  final void Function(BookFormat newFormat) updateBookFormat;
+  final Future<void> Function(BookFormat newFormat) updateBookFormat;
 
   @override
   ConsumerState createState() => _FormatUpdaterState();
@@ -44,28 +44,27 @@ class _FormatUpdaterState extends ConsumerState<FormatUpdater> {
       padding: EdgeInsets.zero,
       onValueChanged: updateFormat,
       groupValue: _currFormat,
-      children: {
-        for (final BookFormat format in BookFormat.values)
-          // Note: We have to wrap BookFormat with Renderable format because
-          // nullable types are not allowed as type param for
-          // CupertinoSegmentedControl.
-          format: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 3),
-            child: Text(
-              format.name,
-              style: const TextStyle(fontSize: 10),
-            ),
-          )
-      },
+      children: {for (final fmt in BookFormat.values) fmt: segmentText(fmt)},
     );
   }
 
-  void updateFormat(BookFormat selectedFormat) {
+  Widget segmentText(BookFormat format) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 3),
+      child: Text(format.name, style: const TextStyle(fontSize: 10)),
+    );
+  }
+
+  Future<void> updateFormat(BookFormat selectedFormat) async {
+    await widget.updateBookFormat(selectedFormat);
+
+    // Note: this is still needed even though we invalidate the provider below.
+    //  I think it's because this is a stateful widget so it will *not* be
+    //  rebuilt by the parent rebuilding.
     setState(() {
       _currFormat = selectedFormat;
       _editing = false;
     });
-    widget.updateBookFormat(selectedFormat);
 
     // This is to update the length field format shown,
     //  e.g. in the case that the format transitioned from paper to audio.
