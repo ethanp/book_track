@@ -55,15 +55,10 @@ class DateAxis {
   }
 
   Duration get verticalInterval {
-    if (timespan.duration < Duration(hours: 10)) {
-      return Duration(minutes: 30);
-    } else if (timespan.duration < Duration(days: 1)) {
-      return Duration(hours: 3);
-    } else if (timespan.duration < Duration(days: 21)) {
-      return Duration(days: 1);
-    } else {
-      return Duration(days: 7);
-    }
+    if (timespan.duration < Duration(hours: 10)) return Duration(minutes: 30);
+    if (timespan.duration < Duration(days: 1)) return Duration(hours: 3);
+    if (timespan.duration < Duration(days: 21)) return Duration(days: 1);
+    return Duration(days: 7);
   }
 
   Widget dateText(double value) {

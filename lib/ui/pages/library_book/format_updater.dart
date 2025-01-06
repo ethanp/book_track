@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class FormatUpdater extends ConsumerStatefulWidget {
   const FormatUpdater(this.initialBookFormat, this.updateBookFormat);
 
-  final BookFormat? initialBookFormat;
+  final BookFormat initialBookFormat;
 
   final void Function(BookFormat newFormat) updateBookFormat;
 
@@ -17,12 +17,7 @@ class FormatUpdater extends ConsumerStatefulWidget {
 }
 
 class _FormatUpdaterState extends ConsumerState<FormatUpdater> {
-  // TODO(ux) This isn't going to look good if the current format is `null`.
-  //  Instead of fixing this, remove the capability for the user to select
-  //  `null` as their format, and remove all the ?'s associated with the
-  //  current BookFormat. It's not worth the effort. Adding a new type in
-  //  would be easy if necessary.
-  late BookFormat? _currFormat = widget.initialBookFormat;
+  late BookFormat _currFormat = widget.initialBookFormat;
   bool _editing = false;
 
   @override
@@ -36,10 +31,7 @@ class _FormatUpdaterState extends ConsumerState<FormatUpdater> {
           children: [
             _editing
                 ? formatSelector()
-                : Text(
-                    _currFormat?.name ?? 'unknown',
-                    style: TextStyles().value,
-                  ),
+                : Text(_currFormat.name, style: TextStyles().value),
             updateButton(),
           ],
         ),
@@ -48,25 +40,19 @@ class _FormatUpdaterState extends ConsumerState<FormatUpdater> {
   }
 
   Widget formatSelector() {
-    final shownFormats = List.from(BookFormat.values);
-
-    // `null` should only be shown if it is the current value.
-    // It shouldn't be something you can *choose*.
-    if (_currFormat == null) shownFormats.add(null);
-
-    return CupertinoSegmentedControl<RenderableFormat>(
+    return CupertinoSegmentedControl<BookFormat>(
       padding: EdgeInsets.zero,
       onValueChanged: updateFormat,
-      groupValue: RenderableFormat(_currFormat),
+      groupValue: _currFormat,
       children: {
-        for (final BookFormat? format in shownFormats)
+        for (final BookFormat format in BookFormat.values)
           // Note: We have to wrap BookFormat with Renderable format because
           // nullable types are not allowed as type param for
           // CupertinoSegmentedControl.
-          RenderableFormat(format): Padding(
+          format: Padding(
             padding: EdgeInsets.symmetric(horizontal: 3),
             child: Text(
-              format?.name ?? 'unknown',
+              format.name,
               style: const TextStyle(fontSize: 10),
             ),
           )
@@ -74,13 +60,12 @@ class _FormatUpdaterState extends ConsumerState<FormatUpdater> {
     );
   }
 
-  void updateFormat(RenderableFormat selectedFormat) {
-    if (selectedFormat.bookFormat == null) return;
+  void updateFormat(BookFormat selectedFormat) {
     setState(() {
-      _currFormat = selectedFormat.bookFormat;
+      _currFormat = selectedFormat;
       _editing = false;
     });
-    widget.updateBookFormat(selectedFormat.bookFormat!);
+    widget.updateBookFormat(selectedFormat);
 
     // This is to update the length field format shown,
     //  e.g. in the case that the format transitioned from paper to audio.

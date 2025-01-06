@@ -130,8 +130,8 @@ class _SupaLibrary {
   int get userId => rawData[userIdCol];
   static final String userIdCol = 'user_id';
 
-  BookFormat? get format => (rawData[formatCol] as String?)
-      .map((str) => BookFormat.values.firstWhere((v) => v.name == str));
+  BookFormat get format =>
+      BookFormat.values.firstWhere((fmt) => fmt.name == rawData[formatCol]);
   static final String formatCol = 'format';
 
   int? get length => rawData[lengthCol];

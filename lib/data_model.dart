@@ -17,7 +17,7 @@ class LibraryBook {
   final Book book;
   final List<ProgressEvent> progressHistory;
   final List<StatusEvent> statusHistory;
-  final BookFormat? bookFormat;
+  final BookFormat bookFormat;
 
   /// Only if [bookFormat] is [BookFormat.audiobook], then this represents the
   /// number of minutes in the audiobook.
@@ -26,18 +26,13 @@ class LibraryBook {
   final bool archived;
 
   ProgressEventFormat get defaultProgressFormat => switch (bookFormat) {
-        null => ProgressEventFormat.percent,
         BookFormat.audiobook => ProgressEventFormat.minutes,
         _ => ProgressEventFormat.pageNum,
       };
 
   DateTime get startTime => progressHistory.first.end;
 
-  String get _suffix => switch (bookFormat) {
-        null => '(unknown format)',
-        BookFormat.audiobook => 'hrs:mins',
-        _ => 'pgs'
-      };
+  String get _suffix => bookFormat == BookFormat.audiobook ? 'hrs:mins' : 'pgs';
 
   String bookProgressString(ProgressEvent ev) => _format(ev.progress);
 
@@ -178,22 +173,4 @@ enum ReadingStatus {
   reading,
   abandoned,
   finished,
-}
-
-/// Special handling for no known book format. Only use this as the type of the
-/// `CupertinoSegmentedControl` in `_FormatUpdaterState`.
-class RenderableFormat {
-  const RenderableFormat(this.bookFormat);
-
-  final BookFormat? bookFormat;
-
-  @override
-  String toString() => bookFormat?.name ?? 'not selected';
-
-  @override
-  bool operator ==(Object other) =>
-      other is RenderableFormat && bookFormat == other.bookFormat;
-
-  @override
-  int get hashCode => bookFormat?.hashCode ?? 0;
 }
