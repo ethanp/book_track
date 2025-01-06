@@ -83,7 +83,7 @@ class _UpdateProgressDialogState
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // TODO(ux) Audiobook length should have TWO text-fields ([hrs]:[mins])
+          // TODO(ux,feature) Audiobook length should have TWO text-fields ([hrs]:[mins])
           //  Just like how it is for the audiobook length update form.
           GreyBoxTextField(
             textChanged: (input) => _textFieldInput = input,

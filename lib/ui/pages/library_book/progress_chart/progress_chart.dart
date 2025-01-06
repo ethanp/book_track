@@ -34,10 +34,9 @@ class _ProgressChartState extends ConsumerState<ProgressChart> {
   @override
   Widget build(BuildContext context) {
     if (_latestBook.bookLength == null) {
-      // TODO(ui) improve the understandability of what this is saying.
-      // TODO(ux) Or one better: instead of letting it be unknown, force the user
-      //  to set something when adding the book to library
-      return Text('book length unknown');
+      // TODO(ux,feature) Instead of letting it be unknown, force the user
+      //  to set something when adding the book to library.
+      return Text("This book's length is unknown. Update it above.");
     }
     return Card(
       margin: const EdgeInsets.only(left: 16, right: 16, top: 28),

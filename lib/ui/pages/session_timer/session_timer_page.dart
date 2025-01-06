@@ -197,7 +197,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
                     columnWidths: {0: FixedColumnWidth(110)},
                     children: progressEvents.mapL((ev) {
                       final percentage =
-                          widget.book.intPercentProgressAt(ev) ?? '?';
+                          widget.book.intPercentProgressAt(ev) ?? '? ';
                       return TableRow(children: [
                         Text(TimeHelpers.monthDayYear(ev.end)),
                         Text(TimeHelpers.hourMinuteAmPm(ev.end)),
