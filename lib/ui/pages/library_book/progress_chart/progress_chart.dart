@@ -10,16 +10,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'date_axis.dart';
 import 'timespan.dart';
 
-class ProgressHistoryView extends ConsumerStatefulWidget {
-  const ProgressHistoryView(this.useLocalInstead);
+class ProgressChart extends ConsumerStatefulWidget {
+  const ProgressChart(this.useOnlyForInitializing);
 
-  final LibraryBook useLocalInstead;
+  final LibraryBook useOnlyForInitializing;
 
   @override
-  ConsumerState createState() => _ProgressHistoryViewState();
+  ConsumerState createState() => _ProgressChartState();
 }
 
-class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
+class _ProgressChartState extends ConsumerState<ProgressChart> {
   static const noAxisTitles =
       AxisTitles(sideTitles: SideTitles(showTitles: false));
 
@@ -28,17 +28,19 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
   @override
   void initState() {
     super.initState();
-    _latestBook = widget.useLocalInstead;
+    _latestBook = widget.useOnlyForInitializing;
   }
 
   @override
   Widget build(BuildContext context) {
     if (_latestBook.bookLength == null) {
       // TODO(ui) improve the understandability of what this is saying.
+      // TODO(ux) Or one better: instead of letting it be unknown, force the user
+      //  to set something when adding the book to library
       return Text('book length unknown');
     }
     return Card(
-      margin: EdgeInsets.only(left: 16, right: 16, top: 28),
+      margin: const EdgeInsets.only(left: 16, right: 16, top: 28),
       color: Colors.grey[100],
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -59,13 +61,13 @@ class _ProgressHistoryViewState extends ConsumerState<ProgressHistoryView> {
 
   Widget? body(List<LibraryBook> library) {
     final LibraryBook? updatedBook = library
-        .where((book) => book.supaId == widget.useLocalInstead.supaId)
+        .where((book) => book.supaId == widget.useOnlyForInitializing.supaId)
         .singleOrNull;
     if (updatedBook == null) {
       return Text(
-        'The book ${widget.useLocalInstead.book.title} was deleted from '
-        'user\'s library. We probably have to pop this screen '
-        'now?',
+        'The book ${widget.useOnlyForInitializing.book.title} '
+        'has been deleted from your library. '
+        'We probably have to pop this screen now?',
       );
     }
     _latestBook = updatedBook;

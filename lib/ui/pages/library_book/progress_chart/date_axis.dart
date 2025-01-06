@@ -1,7 +1,7 @@
 import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:book_track/ui/pages/library_book/timespan.dart';
+import 'package:book_track/ui/pages/library_book/progress_chart/timespan.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -59,8 +59,10 @@ class DateAxis {
       return Duration(minutes: 30);
     } else if (timespan.duration < Duration(days: 1)) {
       return Duration(hours: 3);
-    } else {
+    } else if (timespan.duration < Duration(days: 21)) {
       return Duration(days: 1);
+    } else {
+      return Duration(days: 7);
     }
   }
 
