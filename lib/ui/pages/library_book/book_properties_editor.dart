@@ -1,4 +1,5 @@
 ﻿import 'package:book_track/data_model.dart';
+import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_book_service.dart';
@@ -42,9 +43,15 @@ class BookPropertiesEditor extends ConsumerWidget {
     return EditableBookProperty(
       title: 'Author',
       value: libraryBook.book.author ?? 'unknown',
-      onPressed: (String text) async {
-        log('updating author to $text');
-        await SupabaseBookService.updateAuthor(libraryBook.book, text);
+      initialTextFieldValues: [
+        TextFieldValueAndSuffix(
+          libraryBook.book.author ?? 'unknown',
+          null,
+        )
+      ],
+      onPressed: (List<String> text) async {
+        log('updating author to ${text[0]}');
+        await SupabaseBookService.updateAuthor(libraryBook.book, text[0]);
         ref.invalidate(userLibraryProvider);
       },
     );
@@ -54,15 +61,35 @@ class BookPropertiesEditor extends ConsumerWidget {
     return EditableBookProperty(
       title: 'Length',
       value: libraryBook.bookLengthStringWSuffix,
-      defaultValue: libraryBook.bookLengthString,
-      onPressed: (String text) => updateLength(text, ref),
+      // TODO(cleanup) Shirley, this logic doesn't belong here.
+      initialTextFieldValues: libraryBook.bookFormat == BookFormat.audiobook
+          ? () {
+              String hrs = '0';
+              String mins = '0';
+              if (libraryBook.bookLength != null) {
+                hrs = libraryBook.bookLength!.hours;
+                mins = libraryBook.bookLength!.minutes;
+              }
+              log('hrs=$hrs mins=$mins');
+              return [
+                TextFieldValueAndSuffix(hrs, 'hrs'),
+                TextFieldValueAndSuffix(mins, 'mins'),
+              ];
+            }()
+          : [
+              TextFieldValueAndSuffix(
+                libraryBook.bookLengthString ?? '200',
+                'pgs',
+              )
+            ],
+      onPressed: (List<String> texts) => updateLength(texts, ref),
     );
   }
 
-  void updateLength(String text, WidgetRef ref) async {
-    final int? len = libraryBook.parseLengthText(text);
-    if (len == null) return log('invalid length: $text');
-    log('updating length to $text');
+  void updateLength(List<String> texts, WidgetRef ref) async {
+    final int? len = libraryBook.parseLengthText(texts.join(':'));
+    if (len == null) return log('invalid length: $texts');
+    log('updating length to $texts');
     await SupabaseLibraryService.updateLength(libraryBook, len);
     ref.invalidate(userLibraryProvider);
   }

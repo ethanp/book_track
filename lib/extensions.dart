@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 extension BuildContextExtension on BuildContext {
   static SimpleLogger log = SimpleLogger(prefix: 'BuildContextExtension');
+
   void showSnackBar(String message, {bool isError = false}) =>
       log('snack bar: $message', error: isError);
 
@@ -77,9 +78,11 @@ extension NumExtension on num {
 extension IntExtension on int {
   String get pad2 => toString().padLeft(2, '0');
 
+  String get hours => (this ~/ 60).pad2;
+
+  String get minutes => (this % 60).pad2;
+
   String get minsToHhMm {
-    final hours = (this ~/ 60).pad2;
-    final minutes = (this % 60).pad2;
     return '$hours:$minutes';
   }
 }

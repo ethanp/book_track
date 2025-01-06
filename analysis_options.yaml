@@ -34,5 +34,6 @@ analyzer:
     use_key_in_widget_constructors: ignore
     avoid_print: ignore
     invalid_annotation_target: ignore # https://pub.dev/packages/freezed#how-to-use
+    avoid_function_literals_in_foreach_calls: ignore
   plugins:
     - custom_lint

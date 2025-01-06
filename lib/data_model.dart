@@ -72,7 +72,6 @@ class LibraryBook {
 
   int? parseLengthText(String text) {
     if (bookFormat == BookFormat.audiobook) {
-      // TODO(ux) Audiobook length should have TWO text-fields ([hrs]:[mins])
       final int? hoursMins = _tryParseAudiobookLength(text);
       if (hoursMins != null) return hoursMins;
     }
