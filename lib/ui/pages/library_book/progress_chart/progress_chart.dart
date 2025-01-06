@@ -124,13 +124,16 @@ class _ProgressChartState extends ConsumerState<ProgressChart> {
 
   List<LineChartBarData> plotLines() {
     // TODO(ux) If there are multiple spots on a single day, and the whole book's
-    //  been read over many days, it would make sense to only show the LAST
-    //  spot of each day on the chart, to avoid weird and hard-to-interpret
-    //  visuals.
+    //  been read over many days, it would be easier to interpret if we instead
+    //  only show the LAST location of each day on the chart, to avoid those
+    //  weird and hard-to-interpret vertical blips visuals. Currently I'm just
+    //  *deleting* inner daily location updates to make the chart better, but
+    //  this is a waste of data that would be nice to collect.
     final readingProgressLine = LineChartBarData(
-        spots: _latestBook.progressHistory.mapL(eventToSpot),
-        belowBarData: gradientFill(),
-        gradient: lineGradient());
+      spots: _latestBook.progressHistory.mapL(eventToSpot),
+      belowBarData: gradientFill(),
+      gradient: lineGradient(),
+    );
     return [readingProgressLine];
   }
 

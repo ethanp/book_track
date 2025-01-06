@@ -48,9 +48,9 @@ class _EventTimelineItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(children: [
-      pipe(top: true),
+      pipe(onTop: true),
       card(ref),
-      pipe(top: false),
+      pipe(onTop: false),
     ]);
   }
 
@@ -61,34 +61,55 @@ class _EventTimelineItem extends ConsumerWidget {
         padding: const EdgeInsets.only(left: 12, top: 6, bottom: 6),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [dateTimeString(), eventInfo()],
-            ),
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () => update(ref),
-                  icon: Icon(Icons.edit_note, size: 28),
-                ),
-                IconButton(
-                  onPressed: () => delete(ref),
-                  icon: Icon(
-                    Icons.delete,
-                    size: 22,
-                    color: Colors.red[900],
-                  ),
-                ),
-              ],
-            ),
-          ],
+          children: [eventInfo(), modifyButtons(ref)],
         ),
       ),
     );
   }
 
-  void delete(WidgetRef ref) => ConfirmationDialog.show(
+  Widget eventInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        dateTimeString(),
+        switch (readingEvent) {
+          StatusEvent ev => Text('Status: ${ev.status.name}'),
+          ProgressEvent ev => () {
+              final progressString = libraryBook.bookProgressStringWSuffix(ev);
+              final percentString = libraryBook.intPercentProgressAt(ev);
+              return Text('Progress: $progressString ($percentString%)');
+            }(),
+          _ => throw UnsupportedError(
+              'Unknown reading event type: ${readingEvent.runtimeType}')
+        },
+      ],
+    );
+  }
+
+  Widget modifyButtons(WidgetRef ref) =>
+      Row(children: [updateButton(ref), deleteButton(ref)]);
+
+  Widget updateButton(WidgetRef ref) {
+    return IconButton(
+      icon: Icon(Icons.edit_note, size: 28),
+      onPressed: () async => switch (readingEvent) {
+        ProgressEvent ev =>
+          await UpdateProgressDialogPage.update(ref, libraryBook, ev),
+        StatusEvent _ =>
+          // TODO(feature) Show a modal that allows updating [StatusEvent]s.
+          //  Probably want to allow updating both the `status` and `time`.
+          //  Requires implementing something like [UpdateProgressDialogPage],
+          //  but it would be called `UpdateStatusDialogPage` instead.
+          'a',
+        _ => log('unknown event ${readingEvent.runtimeType} $readingEvent'),
+      },
+    );
+  }
+
+  Widget deleteButton(WidgetRef ref) {
+    return IconButton(
+      icon: Icon(Icons.delete, size: 22, color: Colors.red[900]),
+      onPressed: () => ConfirmationDialog.show(
         context: ref.context,
         text: 'Are you sure you want to delete this event?',
         title: 'delete event',
@@ -101,53 +122,26 @@ class _EventTimelineItem extends ConsumerWidget {
           };
           ref.invalidate(userLibraryProvider);
         },
-      );
-
-  Future<void> update(WidgetRef ref) async {
-    return switch (readingEvent) {
-      ProgressEvent ev =>
-        await UpdateProgressDialogPage.update(ref, libraryBook, ev),
-      StatusEvent _ =>
-        // TODO(feature) Show a similar modal, but for status updates,
-        //  so you can update the datetime or delete only.
-        'a',
-      _ => log('unknown event ${readingEvent.runtimeType} $readingEvent'),
-    };
+      ),
+    );
   }
 
   Widget dateTimeString() =>
       Text(TimeHelpers.dateAndTime(readingEvent.dateTime));
 
-  Widget eventInfo() {
-    return switch (readingEvent) {
-      StatusEvent ev => Text('Status: ${ev.status.name}'),
-      ProgressEvent ev => () {
-          final progressString = libraryBook.bookProgressStringWSuffix(ev);
-          final percentString = libraryBook.intPercentProgressAt(ev);
-          return Text('Progress: $progressString ($percentString%)');
-        }(),
-      _ => throw UnsupportedError(
-          'Unknown reading event type: ${readingEvent.runtimeType}')
-    };
-  }
-
-  Widget pipe({required bool top}) {
+  Widget pipe({required bool onTop}) {
     return Container(
       height: 6,
       width: 12,
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(onTop ? 0 : 3),
+          bottom: Radius.circular(onTop ? 3 : 0),
+        ),
         gradient: LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
-          colors: [
-            Colors.grey.shade700, // Darker shade for the edges
-            Colors.grey.shade300, // Lighter shade for the center
-            Colors.grey.shade700, // Darker shade for the other edge
-          ],
-        ),
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(top ? 0 : 3),
-          bottom: Radius.circular(top ? 3 : 0),
+          colors: [Colors.grey[700]!, Colors.grey[300]!, Colors.grey[700]!],
         ),
       ),
     );

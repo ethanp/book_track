@@ -45,17 +45,16 @@ class _LoginPageState extends State<LoginPage> {
 
   void pushLoggedInAppUponLogin() {
     _authStateSubscription = SupabaseAuthService.onAuthStateChange(
+      onError: (Object error) => log.error('Auth state change error: $error'),
       onEvent: (AuthState data) {
         log('Auth state changed: $data');
         if (_redirectingToLoggedInApp) return;
         if (SupabaseAuthService.isLoggedIn) {
           _redirectingToLoggedInApp = true;
-          // TODO(bug) probably need to call this when we log OUT as well
+          // TODO(bug?) Do we need to call this upon logging OUT as well?
           if (mounted) context.pushReplacementPage(const WholeAppWidget());
         }
       },
-      onError: (Object error) =>
-          log('Unexpected error occurred: $error', error: true),
     );
   }
 
