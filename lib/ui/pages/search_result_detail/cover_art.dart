@@ -25,6 +25,7 @@ class _CoverArtState extends ConsumerState<CoverArt> {
 
   @override
   void dispose() {
+    // `ignore()` is for when we _used to but no longer_ care about the result
     futureCoverArtMedSize.ignore();
     super.dispose();
   }

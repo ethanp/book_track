@@ -1,3 +1,4 @@
+import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/ui/common/design.dart';
@@ -7,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'search_results.dart';
 
 class AddBookModalBody extends ConsumerWidget {
+  static final SimpleLogger log = SimpleLogger(prefix: 'AddBookModalBody');
+
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -44,10 +47,10 @@ class AddBookModalBody extends ConsumerWidget {
   }
 
   void search(String text, WidgetRef ref) {
-    print('searching for: $text');
-    final BookSearchResults results =
+    log('searching for: $text');
+    final BookSearchResultsNotifier results =
         ref.read(bookSearchResultsProvider.notifier);
-    results.update(BookSearchResult.loading);
+    results.notify(BookSearchResults.loading);
     BookUniverseService.search(text, results);
   }
 }

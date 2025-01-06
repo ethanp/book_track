@@ -177,29 +177,36 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
         color: Colors.blueGrey[100],
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
-          // TODO(ui) This height limit makes no sense:
-          //  When there are too many items, it just overflows out.
-          height: 200,
-          // TODO(simplify) Not sure -- what's the default width semantics?
-          //  Is it something different than using infinity here?
-          width: double.infinity,
+          constraints: const BoxConstraints(minHeight: 200, maxHeight: 270),
           child: Column(children: [
-            Text('Progress Events:', style: TextStyles().h1),
+            Container(
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.black)),
+              ),
+              padding: const EdgeInsets.only(bottom: 2),
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Text('Progress Events', style: TextStyles().h1),
+            ),
             if (progressEvents.isEmpty)
               Text('None', style: TextStyles().h2)
             else
-              Table(
-                columnWidths: {0: FixedColumnWidth(110)},
-                children: progressEvents.mapL((ev) {
-                  final percentage =
-                      widget.book.intPercentProgressAt(ev) ?? '?';
-                  return TableRow(children: [
-                    Text(TimeHelpers.monthDayYear(ev.end)),
-                    Text(TimeHelpers.hourMinuteAmPm(ev.end)),
-                    Text('$percentage%'),
-                    Text(widget.book.bookProgressStringWSuffix(ev)),
-                  ]);
-                }),
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Table(
+                    columnWidths: {0: FixedColumnWidth(110)},
+                    children: progressEvents.mapL((ev) {
+                      final percentage =
+                          widget.book.intPercentProgressAt(ev) ?? '?';
+                      return TableRow(children: [
+                        Text(TimeHelpers.monthDayYear(ev.end)),
+                        Text(TimeHelpers.hourMinuteAmPm(ev.end)),
+                        Text('$percentage%'),
+                        Text(widget.book.bookProgressStringWSuffix(ev)),
+                      ]);
+                    }),
+                  ),
+                ),
               ),
           ]),
         ),

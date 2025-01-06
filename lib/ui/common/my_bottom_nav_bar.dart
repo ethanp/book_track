@@ -26,7 +26,10 @@ class MyBottomNavBar extends ConsumerWidget {
         navigationBar: CupertinoNavigationBar(
           middle: Text('Stats'),
         ),
-        // TODO make it cupertino style.
+        // TODO(feature) Add stats page, and it properly cupertino style. Consider asking ChatGpt for
+        //  specific UI ideas to retain optimal navigability. I'm thinking the nav-bar should
+        //  only be shown on the my_library_page, rather than on all pages. Similar to the
+        //  Strong UI.
         // bottomNavigationBar: MyBottomNavBar(),
         child: Text('Stats page does not exist yet'),
       ),

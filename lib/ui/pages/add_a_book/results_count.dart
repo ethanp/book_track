@@ -3,7 +3,7 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/material.dart';
 
 class ResultsCount extends StatelessWidget {
-  ResultsCount(BookSearchResult searchResult)
+  ResultsCount(BookSearchResults searchResult)
       : shownCount = searchResult.books.length,
         fullCount = searchResult.fullResultCount;
 

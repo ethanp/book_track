@@ -44,14 +44,23 @@ class _FormatUpdaterState extends ConsumerState<FormatUpdater> {
       padding: EdgeInsets.zero,
       onValueChanged: updateFormat,
       groupValue: _currFormat,
-      children: {for (final fmt in BookFormat.values) fmt: segmentText(fmt)},
+      children: formatSegments(),
     );
   }
 
-  Widget segmentText(BookFormat format) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 3),
-      child: Text(format.name, style: const TextStyle(fontSize: 10)),
+  /// * Key - the BookFormat to assign when widget is clicked
+  /// * Value - the `label` [Widget] for this segment
+  ///
+  /// It returns a `LinkedHashMap` that will iterate in enum-declaration order.
+  Map<BookFormat, Widget> formatSegments() {
+    return Map.fromIterables(
+      BookFormat.values,
+      BookFormat.values.map(
+        (format) => Padding(
+          padding: EdgeInsets.symmetric(horizontal: 3),
+          child: Text(format.name, style: const TextStyle(fontSize: 10)),
+        ),
+      ),
     );
   }
 
@@ -59,8 +68,9 @@ class _FormatUpdaterState extends ConsumerState<FormatUpdater> {
     await widget.updateBookFormat(selectedFormat);
 
     // Note: this is still needed even though we invalidate the provider below.
-    //  I think it's because this is a stateful widget so it will *not* be
-    //  rebuilt by the parent rebuilding.
+    //  TODO(clarification) Ask ChatGpt? Possibly, it's because this is a stateful
+    //   widget, which (may?) mean it's rebuild will *not* be triggered  by
+    //   the parent rebuilding.
     setState(() {
       _currFormat = selectedFormat;
       _editing = false;

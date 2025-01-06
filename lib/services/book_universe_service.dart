@@ -6,61 +6,72 @@ import 'package:book_track/riverpods.dart';
 import 'package:http/http.dart' as http;
 
 class BookUniverseService {
-  static final bookUniverseRepo = OpenLibraryBookUniverseRepository();
+  static final _bookUniverseRepo = _OpenLibraryBookUniverseRepository();
 
   static Future<void> search(
-      String containing, BookSearchResults results) async {
-    if (containing.isEmpty) {
-      return results.update(BookSearchResult.empty);
+    String expectedSubstring,
+    BookSearchResultsNotifier bookSearchResultsNotifier,
+  ) async {
+    // Empty search string clears the search results list.
+    if (expectedSubstring.isEmpty) {
+      return bookSearchResultsNotifier.notify(BookSearchResults.empty);
     }
-    results.update(await bookUniverseRepo.search(containing));
+
+    final searchResults = await _bookUniverseRepo.search(expectedSubstring);
+    bookSearchResultsNotifier.notify(searchResults);
   }
 
   static Future<Uint8List?> downloadMedSizeCover(OpenLibraryBook book) =>
-      bookUniverseRepo._coverBytes(book.openLibCoverId, 'M');
+      _bookUniverseRepo._coverBytes(book.openLibCoverId, 'M');
 }
 
-/// Open Library has a simple HTTP search endpoint for books and covers:
-///     https://openlibrary.org/dev/docs/api/books
-///    It doesn't require any authentication or setup.
-///    ***I'm starting with this one for now.***
-/// Google would probably work better/faster, but more difficult to use:
-///     https://developers.google.com/books/docs/v1/using
-/// Another one to check out is:
-///     https://hardcover.app/account/api?referrer_id=15017
-class OpenLibraryBookUniverseRepository {
+/// * Open Library has a simple HTTP search endpoint for books and covers:
+///   * https://openlibrary.org/dev/docs/api/books
+///   * It doesn't require any authentication or setup.
+///   * **I'm starting with this one for now.**
+///
+/// * Google would probably work better/faster, but requires a token and has
+///  more terms of service:
+///   * https://developers.google.com/books/docs/v1/using
+///   * I intend to try this out in the future.
+///
+/// * Another one to check out is:
+///   * https://hardcover.app/account/api?referrer_id=15017
+///   * Worth taking another look and maybe deleting this one from this list.
+///
+class _OpenLibraryBookUniverseRepository {
   static final SimpleLogger log =
       SimpleLogger(prefix: 'OpenLibraryBookUniverseRepository');
+
   static final Uri apiUrl = Uri.parse('https://openlibrary.org/search.json');
 
   static Uri coverUrl(int coverId, String size) =>
       Uri.parse('https://covers.openlibrary.org/b/id/$coverId-$size.jpg');
 
-  Future<BookSearchResult> search(String containing) async {
+  Future<BookSearchResults> search(String containing) async {
     String safe(String str) => str.replaceAll(r'\S', '+');
     final Uri url = apiUrl.replace(queryParameters: {
       'q': safe(containing),
       'limit': '10',
     });
-    print('apiUrl: $url');
     final http.Response response = await http.get(url);
     if (response.statusCode != 200) {
-      // NB: Sometimes I get 500 Internal Server Error from here.
-      //  TODO(ux): Instead of immediately prompting user to retry, back off,
-      //   then try again automagically.
-      final oops =
-          'search error: ${response.statusCode} ${response.reasonPhrase}';
+      // NB: Sometimes I get 500 Internal Server Error from here,
+      // and a simple wait and retry fixes it.
+      final oops = 'search error: '
+          '${response.statusCode} ${response.reasonPhrase}.'
+          ' Please try again.';
       log(oops);
-      return BookSearchResult.failed(oops);
+      return BookSearchResults.failed(oops);
     }
     final dynamic bodyJson = jsonDecode(response.body);
     final results = bodyJson['docs'] as List<dynamic>;
-    return BookSearchResult(
+    return BookSearchResults(
       fullResultCount: bodyJson['numFound'] ?? -777,
       books: await Future.wait(
         results.map(
-          (dynamic openLibBookDoc) async {
-            final List? authorNames = openLibBookDoc['author_name'];
+          (dynamic /*Map<String, dynamic>*/ openLibBookDoc) async {
+            final List<String>? authorNames = openLibBookDoc['author_name'];
             return OpenLibraryBook(
               openLibBookDoc['title'],
               authorNames?.first ?? 'Unknown',

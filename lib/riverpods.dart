@@ -42,15 +42,15 @@ class SessionStartTime extends _$SessionStartTime {
 }
 
 @riverpod
-class BookSearchResults extends _$BookSearchResults {
+class BookSearchResultsNotifier extends _$BookSearchResults {
   @override
-  BookSearchResult build() => BookSearchResult.empty;
+  BookSearchResults build() => BookSearchResults.empty;
 
-  void update(BookSearchResult searchResult) => state = searchResult;
+  void notify(BookSearchResults searchResult) => state = searchResult;
 }
 
-class BookSearchResult {
-  const BookSearchResult({
+class BookSearchResults {
+  const BookSearchResults({
     required this.books,
     required this.fullResultCount,
     this.isLoading = false,
@@ -62,14 +62,14 @@ class BookSearchResult {
   final List<OpenLibraryBook> books;
   final int fullResultCount;
 
-  static const BookSearchResult empty =
-      BookSearchResult(books: [], fullResultCount: 0);
+  static const BookSearchResults empty =
+      BookSearchResults(books: [], fullResultCount: 0);
 
-  static const BookSearchResult loading =
-      BookSearchResult(books: [], fullResultCount: 0, isLoading: true);
+  static const BookSearchResults loading =
+      BookSearchResults(books: [], fullResultCount: 0, isLoading: true);
 
-  static BookSearchResult failed(Object? failure) =>
-      BookSearchResult(books: [], fullResultCount: 0, failure: failure);
+  static BookSearchResults failed(Object? failure) =>
+      BookSearchResults(books: [], fullResultCount: 0, failure: failure);
 }
 
 @riverpod
