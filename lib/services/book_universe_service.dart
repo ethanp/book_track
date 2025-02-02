@@ -66,24 +66,28 @@ class _OpenLibraryBookUniverseRepository {
     }
     final dynamic bodyJson = jsonDecode(response.body);
     final results = bodyJson['docs'] as List<dynamic>;
-    return BookSearchResults(
-      fullResultCount: bodyJson['numFound'] ?? -777,
-      books: await Future.wait(
-        results.map(
-          (dynamic /*Map<String, dynamic>*/ openLibBookDoc) async {
-            final List<String>? authorNames = openLibBookDoc['author_name'];
-            return OpenLibraryBook(
-              openLibBookDoc['title'],
-              authorNames?.first ?? 'Unknown',
-              openLibBookDoc['first_publish_year'],
-              openLibBookDoc['number_of_pages_median'],
-              openLibBookDoc['cover_i'],
-              await _coverBytes(openLibBookDoc['cover_i'], 'S'),
-            );
-          },
+    try {
+      return BookSearchResults(
+        fullResultCount: bodyJson['numFound'] ?? -777,
+        books: await Future.wait(
+          results.map(
+            (dynamic /*Map<String, dynamic>*/ openLibBookDoc) async {
+              final List<dynamic>? authorNames = openLibBookDoc['author_name'];
+              return OpenLibraryBook(
+                openLibBookDoc['title'],
+                authorNames?.first ?? 'Unknown',
+                openLibBookDoc['first_publish_year'],
+                openLibBookDoc['number_of_pages_median'],
+                openLibBookDoc['cover_i'],
+                await _coverBytes(openLibBookDoc['cover_i'], 'S'),
+              );
+            },
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      return BookSearchResults(books: [], fullResultCount: 0, failure: e);
+    }
   }
 
   Future<Uint8List?> _coverBytes(int? coverId, String size) async {

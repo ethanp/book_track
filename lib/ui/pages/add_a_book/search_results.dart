@@ -20,9 +20,17 @@ class SearchResults extends ConsumerWidget {
       );
     }
     if (searchResult.failure != null) {
-      return Text(
-        'Request to OpenLibrary failed. Please search again.',
-        style: TextStyles().h3,
+      return Column(
+        children: [
+          Text(
+            'Request to OpenLibrary failed. Please search again.',
+            style: TextStyles().h3,
+          ),
+          Text(
+            '\n${searchResult.failure}',
+            style: TextStyles().value,
+          )
+        ],
       );
     }
     return Expanded(
