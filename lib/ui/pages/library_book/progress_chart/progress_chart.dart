@@ -133,13 +133,28 @@ class _ProgressChartState extends ConsumerState<ProgressChart> {
       spots: _latestBook.progressHistory.mapL(eventToSpot),
       belowBarData: gradientFill(),
       gradient: lineGradient(),
+      dotData: FlDotData(
+        show: true,
+        getDotPainter: (_, percent, __, ___) => FlDotCirclePainter(
+          radius: 3.7,
+          color: Color.lerp(
+            Colors.blue.withValues(alpha: .7),
+            Colors.blueGrey.withValues(alpha: .8),
+            percent / 100,
+          )!,
+          strokeColor: Colors.black,
+        ),
+      ),
     );
     return [readingProgressLine];
   }
 
   static LinearGradient lineGradient() {
     return LinearGradient(
-      colors: [Colors.grey[600]!, Colors.blue.withValues(alpha: .2)],
+      colors: [
+        Colors.blue.withValues(alpha: .2),
+        Colors.grey[700]!.withValues(alpha: .6),
+      ],
       stops: [.4, 1],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
@@ -150,7 +165,10 @@ class _ProgressChartState extends ConsumerState<ProgressChart> {
     return BarAreaData(
       show: true,
       gradient: LinearGradient(
-        colors: [Colors.teal[400]!, Colors.blue.withValues(alpha: .2)],
+        colors: [
+          Colors.teal[400]!.withValues(alpha: .7),
+          Colors.blue.withValues(alpha: .4)
+        ],
         stops: [.4, 1],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,

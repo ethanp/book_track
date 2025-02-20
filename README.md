@@ -53,7 +53,7 @@ This way we can run the app on the phone without tethering to the dev env.
 * Click "Export" to e.g. Desktop (5sec)
 * Connect (properly registered) iPhone to laptop
 * Open "Apple Configurator" app on laptop
-    * It should show iphone homescreen automatically
+    * It will load iphone homescreen automatically (10sec)
 * Open the directory that was exported to the Desktop
 * Drag the `book_track.ipa` file onto the iphone homescreen (8sec)
 * Then click replace (5sec)
