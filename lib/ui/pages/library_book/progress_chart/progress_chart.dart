@@ -131,12 +131,14 @@ class _ProgressChartState extends ConsumerState<ProgressChart> {
     //  this is a waste of data that would be nice to collect.
     final readingProgressLine = LineChartBarData(
       spots: _latestBook.progressHistory.mapL(eventToSpot),
+      isCurved: true,
+      curveSmoothness: .1,
       belowBarData: gradientFill(),
       gradient: lineGradient(),
       dotData: FlDotData(
         show: true,
         getDotPainter: (_, percent, __, ___) => FlDotCirclePainter(
-          radius: 3.7,
+          radius: percent / 100 / 1.2 + 2,
           color: Color.lerp(
             Colors.blue.withValues(alpha: .7),
             Colors.blueGrey.withValues(alpha: .8),

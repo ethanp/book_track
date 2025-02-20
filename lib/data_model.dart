@@ -37,16 +37,22 @@ class LibraryBook {
   String bookProgressString(ProgressEvent ev) => _format(ev.progress);
 
   String bookProgressStringWSuffix(ProgressEvent ev) =>
-      '${_format(ev.progress)} $_suffix';
+      '${_format(ev.progress, ev.format)} $_suffix';
 
   String get bookLengthStringWSuffix =>
       '${bookLengthString ?? 'unknown'} $_suffix';
 
   String? get bookLengthString => bookLength.map(_format);
 
-  String _format(int length) => bookFormat == BookFormat.audiobook
-      ? length.minsToHhMm
-      : length.toString();
+  String _format(int length, [ProgressEventFormat? format]) {
+    if (format != null && format == ProgressEventFormat.percent) {
+      if (bookLength == null) return length.toString();
+      length = ((length / 100.0) * bookLength!).toInt();
+    }
+    return bookFormat == BookFormat.audiobook
+        ? length.minsToHhMm
+        : length.toString();
+  }
 
   ReadingStatus get readingStatus =>
       statusHistory.lastOrNull?.status ?? ReadingStatus.reading;
