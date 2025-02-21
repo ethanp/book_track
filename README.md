@@ -46,7 +46,10 @@ flutter clean;
 
 This way we can run the app on the phone without tethering to the dev env.
 
-* Start with `flutter build ios --release`
+* Start with
+  ```
+  flutter build ios --release
+  ```
 * In XCode open the "blue on white" version of the xcode file
 * Open menu-bar `Product > Archive` (20sec)
 * Click "Distribute App", for "Release Testing" (10sec)

@@ -34,21 +34,30 @@ class LibraryBook {
 
   String get _suffix => bookFormat == BookFormat.audiobook ? 'hrs:mins' : 'pgs';
 
-  String bookProgressString(ProgressEvent ev) => _format(ev.progress);
+  String bookProgressString(ProgressEvent ev) =>
+      _formatBookLengthString(ev.progress);
 
   String bookProgressStringWSuffix(ProgressEvent ev) =>
-      '${_format(ev.progress, ev.format)} $_suffix';
+      '${_formatBookLengthString(ev.progress, ev.format)} $_suffix';
 
   String get bookLengthStringWSuffix =>
       '${bookLengthString ?? 'unknown'} $_suffix';
 
-  String? get bookLengthString => bookLength.map(_format);
+  String? get bookLengthString => bookLength.map(_formatBookLengthString);
 
-  String _format(int length, [ProgressEventFormat? format]) {
-    if (format != null && format == ProgressEventFormat.percent) {
-      if (bookLength == null) return length.toString();
+  String _formatBookLengthString(int length, [ProgressEventFormat? format]) {
+    if (bookLength == null) {
+      return format == ProgressEventFormat.minutes
+          ? length.minsToHhMm
+          : length.toString();
+    }
+
+    // When progress update was given in percentage,
+    // still provide the length completed in terms of the actual book length.
+    if (format == ProgressEventFormat.percent) {
       length = ((length / 100.0) * bookLength!).toInt();
     }
+
     return bookFormat == BookFormat.audiobook
         ? length.minsToHhMm
         : length.toString();
