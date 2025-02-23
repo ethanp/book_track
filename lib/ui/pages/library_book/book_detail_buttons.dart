@@ -29,7 +29,7 @@ class BookDetailButtons extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(userLibraryProvider);
 
-    final List<Widget> children = completed
+    final List<Widget> children = (completed || abandoned)
         ? [
             archive(ref),
             remove(ref),

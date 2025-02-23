@@ -57,6 +57,8 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
   }
 
   Widget libraryScreen(List<LibraryBook> library) {
+    library.sort((a, b) =>
+        (b.progressPercentage ?? 0).compareTo(a.progressPercentage ?? 0));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
