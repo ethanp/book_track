@@ -157,6 +157,7 @@ class _UpdateProgressDialogState
       await SupabaseProgressService.updateProgressEvent(
         preexistingEvent: widget.preexistingProgressEvent!,
         updatedValue: newLen,
+        format: _selectedProgressEventFormat,
         start: widget.startTime,
         end: _selectedEndTime,
       );

@@ -29,12 +29,14 @@ class SupabaseProgressService {
   static Future<void> updateProgressEvent({
     required ProgressEvent preexistingEvent,
     required int updatedValue,
+    required ProgressEventFormat format,
     DateTime? start,
     required DateTime end,
   }) async =>
       await _progressClient
           .update({
             _SupaProgress.progressCol: updatedValue,
+            _SupaProgress.formatCol: format.name,
             _SupaProgress.startCol: start?.toIso8601String(),
             _SupaProgress.endCol: end.toIso8601String(),
             // Out of lack of need thus far, we don't store "updated-at timestamp".
