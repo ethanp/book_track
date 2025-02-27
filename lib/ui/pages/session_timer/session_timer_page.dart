@@ -202,7 +202,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
                         Text(TimeHelpers.monthDayYear(ev.end)),
                         Text(TimeHelpers.hourMinuteAmPm(ev.end)),
                         Text('$percentage%'),
-                        Text(widget.book.bookProgressStringWSuffix(ev)),
+                        Text(ev.stringWSuffix),
                       ]);
                     }),
                   ),

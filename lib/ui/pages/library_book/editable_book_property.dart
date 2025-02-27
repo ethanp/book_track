@@ -1,4 +1,5 @@
 import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +16,8 @@ class EditableBookProperty extends ConsumerStatefulWidget {
   const EditableBookProperty({
     required this.title,
     required this.value,
-    required this.onPressed,
     required this.initialTextFieldValues,
+    required this.onPressed,
   });
 
   final String title;
@@ -50,6 +51,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           titleAndValueLeft(),
+          SizedBox(height: 40, width: 1),
           trailingButtonsRight(),
         ],
       ),
@@ -73,8 +75,8 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
         (field) => Row(
           children: [
             SizedBox(
-              width: 70 - textFields.length * 20,
-              height: 28,
+              width: textFields.length == 2 ? 26 : 150,
+              height: 26,
               child: CupertinoTextField(
                 decoration: BoxDecoration(
                   color: Colors.grey[100]!.withValues(alpha: .8),
@@ -90,7 +92,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
             ),
             if (field.value != null)
               Padding(
-                padding: const EdgeInsets.only(left: 4, right: 6),
+                padding: const EdgeInsets.only(left: 3, right: 4),
                 child: Text(
                   field.value!,
                   style: TextStyles().value,
@@ -109,10 +111,24 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
   }
 
   Widget trailingButtonsRight() {
-    return Row(children: [
-      updateButton(),
-      if (_editing) cancelEditingButton(),
-    ]);
+    return _editing
+        ? Row(children: [
+            submitButton(),
+            SizedBox(width: 8),
+            cancelEditingButton(),
+          ])
+        : updateButton();
+  }
+
+  Widget submitButton() {
+    return buttonStyle(
+      color: Colors.lightGreen.shade300,
+      onPressed: onSubmit,
+      child: Icon(
+        Icons.check,
+        color: Color.lerp(Colors.black87, Colors.green[100], .3),
+      ),
+    );
   }
 
   void setEditing(bool v) => setState(() => _editing = v);
@@ -120,22 +136,38 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
   Widget updateButton() {
     return ElevatedButton(
       style: Buttons.updateButtonStyle(
-          color: _editing
-              ? Colors.lightGreen.shade300
-              : CupertinoColors.systemGrey6),
-      onPressed: () => _editing ? onSubmit() : setEditing(true),
-      child: Text(_editing ? 'Submit' : 'Update'),
+        color: CupertinoColors.systemGrey6,
+      ),
+      onPressed: () => setEditing(true),
+      child: Text('Update'),
     );
   }
 
   Widget cancelEditingButton() {
-    return Padding(
-      padding: const EdgeInsets.only(left: 10),
-      child: ElevatedButton(
-        style: Buttons.updateButtonStyle(color: Colors.red[300]!),
-        onPressed: () => setEditing(false),
-        child: Text('Cancel'),
+    return buttonStyle(
+      color: Colors.red[300]!,
+      onPressed: () => setEditing(false),
+      child: Icon(
+        Icons.clear,
+        color: Color.lerp(Colors.red[900], Colors.black54, .5),
       ),
     );
   }
+
+  Widget buttonStyle({
+    required void Function() onPressed,
+    required Widget child,
+    required Color color,
+  }) =>
+      MaterialButton(
+        onPressed: onPressed,
+        color: color,
+        elevation: 0.3,
+        shape: FlutterHelpers.roundedRect(radius: 10),
+        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        minWidth: 44,
+        height: 30,
+        padding: EdgeInsets.zero,
+        child: child,
+      );
 }

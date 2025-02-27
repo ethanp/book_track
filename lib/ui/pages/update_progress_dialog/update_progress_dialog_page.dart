@@ -4,9 +4,9 @@ import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_progress_service.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'grey_box_text_field.dart';
 import 'update_format_selector.dart';
 
 final SimpleLogger log = SimpleLogger(prefix: 'UpdateProgressDialogPage');
@@ -16,13 +16,13 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
     required this.book,
     this.startTime,
     this.initialEndTime,
-    this.preexistingProgressEvent,
+    this.eventToUpdate,
   });
 
   final LibraryBook book;
   final DateTime? startTime;
   final DateTime? initialEndTime;
-  final ProgressEvent? preexistingProgressEvent;
+  final ProgressEvent? eventToUpdate;
 
   @override
   ConsumerState createState() => _UpdateProgressDialogState();
@@ -54,7 +54,7 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
       context: ref.context,
       builder: (context) => UpdateProgressDialogPage(
         book: libraryBook,
-        preexistingProgressEvent: progressEvent,
+        eventToUpdate: progressEvent,
       ),
     );
     if (res == true) ref.invalidate(userLibraryProvider);
@@ -63,18 +63,38 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
 
 class _UpdateProgressDialogState
     extends ConsumerState<UpdateProgressDialogPage> {
-  late String _textFieldInput =
-      widget.preexistingProgressEvent?.map(widget.book.bookProgressString) ??
-          '';
-
   late ProgressEventFormat _selectedProgressEventFormat =
-      widget.preexistingProgressEvent?.format ??
+      widget.eventToUpdate?.format ??
           widget.book.progressHistory.lastOrNull?.format ??
           widget.book.defaultProgressFormat;
 
-  late DateTime _selectedEndTime = widget.preexistingProgressEvent?.end ??
-      widget.initialEndTime ??
-      DateTime.now();
+  late DateTime _selectedUpdateTimestamp =
+      widget.eventToUpdate?.end ?? widget.initialEndTime ?? DateTime.now();
+
+  late final Map<ProgressEventFormat, List<TextEditingController>>
+      _textControllers = () {
+    final baseline = {
+      ProgressEventFormat.minutes: [
+        TextEditingController(),
+        TextEditingController()
+      ],
+      ProgressEventFormat.pageNum: [TextEditingController()],
+      ProgressEventFormat.percent: [TextEditingController()],
+    };
+    if (widget.eventToUpdate == null) return baseline;
+    final ProgressEvent eventToUpdate = widget.eventToUpdate!;
+    final progress = eventToUpdate.progress;
+    final format = eventToUpdate.format;
+    if (format == ProgressEventFormat.minutes) {
+      baseline[format] = [
+        TextEditingController(text: progress.hours.toString()),
+        TextEditingController(text: progress.minutes.toString()),
+      ];
+    } else {
+      baseline[format] = [TextEditingController(text: progress.toString())];
+    }
+    return baseline;
+  }();
 
   @override
   Widget build(BuildContext context) {
@@ -83,18 +103,59 @@ class _UpdateProgressDialogState
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // TODO(ux,feature) Audiobook length should have TWO text-fields ([hrs]:[mins])
-          //  Just like how it is for the audiobook length update form.
-          GreyBoxTextField(
-            textChanged: (input) => _textFieldInput = input,
-            initialValue: _textFieldInput,
-          ),
+          progressAmountForm(),
           updateFormatSelector(),
           SizedBox(height: 15),
           endTimePicker(),
         ],
       ),
       actions: submitAndCancelButtons(),
+    );
+  }
+
+  Widget progressAmountForm() {
+    final controllers = _textControllers[_selectedProgressEventFormat]!;
+    Widget inputField(TextEditingController c) {
+      return SizedBox(
+        width: _selectedProgressEventFormat == ProgressEventFormat.pageNum
+            ? 36
+            : 28,
+        height: 26,
+        child: CupertinoTextField(
+          decoration: BoxDecoration(
+            color: Colors.grey[100]!.withValues(alpha: .8),
+            border: Border.all(color: Colors.grey[400]!, width: 1),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          padding: EdgeInsets.only(top: 5, left: 4),
+          style: TextStyle(fontSize: 14, color: Colors.grey[900]),
+          autocorrect: false,
+          controller: c,
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: switch (_selectedProgressEventFormat) {
+            ProgressEventFormat.minutes => [
+                inputField(controllers.first),
+                Text(':'),
+                inputField(controllers.last),
+                Text(' hh:mm'),
+              ],
+            ProgressEventFormat.pageNum => [
+                Text('Page number:'),
+                SizedBox(width: 6),
+                inputField(controllers.first),
+              ],
+            ProgressEventFormat.percent => [
+                inputField(controllers.first),
+                Text(' %'),
+              ],
+          }),
     );
   }
 
@@ -124,9 +185,9 @@ class _UpdateProgressDialogState
             mode: CupertinoDatePickerMode.dateAndTime,
             minimumDate: dateTimeNow.copyWith(year: dateTimeNow.year - 20),
             maximumDate: dateTimeNow.add(const Duration(days: 12)),
-            initialDateTime:
-                widget.preexistingProgressEvent?.dateTime ?? dateTimeNow,
-            onDateTimeChanged: (t) => setState(() => _selectedEndTime = t),
+            initialDateTime: widget.eventToUpdate?.dateTime ?? dateTimeNow,
+            onDateTimeChanged: (t) =>
+                setState(() => _selectedUpdateTimestamp = t),
           ),
         ),
       ),
@@ -146,20 +207,24 @@ class _UpdateProgressDialogState
 
   /// Pop [true] iff UI needs to reload to see updated data.
   Future<void> _submit() async {
-    final int? newLen = widget.book.parseLengthText(_textFieldInput);
+    final List<TextEditingController> userInputValues =
+        _textControllers[_selectedProgressEventFormat]!;
+    final String lengthText = userInputValues.map((e) => e.text).join(':');
+    final int? newLen = widget.book.parseLengthText(lengthText);
     if (newLen == null) {
       // TODO(feature) this should be a form validation instead.
-      log.error('invalid length: $_textFieldInput');
+      log.error('invalid length: $lengthText');
       context.pop(false);
       return;
     }
-    if (widget.preexistingProgressEvent != null) {
+    if (widget.eventToUpdate != null) {
+      log('updating progress to $lengthText ($newLen)');
       await SupabaseProgressService.updateProgressEvent(
-        preexistingEvent: widget.preexistingProgressEvent!,
+        preexistingEvent: widget.eventToUpdate!,
         updatedValue: newLen,
         format: _selectedProgressEventFormat,
         start: widget.startTime,
-        end: _selectedEndTime,
+        end: _selectedUpdateTimestamp,
       );
     } else {
       await SupabaseProgressService.addProgressEvent(
@@ -167,7 +232,7 @@ class _UpdateProgressDialogState
         newValue: newLen,
         format: _selectedProgressEventFormat,
         start: widget.startTime,
-        end: _selectedEndTime,
+        end: _selectedUpdateTimestamp,
       );
     }
     if (mounted) context.pop(true);

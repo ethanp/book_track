@@ -73,10 +73,11 @@ class _EventTimelineItem extends ConsumerWidget {
       children: [
         dateTimeString(),
         switch (readingEvent) {
-          StatusEvent ev => Text('Status: ${ev.status.name}'),
-          ProgressEvent ev => () {
-              final progressString = libraryBook.bookProgressStringWSuffix(ev);
-              final percentString = libraryBook.intPercentProgressAt(ev);
+          StatusEvent statusEvent => Text('Status: ${statusEvent.status.name}'),
+          ProgressEvent progressEvent => () {
+              final progressString = progressEvent.stringWSuffix;
+              final percentString =
+                  libraryBook.intPercentProgressAt(progressEvent);
               return Text('Progress: $progressString ($percentString%)');
             }(),
           _ => throw UnsupportedError(

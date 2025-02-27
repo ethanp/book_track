@@ -32,13 +32,10 @@ class LibraryBook {
 
   DateTime get startTime => progressHistory.first.end;
 
-  String get _suffix => bookFormat == BookFormat.audiobook ? 'hrs:mins' : 'pgs';
+  String get _suffix => isAudiobook ? 'hrs:mins' : 'pgs';
 
   String bookProgressString(ProgressEvent ev) =>
       _formatBookLengthString(ev.progress);
-
-  String bookProgressStringWSuffix(ProgressEvent ev) =>
-      '${_formatBookLengthString(ev.progress, ev.format)} $_suffix';
 
   String get bookLengthStringWSuffix =>
       '${bookLengthString ?? 'unknown'} $_suffix';
@@ -58,10 +55,10 @@ class LibraryBook {
       length = ((length / 100.0) * bookLength!).toInt();
     }
 
-    return bookFormat == BookFormat.audiobook
-        ? length.minsToHhMm
-        : length.toString();
+    return isAudiobook ? length.minsToHhMm : length.toString();
   }
+
+  bool get isAudiobook => bookFormat == BookFormat.audiobook;
 
   ReadingStatus get readingStatus =>
       statusHistory.lastOrNull?.status ?? ReadingStatus.reading;
@@ -81,7 +78,7 @@ class LibraryBook {
   }
 
   int? parseLengthText(String text) {
-    if (bookFormat == BookFormat.audiobook) {
+    if (isAudiobook) {
       final int? hoursMins = _tryParseAudiobookLength(text);
       if (hoursMins != null) return hoursMins;
     }
@@ -149,6 +146,13 @@ class ProgressEvent extends ReadingEvent {
   @override
   String toString() =>
       '{progress: $progress, start: $start, end: $end, format: $format}';
+
+  String get stringWSuffix => switch (format) {
+        ProgressEventFormat.pageNum => '$progress pgs',
+        ProgressEventFormat.percent => '$progress %',
+        ProgressEventFormat.minutes =>
+          '${progress.hours}:${progress.minutes} hh:mm',
+      };
 }
 
 enum ProgressEventFormat {

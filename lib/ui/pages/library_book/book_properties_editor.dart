@@ -58,31 +58,20 @@ class BookPropertiesEditor extends ConsumerWidget {
   }
 
   Widget length(WidgetRef ref) {
+    final int? bookLength = libraryBook.bookLength;
+    final List<TextFieldValueAndSuffix> bookLengthFieldValues =
+        libraryBook.isAudiobook
+            ? [
+                TextFieldValueAndSuffix(bookLength?.hours ?? '0', 'hrs'),
+                TextFieldValueAndSuffix(bookLength?.minutes ?? '0', 'mins'),
+              ]
+            : [TextFieldValueAndSuffix(bookLength?.toString() ?? '200', 'pgs')];
+
     return EditableBookProperty(
       title: 'Length',
       value: libraryBook.bookLengthStringWSuffix,
-      // TODO(cleanup) Shirley, this logic doesn't belong here.
-      initialTextFieldValues: libraryBook.bookFormat == BookFormat.audiobook
-          ? () {
-              String hrs = '0';
-              String mins = '0';
-              if (libraryBook.bookLength != null) {
-                hrs = libraryBook.bookLength!.hours;
-                mins = libraryBook.bookLength!.minutes;
-              }
-              log('hrs=$hrs mins=$mins');
-              return [
-                TextFieldValueAndSuffix(hrs, 'hrs'),
-                TextFieldValueAndSuffix(mins, 'mins'),
-              ];
-            }()
-          : [
-              TextFieldValueAndSuffix(
-                libraryBook.bookLengthString ?? '200',
-                'pgs',
-              )
-            ],
-      onPressed: (List<String> texts) => updateLength(texts, ref),
+      initialTextFieldValues: bookLengthFieldValues,
+      onPressed: (List<String> fields) => updateLength(fields, ref),
     );
   }
 
