@@ -1,6 +1,6 @@
 import 'package:book_track/helpers.dart';
+import 'package:book_track/ui/common/books_progress_chart/timespan.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:book_track/ui/pages/library_book/progress_chart/timespan.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 

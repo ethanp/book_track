@@ -7,6 +7,8 @@ class StatsPage extends StatelessWidget {
       navigationBar: CupertinoNavigationBar(
         middle: Text('Stats'),
       ),
+      // TODO(feature): Show all book progress at once using the
+      //  BooksProgressChart widget
       child: Text('Stats page does not exist yet'),
     );
   }
