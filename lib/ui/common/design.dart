@@ -34,6 +34,8 @@ class TextStyles {
   final bottomAxisLabel = TextStyle(fontSize: 20, fontWeight: FontWeight.w600);
 
   TextStyle get sideAxisLabel => bottomAxisLabel.copyWith(fontSize: 16);
+  TextStyle get sideAxisLabelThin =>
+      sideAxisLabel.copyWith(fontWeight: FontWeight.w300, fontSize: 12.5);
 
   TextStyle get h2Skinny => h2.copyWith(fontWeight: FontWeight.w300);
 

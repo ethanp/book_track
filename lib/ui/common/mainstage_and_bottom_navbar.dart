@@ -1,6 +1,7 @@
 import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/pages/my_library/my_library_page.dart';
+import 'package:book_track/ui/pages/stats/stats_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,17 +23,7 @@ class MainstageAndBottomNavbar extends ConsumerWidget {
       ),
     ),
     BottomNavbarElement(
-      page: CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(
-          middle: Text('Stats'),
-        ),
-        // TODO(feature) Add stats page, and it properly cupertino style. Consider asking ChatGpt for
-        //  specific UI ideas to retain optimal navigability. I'm thinking the nav-bar should
-        //  only be shown on the my_library_page, rather than on all pages. Similar to the
-        //  Strong UI.
-        // bottomNavigationBar: MyBottomNavBar(),
-        child: Text('Stats page does not exist yet'),
-      ),
+      page: StatsPage(),
       item: BottomNavigationBarItem(
         icon: Icon(Icons.ssid_chart),
         label: 'Stats',

@@ -1,4 +1,3 @@
-import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/progress_chart/timespan.dart';
@@ -19,20 +18,18 @@ class DateAxis {
   }
 
   Widget dateAxisName() {
-    final String text = timespan.beginning.sameDayAs(timespan.end)
-        ? '(${TimeHelpers.monthDayYear(timespan.beginning)})'
-        : 'Starting ${TimeHelpers.monthDayYear(timespan.beginning)}';
-    final TextStyle style = TextStyles().h2Skinny.copyWith(fontSize: 17);
-
     return FlutterHelpers.transform(
       shift: Offset(20, 0),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Date', style: TextStyles().bottomAxisLabel),
+          Text('Date', style: TextStyles().sideAxisLabel),
           Padding(
-            padding: const EdgeInsets.only(top: 2.9, left: 20),
-            child: Text(text, style: style),
+            padding: const EdgeInsets.only(top: 1, left: 10),
+            child: Text(
+              'Started ${TimeHelpers.monthDayYear(timespan.beginning)}',
+              style: TextStyles().sideAxisLabelThin,
+            ),
           ),
         ],
       ),

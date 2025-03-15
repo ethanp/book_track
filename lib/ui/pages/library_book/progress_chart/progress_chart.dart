@@ -41,10 +41,11 @@ class _ProgressChartState extends ConsumerState<ProgressChart> {
     return Card(
       margin: const EdgeInsets.only(left: 16, right: 16, top: 28),
       color: Colors.grey[100],
+      elevation: 0.2,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: Column(children: [
-          Text('History', style: TextStyles().h1),
+          Text('Progress', style: TextStyles().h2),
           _latestBook.progressHistory.isEmpty
               ? Text('No progress updates yet')
               : SizedBox(
@@ -182,7 +183,10 @@ class _ProgressChartState extends ConsumerState<ProgressChart> {
     return AxisTitles(
       axisNameWidget: FlutterHelpers.transform(
         shift: shiftTitle,
-        child: Text('Percentage', style: TextStyles().sideAxisLabel),
+        child: Text(
+          'Percentage',
+          style: TextStyles().sideAxisLabel,
+        ),
       ),
       sideTitles: SideTitles(
         interval: horizontalInterval,
