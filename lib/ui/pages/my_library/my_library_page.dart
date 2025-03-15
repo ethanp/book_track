@@ -31,8 +31,6 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     );
   }
 
-  // TODO(feature) Add view to see books listed by date started
-  // TODO(feature) Add view to see books listed by date finished
   CupertinoNavigationBar navigationBar(BuildContext context) {
     return CupertinoNavigationBar(
       leading: addABookButton(context),
@@ -57,6 +55,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
   }
 
   Widget libraryScreen(List<LibraryBook> library) {
+    // TODO(feature) Add toggle to sort instead by start-date
     library.sort((a, b) =>
         (b.progressPercentage ?? 0).compareTo(a.progressPercentage ?? 0));
     return Column(
@@ -139,7 +138,11 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           statusTitle(name),
-          ListView(shrinkWrap: true, children: books.mapL(BookTile.new)),
+          ListView(
+            physics: NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            children: books.mapL(BookTile.new),
+          ),
         ],
       ),
     );

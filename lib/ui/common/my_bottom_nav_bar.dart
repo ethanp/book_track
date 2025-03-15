@@ -5,23 +5,23 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class BottomNavBarElement {
-  BottomNavBarElement({required this.item, required this.page});
+class BottomNavbarElement {
+  BottomNavbarElement({required this.item, required this.page});
 
   final BottomNavigationBarItem item;
   final Widget page;
 }
 
-class MyBottomNavBar extends ConsumerWidget {
-  static final List<BottomNavBarElement> elements = [
-    BottomNavBarElement(
+class MainstageAndBottomNavbar extends ConsumerWidget {
+  static final List<BottomNavbarElement> elements = [
+    BottomNavbarElement(
       page: MyLibraryPage(),
       item: BottomNavigationBarItem(
         icon: Icon(Icons.book),
         label: 'Library',
       ),
     ),
-    BottomNavBarElement(
+    BottomNavbarElement(
       page: CupertinoPageScaffold(
         navigationBar: CupertinoNavigationBar(
           middle: Text('Stats'),
@@ -45,14 +45,16 @@ class MyBottomNavBar extends ConsumerWidget {
     final int curIdx = ref.watch(selectedBottomBarIdxProvider);
     final SelectedBottomBarIdx idxSelector =
         ref.read(selectedBottomBarIdxProvider.notifier);
-    return BottomNavigationBar(
-      onTap: (idx) => idxSelector.update(idx),
-      currentIndex: curIdx,
+    return CupertinoTabScaffold(
+      tabBar: CupertinoTabBar(
+        items: elements.mapL((e) => e.item),
+        currentIndex: curIdx,
+        onTap: (idx) => idxSelector.update(idx),
+      ),
       backgroundColor: Color.lerp(Colors.lightGreen, Colors.grey[100], .92),
-      selectedItemColor: Colors.black,
-      selectedFontSize: 18,
-      selectedLabelStyle: TextStyle(fontWeight: FontWeight.w700),
-      items: elements.mapL((BottomNavBarElement elem) => elem.item),
+      tabBuilder: (context, idx) => CupertinoTabView(
+        builder: (context) => elements[idx].page,
+      ),
     );
   }
 }

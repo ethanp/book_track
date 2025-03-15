@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_auth_service.dart';
 import 'package:book_track/ui/common/my_bottom_nav_bar.dart';
 import 'package:book_track/ui/pages/login/login_page.dart';
@@ -19,15 +18,14 @@ Future<void> main() async {
     url: dotenv.env['URL']!,
     anonKey: dotenv.env['ANON_KEY']!,
   );
-  runApp(ProviderScope(child: const WholeAppWidget()));
+  runApp(ProviderScope(child: const TopLevelWidget()));
 }
 
-class WholeAppWidget extends ConsumerWidget {
-  const WholeAppWidget({super.key});
+class TopLevelWidget extends ConsumerWidget {
+  const TopLevelWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final int selectedIdx = ref.watch(selectedBottomBarIdxProvider);
     return CupertinoApp(
       title: 'The app itself',
       debugShowCheckedModeBanner: false,
@@ -37,7 +35,7 @@ class WholeAppWidget extends ConsumerWidget {
       ),
       home: SupabaseAuthService.isLoggedOut
           ? const LoginPage()
-          : MyBottomNavBar.elements[selectedIdx].page,
+          : MainstageAndBottomNavbar(),
     );
   }
 }
