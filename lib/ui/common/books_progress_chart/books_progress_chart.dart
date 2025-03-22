@@ -88,9 +88,9 @@ class BooksProgressChart extends ConsumerWidget {
           (bookEvents) => LineChartBarData(
             spots: bookEvents.mapL(eventToSpot),
             isCurved: true,
-            curveSmoothness: .1,
+            curveSmoothness: .05,
             belowBarData: gradientFill(),
-            gradient: lineGradient(),
+            color: Colors.grey[700]!.withValues(alpha: .7),
             dotData: FlDotData(
               show: true,
               getDotPainter: (spot, xPercentage, bar, index) {
@@ -113,25 +113,13 @@ class BooksProgressChart extends ConsumerWidget {
         );
   }
 
-  static LinearGradient lineGradient() {
-    return LinearGradient(
-      colors: [
-        Colors.blue.withValues(alpha: .2),
-        Colors.grey[700]!.withValues(alpha: .6),
-      ],
-      stops: [.4, 1],
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-    );
-  }
-
   static BarAreaData gradientFill() {
     return BarAreaData(
       show: true,
       gradient: LinearGradient(
         colors: [
-          Colors.teal[400]!.withValues(alpha: .7),
-          Colors.blue.withValues(alpha: .4)
+          Colors.teal[400]!.withValues(alpha: .15),
+          Colors.blue.withValues(alpha: .04)
         ],
         stops: [.4, 1],
         begin: Alignment.topCenter,
