@@ -32,7 +32,15 @@ class LibraryBook {
 
   DateTime get startTime => progressHistory.first.end;
 
-  String get _suffix => isAudiobook ? 'hrs:mins' : 'pgs';
+  String get _suffix => isAudiobook ? 'h:m' : 'pgs';
+
+  String? get currentBookProgressString {
+    final progress =
+        progressHistory.lastOrNull.map((ev) => bookProgressString(ev));
+    final total = bookLength
+        .map((length) => isAudiobook ? length.minsToHhMm : length.toString());
+    return '$progress / $total $_suffix';
+  }
 
   String bookProgressString(ProgressEvent ev) =>
       _formatBookLengthString(ev.progress);

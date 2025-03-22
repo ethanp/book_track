@@ -70,26 +70,32 @@ class BooksProgressChart extends ConsumerWidget {
     //  weird and hard-to-interpret vertical blips visuals. Currently I'm just
     //  *deleting* inner daily location updates to make the chart better, but
     //  this is a waste of data that would be nice to collect.
-    final readingProgressLine = LineChartBarData(
-      spots: books.expand((b) => b.progressHistory).mapL(eventToSpot),
-      isCurved: true,
-      curveSmoothness: .1,
-      belowBarData: gradientFill(),
-      gradient: lineGradient(),
-      dotData: FlDotData(
-        show: true,
-        getDotPainter: (_, percent, __, ___) => FlDotCirclePainter(
-          radius: percent / 100 / 1.2 + 2,
-          color: Color.lerp(
-            Colors.blue.withValues(alpha: .7),
-            Colors.blueGrey.withValues(alpha: .8),
-            percent / 100,
-          )!,
-          strokeColor: Colors.black,
-        ),
-      ),
-    );
-    return [readingProgressLine];
+
+    // TODO(accuracy) This shouldn't be limited to just 21 books.
+    // TODO(ui): Why are there red bubbles on the chart?
+    // TODO(ui): Each book should be a different color.
+    //  With a legend matching each book to its color.
+    return books.sublist(0, 21).map((b) => b.progressHistory).mapL(
+          (bookEvents) => LineChartBarData(
+            spots: bookEvents.mapL(eventToSpot),
+            isCurved: true,
+            curveSmoothness: .1,
+            belowBarData: gradientFill(),
+            gradient: lineGradient(),
+            dotData: FlDotData(
+              show: true,
+              getDotPainter: (_, percent, __, ___) => FlDotCirclePainter(
+                radius: percent / 100 / 1.2 + 2,
+                color: Color.lerp(
+                  Colors.blue.withValues(alpha: .7),
+                  Colors.blueGrey.withValues(alpha: .8),
+                  percent / 100,
+                )!,
+                strokeColor: Colors.black,
+              ),
+            ),
+          ),
+        );
   }
 
   static LinearGradient lineGradient() {

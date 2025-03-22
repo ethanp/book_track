@@ -22,34 +22,53 @@ class BookTile extends ConsumerWidget {
         height: 38,
         child: Dismissible(
           key: Key(book.book.supaId.toString()),
+          direction: DismissDirection.startToEnd,
           confirmDismiss: (direction) =>
               UpdateProgressDialogPage.show(ref, book),
-          background: Container(
-            color: Colors.green,
-            child: Text(
-              'Add progress',
-              style: TextStyle(color: Colors.grey[100], fontSize: 18),
-            ),
-          ),
-          child: CupertinoListTile(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            title: Text(book.book.title, style: TextStyles().title),
-            subtitle: Text(book.book.author ?? 'Author unknown'),
-            leading: junkCover
-                ? Text('?')
-                : book.book.coverArtS.map(Image.memory) ??
-                    Icon(Icons.question_mark),
-            trailing: ReadingProgressIndicator(book),
-            onTap: () => context.push(LibraryBookPage(book)),
-          ),
+          background: dragBackground(),
+          child: bookListTile(context),
         ),
       ),
     );
   }
 
-  bool get junkCover => !(true &&
-      book.book.coverArtS?[0] == 255 &&
-      book.book.coverArtS?[1] == 216 &&
-      book.book.coverArtS?[2] == 255 &&
-      book.book.coverArtS?[3] == 224);
+  Widget bookListTile(BuildContext context) {
+    return CupertinoListTile(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      title: Text(book.book.title, style: TextStyles().title),
+      subtitle: Text(book.book.author ?? 'Author unknown'),
+      leading: coverArt(),
+      trailing: ReadingProgressIndicator(book),
+      onTap: () => context.push(LibraryBookPage(book)),
+    );
+  }
+
+  Widget coverArt() {
+    if (book.book.coverArtS != null) {
+      final bool validCover = (true &&
+          book.book.coverArtS![0] == 255 &&
+          book.book.coverArtS![1] == 216 &&
+          book.book.coverArtS![2] == 255 &&
+          book.book.coverArtS![3] == 224);
+      if (validCover) return Image.memory(book.book.coverArtS!);
+    }
+    return Icon(Icons.question_mark);
+  }
+
+  Widget dragBackground() {
+    return Container(
+      color: Colors.green,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          'Add progress',
+          style: TextStyle(
+            color: Colors.grey[100],
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
 }

@@ -1,7 +1,11 @@
 import 'dart:math' as math;
 
+import 'package:book_track/data_model.dart';
 import 'package:book_track/helpers.dart';
+import 'package:book_track/riverpods.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 extension BuildContextExtension on BuildContext {
@@ -20,6 +24,15 @@ extension BuildContextExtension on BuildContext {
 
   void popUntilFirst<T>([T? result]) =>
       Navigator.of(this).popUntil((route) => route.isFirst);
+}
+
+extension WidgetRefExtension on WidgetRef {
+  Widget userLibrary(Widget Function(List<LibraryBook>) body) =>
+      watch(userLibraryProvider).when(
+        loading: () => const CircularProgressIndicator(),
+        error: (err, trace) => Text(err.toString()),
+        data: body,
+      );
 }
 
 extension IterableExtension<T> on Iterable<T> {
@@ -78,7 +91,7 @@ extension NumExtension on num {
 extension IntExtension on int {
   String get pad2 => toString().padLeft(2, '0');
 
-  String get hours => (this ~/ 60).pad2;
+  String get hours => (this ~/ 60).toString();
 
   String get minutes => (this % 60).pad2;
 

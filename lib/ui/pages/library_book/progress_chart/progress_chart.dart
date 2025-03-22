@@ -1,6 +1,6 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/riverpods.dart';
-import 'package:book_track/ui/common/books_progress_chart/my_line_chart.dart';
+import 'package:book_track/extensions.dart';
+import 'package:book_track/ui/common/books_progress_chart/books_progress_chart.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,18 +40,13 @@ class _ProgressChartState extends ConsumerState<ProgressChart> {
           Text('Progress', style: TextStyles().h2),
           _latestBook.progressHistory.isEmpty
               ? Text('No progress updates yet')
-              : SizedBox(
-                  height: 300,
-                  child: ref.watch(userLibraryProvider).when(
-                      loading: () => const CircularProgressIndicator(),
-                      error: (err, trace) => Text(err.toString()),
-                      data: body))
+              : SizedBox(height: 300, child: ref.userLibrary(body))
         ]),
       ),
     );
   }
 
-  Widget? body(List<LibraryBook> library) {
+  Widget body(List<LibraryBook> library) {
     final LibraryBook? updatedBook = library
         .where((book) => book.supaId == widget.useOnlyForInitializing.supaId)
         .singleOrNull;
