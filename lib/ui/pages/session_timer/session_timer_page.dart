@@ -179,14 +179,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           constraints: const BoxConstraints(minHeight: 200, maxHeight: 270),
           child: Column(children: [
-            Container(
-              decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.black)),
-              ),
-              padding: const EdgeInsets.only(bottom: 2),
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Text('Progress Events', style: TextStyles().h1),
-            ),
+            title(),
             if (progressEvents.isEmpty)
               Text('None', style: TextStyles().h2)
             else
@@ -211,6 +204,17 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
           ]),
         ),
       ),
+    );
+  }
+
+  Widget title() {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.black)),
+      ),
+      padding: const EdgeInsets.only(bottom: 2),
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Text('Progress Events', style: TextStyles().h1),
     );
   }
 }

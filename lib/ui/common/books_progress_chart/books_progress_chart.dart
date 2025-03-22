@@ -73,14 +73,18 @@ class BooksProgressChart extends ConsumerWidget {
     //  *deleting* inner daily location updates to make the chart better, but
     //  this is a waste of data that would be nice to collect.
 
-    // TODO(accuracy) This shouldn't be limited to just 21 books.
-    // TODO(ui): Why are there red bubbles on the chart?
     // TODO(ui): Each book should be a different color.
     //  With a legend matching each book to its color.
-    return books
-        .sublist(0, math.min(21, books.length))
-        .map((b) => b.progressHistory)
-        .mapL(
+    final allProgressEvents = books.expand((b) => b.progressHistory).toList();
+    int firstDate = allProgressEvents.first.dateTime.millisecondsSinceEpoch;
+    int lastDate = allProgressEvents.first.dateTime.millisecondsSinceEpoch;
+    for (final b in allProgressEvents) {
+      final t = b.dateTime.millisecondsSinceEpoch;
+      firstDate = math.min(firstDate, t);
+      lastDate = math.max(lastDate, t);
+    }
+    final double xRange = lastDate.toDouble() - firstDate;
+    return books.sublist(0, books.length).map((b) => b.progressHistory).mapL(
           (bookEvents) => LineChartBarData(
             spots: bookEvents.mapL(eventToSpot),
             isCurved: true,
@@ -89,15 +93,21 @@ class BooksProgressChart extends ConsumerWidget {
             gradient: lineGradient(),
             dotData: FlDotData(
               show: true,
-              getDotPainter: (_, percent, __, ___) => FlDotCirclePainter(
-                radius: percent / 100 / 1.2 + 2,
-                color: Color.lerp(
-                  Colors.blue.withValues(alpha: .7),
-                  Colors.blueGrey.withValues(alpha: .8),
-                  percent / 100,
-                )!,
-                strokeColor: Colors.black,
-              ),
+              getDotPainter: (spot, xPercentage, bar, index) {
+                // For some reason, the fl_chart code for setting `xPercentage`
+                // is incorrect. Reset value using the correct formula.
+                xPercentage = (spot.x - firstDate) / xRange * 100;
+                final double radius = xPercentage / 100 / 1.2 + 2;
+                return FlDotCirclePainter(
+                  radius: radius,
+                  color: Color.lerp(
+                    Colors.blue.withValues(alpha: .7),
+                    Colors.blueGrey.withValues(alpha: .8),
+                    xPercentage / 100,
+                  )!,
+                  strokeColor: Colors.black,
+                );
+              },
             ),
           ),
         );
