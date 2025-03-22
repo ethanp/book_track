@@ -12,6 +12,7 @@ class ReadingProgressIndicator extends ConsumerWidget {
   final ProgressEvent? latestProgress;
 
   static SimpleLogger log = SimpleLogger(prefix: 'ReadingProgressIndicator');
+  static const Radius rounded = Radius.circular(10);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -45,25 +46,30 @@ class ReadingProgressIndicator extends ConsumerWidget {
       child: Padding(
         padding: const EdgeInsets.only(left: 1.5),
         child: Row(children: [
-          if (percent > 0) readPortion(readWidth),
-          if (percent < 100) unreadPortion(unreadWidth),
+          if (percent > 0)
+            portion(
+              width: readWidth,
+              color: Colors.green,
+              left: ReadingProgressIndicator.rounded,
+            ),
+          if (percent < 100)
+            portion(
+              width: unreadWidth,
+              color: Colors.orange,
+              right: ReadingProgressIndicator.rounded,
+            ),
         ]),
       ),
     );
   }
 
-  Widget unreadPortion(double unreadWidth) =>
-      portion(unreadWidth, Colors.orange, right: Radius.circular(10));
-
-  Widget readPortion(double readWidth) =>
-      portion(readWidth, Colors.green, left: Radius.circular(10));
-
-  Widget portion(
-    double width,
-    Color color, {
+  Widget portion({
+    required double width,
+    required Color color,
     Radius left = Radius.zero,
     Radius right = Radius.zero,
   }) {
+    if ([0, 100].contains(book.progressPercentage)) left = right = rounded;
     return Container(
       width: width,
       padding: EdgeInsets.zero,

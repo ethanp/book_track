@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
+import 'package:book_track/ui/pages/my_library/reading_progress_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -32,12 +33,8 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
       bool isShownBook(LibraryBook i) => i.supaId == widget.libraryBook.supaId;
       _libraryBook = items.where(isShownBook).first;
     });
-    final subtitle =
-        _libraryBook.statusHistory.lastOrNull?.status.name ?? 'no status';
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text('${_libraryBook.book.title} ($subtitle)'),
-      ),
+      navigationBar: navBar(),
       child: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -50,6 +47,26 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  CupertinoNavigationBar navBar() {
+    final currentStatus =
+        _libraryBook.statusHistory.lastOrNull?.status.name ?? 'no status';
+    return CupertinoNavigationBar(
+      middle: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Flexible(
+            flex: 5,
+            child: Text('${_libraryBook.book.title} ($currentStatus)'),
+          ),
+          Flexible(
+            flex: 2,
+            child: ReadingProgressIndicator(_libraryBook),
+          ),
+        ],
       ),
     );
   }

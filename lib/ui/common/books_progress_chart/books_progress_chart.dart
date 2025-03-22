@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
@@ -75,7 +77,10 @@ class BooksProgressChart extends ConsumerWidget {
     // TODO(ui): Why are there red bubbles on the chart?
     // TODO(ui): Each book should be a different color.
     //  With a legend matching each book to its color.
-    return books.sublist(0, 21).map((b) => b.progressHistory).mapL(
+    return books
+        .sublist(0, math.min(21, books.length))
+        .map((b) => b.progressHistory)
+        .mapL(
           (bookEvents) => LineChartBarData(
             spots: bookEvents.mapL(eventToSpot),
             isCurved: true,
