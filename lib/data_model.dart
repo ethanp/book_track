@@ -39,7 +39,7 @@ class LibraryBook {
         progressHistory.lastOrNull.map((ev) => bookProgressString(ev));
     final total = bookLength
         .map((length) => isAudiobook ? length.minsToHhMm : length.toString());
-    return '$progress / $total $_suffix';
+    return '$progress / $total';
   }
 
   String bookProgressString(ProgressEvent ev) =>

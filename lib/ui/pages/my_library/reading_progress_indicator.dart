@@ -19,7 +19,7 @@ class ReadingProgressIndicator extends ConsumerWidget {
     ref.watch(userLibraryProvider);
     final int? progressPercentage = book.progressPercentage;
     if (progressPercentage == null) return SizedBox.shrink();
-    const double width = 90;
+    const double width = 65;
     return SizedBox(
       width: width - 1,
       child: Column(

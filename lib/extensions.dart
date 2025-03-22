@@ -89,11 +89,11 @@ extension NumExtension on num {
 }
 
 extension IntExtension on int {
-  String get pad2 => toString().padLeft(2, '0');
+  String pad(int n) => toString().padLeft(n, '0');
 
-  String get hours => (this ~/ 60).toString();
+  String get hours => (this ~/ 60).pad(1);
 
-  String get minutes => (this % 60).pad2;
+  String get minutes => (this % 60).pad(2);
 
   String get minsToHhMm {
     return '$hours:$minutes';

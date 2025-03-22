@@ -51,14 +51,14 @@ This way we can run the app on the phone without tethering to the dev env.
   flutter build ios --release
   ```
 * In XCode open the "blue on white" version of the xcode file
+* Connect iPhone to laptop via physical wire
+* Select iPhone (8) as output of XCode build
 * Open menu-bar `Product > Archive` (20sec)
-* Click "Distribute App", for "Release Testing" (10sec)
+* It will open a dialog. Click "Distribute App", for "Release Testing" (10sec)
 * Click "Export" to e.g. Desktop (5sec)
-* Connect (properly registered) iPhone to laptop
 * Open "Apple Configurator" app on laptop
     * It will load iphone homescreen automatically (10sec)
 * Open the directory that was exported to the Desktop
-* Drag the `book_track.ipa` file onto the iphone homescreen (8sec)
-* Then click replace (5sec)
+* Drag the `book_track.ipa` file onto the iphone homescreen (8sec)* Then click replace (5sec)
 * Wait for it to finish installing on the phone (5sec)
 * Disconnect phone from laptop
