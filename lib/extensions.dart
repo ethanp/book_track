@@ -58,18 +58,23 @@ extension ListExtension<T> on List<T> {
   void sortOn(Comparable Function(T) cmp) =>
       sort((a, b) => cmp(a).compareTo(cmp(b)));
 
-  /// You provide a function, which takes each element, starting at the second
-  /// one, and pairs it with the previous element, and turns them into something
-  /// else, which is returned in a list (in the same order as the input).
+  /// You provide a function, which takes each element, paired with the
+  /// element [diff] away, a turns them into a [B], which is
+  /// returned in an [Iterable], in the same order as `this` [List].
   ///
-  /// This is not written with performance in mind 🤪.
-  List<B> zipWithPrev<B>(B Function(T prev, T curr) f) {
-    if (length < 2) return [];
-    return skip(1).zipWithIndex.mapL((e) {
-      final T prev = this[e.idx];
-      final T curr = e.elem;
-      return f(prev, curr);
-    });
+  /// Iteration stops when there are no two elements [diff] away.
+  /// So if `diff=n`, then the resulting iterable will have
+  /// `length = orig.length - n`. If `n > orig.length`, then the
+  /// returned [Iterable] will be empty.
+  ///
+  /// [diff] is allowed to be positive or negative or zero.
+  Iterable<B> zipWithDiff<B>(int diff, B Function(T curr, T diffAway) f) sync* {
+    int i = math.max(0, -diff);
+    int j = math.max(0, diff);
+
+    while (math.max(i, j) < length) {
+      yield f(this[i++], this[j++]);
+    }
   }
 }
 
@@ -86,7 +91,8 @@ extension ComparableIterableExtension<T extends Comparable<T>> on Iterable<T> {
 }
 
 /// We need this for [min] and [max] to work on [double] and [int], which
-/// don't extend Comparable<T>, they extend num which extends Comparable<num>.
+/// don't extend [Comparable<T>], they extend num which extends [Comparable<num>].
+/// Perhaps there's some way to combine them together?
 extension ComparableIterableNumExtension<T extends num> on Iterable<T> {
   T get min => minBy<num>((t) => t);
 
@@ -149,18 +155,15 @@ extension SupaExtension<T> on RawPostgrestBuilder<T, T, T> {
 
 extension StringExtension on String {
   String get capitalize =>
-      isEmpty ? this : this[0].toUpperCase() + substring(1);
+      isEmpty ? this : characters.first.toUpperCase() + substring(1);
 }
 
 extension EnumName on Enum {
-  String get nameAsCapitalizedWords {
-    if (name.isEmpty) return name;
-    final result = name
-        .replaceAllMapped(
-          RegExp(r'([A-Z])'),
-          (match) => ' ${match.group(0)}',
-        )
-        .trim();
-    return result.substring(0, 1).toUpperCase() + result.substring(1);
-  }
+  /// Captures a single capital letter.
+  static final isCapital = RegExp(r'([A-Z])');
+
+  String get nameAsCapitalizedWords => name
+      .replaceAllMapped(isCapital, (match) => ' ${match.group(0)}')
+      .trim()
+      .capitalize;
 }

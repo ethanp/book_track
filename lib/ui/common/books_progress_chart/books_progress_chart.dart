@@ -88,7 +88,9 @@ class BooksProgressChart extends ConsumerWidget {
       (LibraryBook book) {
         final bookEvents = book.progressHistory;
         return LineChartBarData(
-          spots: bookEvents.mapL((ev) => eventToSpot(book, ev)),
+          spots: bookEvents
+              .zipWithDiff(1, (prev, curr) => eventToSpot(book, prev, curr))
+              .toList(),
           isCurved: true,
           curveSmoothness: .05,
           belowBarData: gradientFill(),
@@ -151,7 +153,8 @@ class BooksProgressChart extends ConsumerWidget {
     );
   }
 
-  FlSpot eventToSpot(LibraryBook book, ProgressEvent progressEvent) {
+  FlSpot eventToSpot(
+      LibraryBook book, ProgressEvent progressEvent, ProgressEvent curr) {
     return FlSpot(
       progressEvent.end.millisecondsSinceEpoch.toDouble(),
       book.percentProgressAt(progressEvent)!,

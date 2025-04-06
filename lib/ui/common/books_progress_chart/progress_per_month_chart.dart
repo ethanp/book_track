@@ -23,11 +23,12 @@ class ProgressPerMonthChart extends ConsumerWidget {
 
   List<List<MapEntry<String, double>>> get lineDatas =>
       [deltaByMonth, pagesByMonth, minutesByMonth];
-  static final yyMmFormat = DateFormat('yyyy-MM');
+
+  static final yyyyMM = DateFormat('yyyy-MM');
 
   static List<MapEntry<String, double>> diffPerMonth(
     List<LibraryBook> books,
-    List<MapEntry<DateTime, double>> Function(LibraryBook) getDiffs,
+    Iterable<MapEntry<DateTime, double>> Function(LibraryBook) getDiffs,
   ) =>
       books
           .expand(getDiffs)
@@ -40,7 +41,7 @@ class ProgressPerMonthChart extends ConsumerWidget {
     Map<String, double> acc,
     MapEntry<DateTime, double> curr,
   ) {
-    final key = yyMmFormat.format(curr.key);
+    final key = yyyyMM.format(curr.key);
     acc[key] = (acc[key] ?? 0.0) + curr.value;
     return acc;
   }
@@ -52,7 +53,7 @@ class ProgressPerMonthChart extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final List<DateTime> eventTimes =
-        lineDatas.flatten.mapL((e) => yyMmFormat.parse(e.key));
+        lineDatas.flatten.mapL((e) => yyyyMM.parse(e.key));
     final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
     const borderSide = BorderSide(color: Colors.black, width: 2);
 
@@ -89,11 +90,11 @@ class ProgressPerMonthChart extends ConsumerWidget {
   }
 
   LineChartBarData dataByMonthLine(List<MapEntry<String, double>> dataByMonth) {
-    final now = DateTime.now();
-    final currMonth = yyMmFormat.format(now);
+    final DateTime now = DateTime.now();
+    final String currMonth = yyyyMM.format(now);
     return LineChartBarData(
       spots: dataByMonth.mapL((x) => FlSpot(
-          yyMmFormat.parse(x.key).millisSinceEpoch,
+          yyyyMM.parse(x.key).millisSinceEpoch,
           // Scale the last point based on how much of the month has
           // elapsed, to make it an "estimate" of the "full" month's data.
           x.key == currMonth

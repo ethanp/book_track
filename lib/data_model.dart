@@ -77,8 +77,8 @@ class LibraryBook {
     return intPercentProgressAt(progressHistory.last);
   }
 
-  List<MapEntry<DateTime, double>> get progressDiffs {
-    return progressHistory.zipWithPrev((prev, curr) {
+  Iterable<MapEntry<DateTime, double>> get progressDiffs {
+    return progressHistory.zipWithDiff(1, (prev, curr) {
       final double progressNow = percentProgressAt(curr)!;
       final double priorProgress = percentProgressAt(prev)!;
       final double progressDelta = progressNow - priorProgress;
@@ -87,11 +87,11 @@ class LibraryBook {
     });
   }
 
-  List<MapEntry<DateTime, double>> get pagesDiffs {
+  Iterable<MapEntry<DateTime, double>> get pagesDiffs {
     if (bookFormat == BookFormat.audiobook) return [];
     if (bookLength == null) return [];
 
-    return progressHistory.zipWithPrev((prev, curr) {
+    return progressHistory.zipWithDiff(1, (prev, curr) {
       final double progressNow = pagesAt(curr);
       final double priorProgress = pagesAt(prev);
       final double progressDelta = progressNow - priorProgress;
@@ -100,11 +100,11 @@ class LibraryBook {
     });
   }
 
-  List<MapEntry<DateTime, double>> get fiveMinDiffs {
+  Iterable<MapEntry<DateTime, double>> get fiveMinDiffs {
     if (bookFormat != BookFormat.audiobook) return [];
     if (bookLength == null) return [];
 
-    return progressHistory.zipWithPrev((prev, curr) {
+    return progressHistory.zipWithDiff(1, (prev, curr) {
       final double progressNow = minutesAt(curr);
       final double priorProgress = minutesAt(prev);
       final double progressDelta = progressNow - priorProgress;

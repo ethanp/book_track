@@ -18,17 +18,19 @@ class StatsPage extends ConsumerWidget {
 
   Widget body(List<LibraryBook> userLibrary) {
     return SafeArea(
-      child: Column(
-        children: [
-          ChartCard(
-            title: 'Read Lines',
-            chart: BooksProgressChart(books: userLibrary),
-          ),
-          ChartCard(
-            title: 'Progress per Month',
-            chart: ProgressPerMonthChart(books: userLibrary),
-          ),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            ChartCard(
+              title: 'Read Lines',
+              chart: BooksProgressChart(books: userLibrary),
+            ),
+            ChartCard(
+              title: 'Progress per Month',
+              chart: ProgressPerMonthChart(books: userLibrary),
+            ),
+          ],
+        ),
       ),
     );
   }
