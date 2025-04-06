@@ -35,5 +35,6 @@ analyzer:
     avoid_print: ignore
     invalid_annotation_target: ignore # https://pub.dev/packages/freezed#how-to-use
     avoid_function_literals_in_foreach_calls: ignore
+    curly_braces_in_flow_control_structures: ignore
   plugins:
     - custom_lint

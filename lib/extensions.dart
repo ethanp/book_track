@@ -53,6 +53,20 @@ extension IterableExtension<T> on Iterable<T> {
 extension ListExtension<T> on List<T> {
   void sortOn(Comparable Function(T) cmp) =>
       sort((a, b) => cmp(a).compareTo(cmp(b)));
+
+  /// You provide a function, which takes each element, starting at the second
+  /// one, and pairs it with the previous element, and turns them into something
+  /// else, which is returned in a list (in the same order as the input).
+  ///
+  /// This is not written with performance in mind 🤪.
+  List<B> zipWithPrev<B>(B Function(T prev, T curr) f) {
+    if (length < 2) return [];
+    return skip(1).zipWithIndex.mapL((e) {
+      final T prev = this[e.idx];
+      final T curr = e.elem;
+      return f(prev, curr);
+    });
+  }
 }
 
 extension ComparableExtension<T extends Comparable<T>> on T {

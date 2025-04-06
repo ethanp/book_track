@@ -16,6 +16,8 @@ class DeltaProgressChart extends ConsumerWidget {
         minutesByMonth = _calculateMinutesByMonth(books);
 
   final List<LibraryBook> books;
+
+  // TODO(cleanup): Convert these fields into getters/methods?
   final List<MapEntry<String, double>> deltaByMonth;
   final List<MapEntry<String, double>> pagesByMonth;
   final List<MapEntry<String, double>> minutesByMonth;
@@ -33,20 +35,19 @@ class DeltaProgressChart extends ConsumerWidget {
           .toList()
         ..sort((a, b) => a.key.compareTo(b.key));
 
-  // TODO(bug): I haven't bothered to implement this correctly yet.
   static List<MapEntry<String, double>> _calculatePagesByMonth(
           List<LibraryBook> books) =>
       books
-          .expand((b) => b.progressDiffs)
+          .expand((b) => b.pagesDiffs)
           .fold(<String, double>{}, _sumByMonth)
           .entries
           .toList()
         ..sort((a, b) => a.key.compareTo(b.key));
 
-  // TODO(bug): I haven't bothered to implement this correctly yet.
   static List<MapEntry<String, double>> _calculateMinutesByMonth(
           List<LibraryBook> books) =>
       books
+          // TODO(incomplete): Implement b.minutesDiffs to use here instead.
           .expand((b) => b.progressDiffs)
           .fold(<String, double>{}, _sumByMonth)
           .entries

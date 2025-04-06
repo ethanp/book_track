@@ -78,19 +78,24 @@ class LibraryBook {
   }
 
   List<MapEntry<DateTime, double>> get progressDiffs {
-    if (progressHistory.length < 2) return [];
-
-    return progressHistory.skip(1).zipWithIndex.mapL((e) {
-      // Kinda tricky: `idx` is the *prior* element, because of the `.skip(1)`.
-      // For some reason doing `.zipWithIndex.skip(1)` does *not* cause the
-      // first idx to be 1, presumably due to some optimization on `.map`,
-      // which would require an updated implementation of `.zipWithIndex`,
-      // which I don't want to focus on right now.
-      final ProgressEvent prev = progressHistory[e.idx];
-      final double progressNow = percentProgressAt(e.elem)!;
+    return progressHistory.zipWithPrev((prev, curr) {
+      final double progressNow = percentProgressAt(curr)!;
       final double priorProgress = percentProgressAt(prev)!;
       final double progressDelta = progressNow - priorProgress;
-      final DateTime progressTimestamp = e.elem.end;
+      final DateTime progressTimestamp = curr.end;
+      return MapEntry(progressTimestamp, progressDelta);
+    });
+  }
+
+  List<MapEntry<DateTime, double>> get pagesDiffs {
+    if (bookFormat == BookFormat.audiobook) return [];
+    if (bookLength == null) return [];
+
+    return progressHistory.zipWithPrev((prev, curr) {
+      final double progressNow = pagesAt(curr);
+      final double priorProgress = pagesAt(prev);
+      final double progressDelta = progressNow - priorProgress;
+      final DateTime progressTimestamp = curr.end;
       return MapEntry(progressTimestamp, progressDelta);
     });
   }
@@ -118,6 +123,13 @@ class LibraryBook {
     final int? mins = int.tryParse(split[1]);
     if (hrs == null || mins == null) return null;
     return hrs * 60 + mins;
+  }
+
+  double pagesAt(ProgressEvent event) {
+    if (bookLength == null) return 0;
+    if (event.format == ProgressEventFormat.pageNum)
+      return event.progress.toDouble();
+    return event.progress / 100.0 * bookLength!;
   }
 }
 
