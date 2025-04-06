@@ -105,16 +105,17 @@ class DeltaProgressChart extends ConsumerWidget {
     );
   }
 
-  // TODO(feat): The last point should be scaled based on how much of the month has
-  //  elapsed, to make it an "estimate" of the "full" month's data.
   LineChartBarData dataByMonthLine(List<MapEntry<String, double>> dataByMonth) {
+    final now = DateTime.now();
+    final currMonth = yyMmFormat.format(now);
     return LineChartBarData(
-      spots: dataByMonth.mapL(
-        (x) => FlSpot(
+      spots: dataByMonth.mapL((x) => FlSpot(
           yyMmFormat.parse(x.key).millisSinceEpoch,
-          x.value,
-        ),
-      ),
+          // Scale the last point based on how much of the month has
+          // elapsed, to make it an "estimate" of the "full" month's data.
+          x.key == currMonth
+              ? x.value / now.day * monthLength(now.month, now.year)
+              : x.value)),
       isCurved: true,
       curveSmoothness: .05,
       belowBarData: gradientFill(),
@@ -169,4 +170,12 @@ class DeltaProgressChart extends ConsumerWidget {
       axisNameSize: 22,
     );
   }
+
+  static num monthLength(int month, int year) => month == 2
+      ? year % 4 == 0
+          ? 29
+          : 28
+      : {9, 4, 6, 11}.contains(month)
+          ? 30
+          : 31;
 }
