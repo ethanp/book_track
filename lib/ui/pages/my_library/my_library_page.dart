@@ -23,6 +23,8 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
 
   bool _showingArchived = false;
 
+  _LibrarySort _librarySort = _LibrarySort.progress;
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -55,15 +57,37 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
   }
 
   Widget libraryScreen(List<LibraryBook> library) {
-    // TODO(feature) Add toggle to sort instead by start-date
-    library.sort((a, b) =>
-        (b.progressPercentage ?? 0).compareTo(a.progressPercentage ?? 0));
+    switch (_librarySort) {
+      case _LibrarySort.progress:
+        library.sort(
+            (a, b) => (b.progressPercentage).compareTo(a.progressPercentage));
+        break;
+      case _LibrarySort.startDate:
+        library.sort((a, b) => b.startTime.compareTo(a.startTime));
+        break;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        sortSelector(),
         userLibraryByStatus(library),
         if (library.any((b) => b.archived)) archivedSection(library),
       ],
+    );
+  }
+
+  Widget sortSelector() {
+    return CupertinoSegmentedControl<_LibrarySort>(
+      groupValue: _librarySort,
+      children: {
+        for (final value in _LibrarySort.values)
+          value: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(value.nameAsCapitalizedWords),
+          ),
+      },
+      onValueChanged: (choice) => setState(() => _librarySort = choice),
     );
   }
 
@@ -127,10 +151,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     );
   }
 
-  Widget bookSection(
-    String name,
-    Iterable<LibraryBook> books,
-  ) {
+  Widget bookSection(String name, Iterable<LibraryBook> books) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -141,7 +162,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
           ListView(
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            children: books.mapL(BookTile.new),
+            children: books.zipWithIndex.mapL((e) => BookTile(e.elem, e.idx)),
           ),
         ],
       ),
@@ -157,4 +178,22 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
       ),
     );
   }
+}
+
+enum _LibrarySort {
+  progress(bookProgress),
+  startDate(bookStartTime);
+
+  final Comparable Function(LibraryBook) compareFn;
+
+  const _LibrarySort(this.compareFn);
+
+  int compare(LibraryBook a, LibraryBook b) =>
+      compareFn(b).compareTo(compareFn(a));
+
+  // Enum constructor can only take "constants" (probably means lvalue?)
+  static Comparable bookProgress(LibraryBook book) => book.progressPercentage;
+
+  // Enum constructor can only take "constants" (probably means lvalue?)
+  static Comparable bookStartTime(LibraryBook book) => book.startTime;
 }

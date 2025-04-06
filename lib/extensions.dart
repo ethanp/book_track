@@ -125,3 +125,16 @@ extension StringExtension on String {
   String get capitalize =>
       isEmpty ? this : this[0].toUpperCase() + substring(1);
 }
+
+extension EnumName on Enum {
+  String get nameAsCapitalizedWords {
+    if (name.isEmpty) return name;
+    final result = name
+        .replaceAllMapped(
+          RegExp(r'([A-Z])'),
+          (match) => ' ${match.group(0)}',
+        )
+        .trim();
+    return result.substring(0, 1).toUpperCase() + result.substring(1);
+  }
+}

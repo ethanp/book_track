@@ -17,8 +17,7 @@ class ReadingProgressIndicator extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(userLibraryProvider);
-    final int? progressPercentage = book.progressPercentage;
-    if (progressPercentage == null) return SizedBox.shrink();
+    final int progressPercentage = book.progressPercentage;
     const double width = 65;
     return SizedBox(
       width: width - 1,
@@ -38,21 +37,21 @@ class ReadingProgressIndicator extends ConsumerWidget {
 
   Widget progressBarColors(double width) {
     final double scaledWidthPerPercent = width / 100 * .94;
-    final int percent = book.progressPercentage!;
-    final double readWidth = percent * scaledWidthPerPercent;
-    final double unreadWidth = (100 - percent) * scaledWidthPerPercent;
+    final double readWidth = book.progressPercentage * scaledWidthPerPercent;
+    final double unreadWidth =
+        (100 - book.progressPercentage) * scaledWidthPerPercent;
     return SizedBox(
       height: 9,
       child: Padding(
         padding: const EdgeInsets.only(left: 1.5),
         child: Row(children: [
-          if (percent > 0)
+          if (book.progressPercentage > 0)
             portion(
               width: readWidth,
               color: Colors.green,
               left: ReadingProgressIndicator.rounded,
             ),
-          if (percent < 100)
+          if (book.progressPercentage < 100)
             portion(
               width: unreadWidth,
               color: Colors.orange,

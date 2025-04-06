@@ -71,13 +71,13 @@ class LibraryBook {
   ReadingStatus get readingStatus =>
       statusHistory.lastOrNull?.status ?? ReadingStatus.reading;
 
-  int? get progressPercentage {
+  int get progressPercentage {
     if (readingStatus == ReadingStatus.finished) return 100;
-    if (progressHistory.lastOrNull == null) return null;
+    if (progressHistory.lastOrNull == null) return 0;
     return intPercentProgressAt(progressHistory.last);
   }
 
-  int? intPercentProgressAt(ProgressEvent p) => percentProgressAt(p)?.floor();
+  int intPercentProgressAt(ProgressEvent p) => percentProgressAt(p)!.floor();
 
   /// Eg. if the book is 50% complete, this method will return `50`.
   double? percentProgressAt(ProgressEvent p) {

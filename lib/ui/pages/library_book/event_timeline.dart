@@ -94,8 +94,8 @@ class _EventTimelineItem extends ConsumerWidget {
     return IconButton(
       icon: Icon(Icons.edit_note, size: 28),
       onPressed: () async => switch (readingEvent) {
-        ProgressEvent ev =>
-          await UpdateProgressDialogPage.update(ref, libraryBook, ev),
+        ProgressEvent progressEvent => await UpdateProgressDialogPage.update(
+            ref, libraryBook, progressEvent),
         StatusEvent _ =>
           // TODO(feature) Show a modal that allows updating [StatusEvent]s.
           //  Probably want to allow updating both the `status` and `time`.

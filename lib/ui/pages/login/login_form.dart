@@ -1,6 +1,7 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'login_form_controllers.dart';
 
@@ -12,18 +13,25 @@ class LoginForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoFormSection.insetGrouped(
-      backgroundColor: Colors.grey[400]!,
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey[800]!, width: .5)),
-        color: Colors.white.withValues(alpha: .75),
-        borderRadius: BorderRadius.circular(10),
+    return AutofillGroup(
+      child: CupertinoFormSection.insetGrouped(
+        backgroundColor: Colors.grey[400]!,
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: Colors.grey[800]!,
+              width: .5,
+            ),
+          ),
+          color: Colors.white.withValues(alpha: .75),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        children: [
+          emailField(),
+          passwordField(),
+          tokenField(),
+        ],
       ),
-      children: [
-        emailField(),
-        passwordField(),
-        tokenField(),
-      ],
     );
   }
 
@@ -31,7 +39,9 @@ class LoginForm extends StatelessWidget {
     return CupertinoTextFormFieldRow(
       controller: loginFormC.emailC,
       prefix: fieldPrefixText('Email'),
-      placeholder: 'email',
+      placeholder: 'ethanp@utexas.edu',
+      keyboardType: TextInputType.emailAddress,
+      autofillHints: const [AutofillHints.username, AutofillHints.email],
       autovalidateMode: AutovalidateMode.onUserInteraction,
       validator: (value) =>
           !EmailValidator.validate(value!) ? 'Requires valid email' : null,
@@ -42,14 +52,17 @@ class LoginForm extends StatelessWidget {
   Widget passwordField() => submittableField(
         controller: loginFormC.passwordC,
         name: 'Password',
+        placeholder: 'atg1',
         obscureText: true,
+        autofillHints: const [AutofillHints.password],
         validator: (input) =>
             (input?.length ?? 0) < 6 ? 'Requires at least 6 characters' : null,
       );
 
   Widget tokenField() => submittableField(
         controller: loginFormC.tokenC,
-        name: 'Token (optional)',
+        name: 'Token (deprecated)',
+        placeholder: 'leave it blank',
         validator: (input) =>
             input == null || input.isEmpty || input.length == 6
                 ? null
@@ -61,13 +74,19 @@ class LoginForm extends StatelessWidget {
     required String name,
     required String? Function(String?) validator,
     bool obscureText = false,
+    List<String>? autofillHints,
+    String? placeholder,
   }) {
     return CupertinoTextFormFieldRow(
       controller: controller,
-      placeholder: name,
+      placeholder: placeholder ?? name,
       obscureText: obscureText,
       prefix: fieldPrefixText(name),
-      onFieldSubmitted: (_) => onSubmit(),
+      autofillHints: autofillHints,
+      onFieldSubmitted: (_) {
+        TextInput.finishAutofillContext();
+        onSubmit();
+      },
       // Show "done" button on keyboard
       textInputAction: TextInputAction.done,
       autovalidateMode: AutovalidateMode.onUserInteraction,

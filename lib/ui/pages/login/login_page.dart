@@ -51,7 +51,6 @@ class _LoginPageState extends State<LoginPage> {
         if (_redirectingToLoggedInApp) return;
         if (SupabaseAuthService.isLoggedIn) {
           _redirectingToLoggedInApp = true;
-          // TODO(bug?) Do we need to call this upon logging OUT as well?
           if (mounted) context.pushReplacementPage(const TopLevelWidget());
         }
       },

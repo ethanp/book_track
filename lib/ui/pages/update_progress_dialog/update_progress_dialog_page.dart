@@ -33,7 +33,7 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
     DateTime? startTime,
     DateTime? initialEndTime,
   }) async {
-    final bool? res = await showCupertinoDialog(
+    final bool? updateConfirmed = await showCupertinoDialog(
       context: ref.context,
       builder: (context) => UpdateProgressDialogPage(
         book: book,
@@ -41,7 +41,7 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
         initialEndTime: initialEndTime,
       ),
     );
-    if (res == true) ref.invalidate(userLibraryProvider);
+    if (updateConfirmed == true) ref.invalidate(userLibraryProvider);
     return false; // <- This means *don't* remove the book from the ListView.
   }
 
@@ -50,14 +50,14 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
     LibraryBook libraryBook,
     ProgressEvent progressEvent,
   ) async {
-    final bool? res = await showCupertinoDialog(
+    final bool? updateConfirmed = await showCupertinoDialog(
       context: ref.context,
       builder: (context) => UpdateProgressDialogPage(
         book: libraryBook,
         eventToUpdate: progressEvent,
       ),
     );
-    if (res == true) ref.invalidate(userLibraryProvider);
+    if (updateConfirmed == true) ref.invalidate(userLibraryProvider);
   }
 }
 

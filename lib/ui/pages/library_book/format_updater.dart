@@ -76,7 +76,7 @@ class _FormatUpdaterState extends ConsumerState<FormatUpdater> {
       _editing = false;
     });
 
-    // This is to update the length field format shown,
+    // This updates the length field format shown,
     //  e.g. in the case that the format transitioned from paper to audio.
     ref.invalidate(userLibraryProvider);
   }

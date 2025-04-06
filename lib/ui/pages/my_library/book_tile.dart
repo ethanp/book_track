@@ -6,13 +6,15 @@ import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialo
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import 'reading_progress_indicator.dart';
 
 class BookTile extends ConsumerWidget {
-  const BookTile(this.book);
+  const BookTile(this.book, this.idx);
 
   final LibraryBook book;
+  final int idx;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,11 +35,37 @@ class BookTile extends ConsumerWidget {
   }
 
   Widget bookListTile(BuildContext context) {
+    final startDate = DateFormat('M-yy').format(book.startTime);
     return CupertinoListTile(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: EdgeInsets.zero,
       title: Text(book.book.title, style: TextStyles().title),
-      subtitle: Text(book.book.author ?? 'Author unknown'),
-      leading: coverArt(),
+      subtitle: Row(
+        children: [
+          SizedBox(width: 47, child: Text('($startDate)')),
+          Expanded(child: Text(book.book.author ?? 'Author unknown')),
+        ],
+      ),
+      leadingSize: 46,
+      leading: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: SizedBox(
+              width: 15,
+              child: Text(
+                (idx + 1).toString(),
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[800],
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+          Flexible(child: coverArt()),
+        ],
+      ),
       trailing: ReadingProgressIndicator(book),
       onTap: () => context.push(LibraryBookPage(book)),
     );
