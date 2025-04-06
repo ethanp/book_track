@@ -1,7 +1,7 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/common/books_progress_chart/books_progress_chart.dart';
-import 'package:book_track/ui/common/books_progress_chart/weekly_progress_chart.dart';
+import 'package:book_track/ui/common/books_progress_chart/delta_progress_chart.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -25,8 +25,8 @@ class StatsPage extends ConsumerWidget {
             chart: BooksProgressChart(books: userLibrary),
           ),
           ChartCard(
-            title: 'Progress per week',
-            chart: WeeklyProgressChart(books: userLibrary),
+            title: 'Progress per Month',
+            chart: DeltaProgressChart(books: userLibrary),
           ),
         ],
       ),
