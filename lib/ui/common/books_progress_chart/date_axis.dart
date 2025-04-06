@@ -27,7 +27,7 @@ class DateAxis {
           Padding(
             padding: const EdgeInsets.only(top: 1, left: 10),
             child: Text(
-              'Started ${TimeHelpers.monthDayYear(timespan.beginning)}',
+              'Starting ${TimeHelpers.monthDayYear(timespan.beginning)}',
               style: TextStyles().sideAxisLabelThin,
             ),
           ),

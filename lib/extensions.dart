@@ -50,6 +50,11 @@ extension IterableExtension<T> on Iterable<T> {
       reduce((prev, curr) => fun(prev) < fun(curr) ? curr : prev);
 }
 
+extension ListExtension<T> on List<T> {
+  void sortOn(Comparable Function(T) cmp) =>
+      sort((a, b) => cmp(a).compareTo(cmp(b)));
+}
+
 extension ComparableExtension<T extends Comparable<T>> on T {
   operator <(T other) => compareTo(other) < 0;
 
@@ -78,6 +83,9 @@ class ElemAndIndex<T> {
 
   final T elem;
   final int idx;
+
+  @override
+  String toString() => '{elem: $elem, idx: $idx}';
 }
 
 extension NullableObjectExtensions<T> on T? {

@@ -77,6 +77,24 @@ class LibraryBook {
     return intPercentProgressAt(progressHistory.last);
   }
 
+  List<MapEntry<DateTime, double>> get progressDiffs {
+    if (progressHistory.length < 2) return [];
+
+    return progressHistory.skip(1).zipWithIndex.mapL((e) {
+      // Kinda tricky: `idx` is the *prior* element, because of the `.skip(1)`.
+      // For some reason doing `.zipWithIndex.skip(1)` does *not* cause the
+      // first idx to be 1, presumably due to some optimization on `.map`,
+      // which would require an updated implementation of `.zipWithIndex`,
+      // which I don't want to focus on right now.
+      final ProgressEvent prev = progressHistory[e.idx];
+      final double progressNow = percentProgressAt(e.elem)!;
+      final double priorProgress = percentProgressAt(prev)!;
+      final double progressDelta = progressNow - priorProgress;
+      final DateTime progressTimestamp = e.elem.end;
+      return MapEntry(progressTimestamp, progressDelta);
+    });
+  }
+
   int intPercentProgressAt(ProgressEvent p) => percentProgressAt(p)!.floor();
 
   /// Eg. if the book is 50% complete, this method will return `50`.
