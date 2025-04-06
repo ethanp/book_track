@@ -23,7 +23,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
 
   bool _showingArchived = false;
 
-  _LibrarySort _librarySort = _LibrarySort.progress;
+  _LibraryOrder _libraryOrder = _LibraryOrder.progress;
 
   @override
   Widget build(BuildContext context) {
@@ -57,16 +57,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
   }
 
   Widget libraryScreen(List<LibraryBook> library) {
-    switch (_librarySort) {
-      case _LibrarySort.progress:
-        library.sort(
-            (a, b) => (b.progressPercentage).compareTo(a.progressPercentage));
-        break;
-      case _LibrarySort.startDate:
-        library.sort((a, b) => b.startTime.compareTo(a.startTime));
-        break;
-    }
-
+    _libraryOrder.sortDescending(library);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -78,16 +69,16 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
   }
 
   Widget sortSelector() {
-    return CupertinoSegmentedControl<_LibrarySort>(
-      groupValue: _librarySort,
+    return CupertinoSegmentedControl<_LibraryOrder>(
+      groupValue: _libraryOrder,
       children: {
-        for (final value in _LibrarySort.values)
+        for (final value in _LibraryOrder.values)
           value: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(value.nameAsCapitalizedWords),
           ),
       },
-      onValueChanged: (choice) => setState(() => _librarySort = choice),
+      onValueChanged: (choice) => setState(() => _libraryOrder = choice),
     );
   }
 
@@ -180,16 +171,16 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
   }
 }
 
-enum _LibrarySort {
+enum _LibraryOrder {
   progress(bookProgress),
   startDate(bookStartTime);
 
   final Comparable Function(LibraryBook) compareFn;
 
-  const _LibrarySort(this.compareFn);
+  const _LibraryOrder(this.compareFn);
 
-  int compare(LibraryBook a, LibraryBook b) =>
-      compareFn(b).compareTo(compareFn(a));
+  void sortDescending(List<LibraryBook> library) =>
+      library.sort((a, b) => compareFn(b).compareTo(compareFn(a)));
 
   // Enum constructor can only take "constants" (probably means lvalue?)
   static Comparable bookProgress(LibraryBook book) => book.progressPercentage;
