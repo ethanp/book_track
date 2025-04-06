@@ -28,18 +28,16 @@ class AllBooksLineChartCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      margin: EdgeInsets.symmetric(horizontal: 12),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 18, bottom: 20),
-            child: Text(
-              'Progress across all books ever',
-              style: TextStyles().h3,
-            ),
+            child: Text('Read Lines', style: TextStyles().h3),
           ),
           SizedBox(
-            height: 400,
+            height: 200,
             child: Padding(
               padding: const EdgeInsets.only(left: 18, right: 35, bottom: 14),
               child: BooksProgressChart(books: userLibrary),

@@ -84,33 +84,36 @@ class BooksProgressChart extends ConsumerWidget {
       lastDate = math.max(lastDate, t);
     }
     final double xRange = lastDate.toDouble() - firstDate;
-    return books.sublist(0, books.length).map((b) => b.progressHistory).mapL(
-          (bookEvents) => LineChartBarData(
-            spots: bookEvents.mapL(eventToSpot),
-            isCurved: true,
-            curveSmoothness: .05,
-            belowBarData: gradientFill(),
-            color: Colors.grey[700]!.withValues(alpha: .7),
-            dotData: FlDotData(
-              show: true,
-              getDotPainter: (spot, xPercentage, bar, index) {
-                // For some reason, the fl_chart code for setting `xPercentage`
-                // is incorrect. Reset value using the correct formula.
-                xPercentage = (spot.x - firstDate) / xRange * 100;
-                final double radius = xPercentage / 100 / 1.2 + 2;
-                return FlDotCirclePainter(
-                  radius: radius,
-                  color: Color.lerp(
-                    Colors.blue.withValues(alpha: .7),
-                    Colors.blueGrey.withValues(alpha: .8),
-                    xPercentage / 100,
-                  )!,
-                  strokeColor: Colors.black,
-                );
-              },
-            ),
+    return books.mapL(
+      (LibraryBook book) {
+        final bookEvents = book.progressHistory;
+        return LineChartBarData(
+          spots: bookEvents.mapL((ev) => eventToSpot(book, ev)),
+          isCurved: true,
+          curveSmoothness: .05,
+          belowBarData: gradientFill(),
+          color: Colors.grey[700]!.withValues(alpha: .7),
+          dotData: FlDotData(
+            show: true,
+            getDotPainter: (spot, xPercentage, bar, index) {
+              // Based on a close reading, the fl_chart code for setting
+              // `xPercentage` is incorrect. This corrects the formula.
+              xPercentage = (spot.x - firstDate) / xRange * 100;
+              final double radius = xPercentage / 100 / 1.2 + 2;
+              return FlDotCirclePainter(
+                radius: radius,
+                color: Color.lerp(
+                  Colors.blue.withValues(alpha: .7),
+                  Colors.blueGrey.withValues(alpha: .8),
+                  xPercentage / 100,
+                )!,
+                strokeColor: Colors.black,
+              );
+            },
           ),
         );
+      },
+    );
   }
 
   static BarAreaData gradientFill() {
@@ -148,10 +151,10 @@ class BooksProgressChart extends ConsumerWidget {
     );
   }
 
-  FlSpot eventToSpot(ProgressEvent progressEvent) {
+  FlSpot eventToSpot(LibraryBook book, ProgressEvent progressEvent) {
     return FlSpot(
       progressEvent.end.millisecondsSinceEpoch.toDouble(),
-      books.first.percentProgressAt(progressEvent)!,
+      book.percentProgressAt(progressEvent)!,
     );
   }
 }
