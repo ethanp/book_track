@@ -50,6 +50,10 @@ extension IterableExtension<T> on Iterable<T> {
       reduce((prev, curr) => fun(prev) < fun(curr) ? curr : prev);
 }
 
+extension Flattenable<T> on Iterable<Iterable<T>> {
+  Iterable<T> get flatten => expand((e) => e);
+}
+
 extension ListExtension<T> on List<T> {
   void sortOn(Comparable Function(T) cmp) =>
       sort((a, b) => cmp(a).compareTo(cmp(b)));

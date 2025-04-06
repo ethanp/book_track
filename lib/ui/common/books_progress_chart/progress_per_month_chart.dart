@@ -9,15 +9,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-class DeltaProgressChart extends ConsumerWidget {
-  DeltaProgressChart({required this.books, super.key})
-      : deltaByMonth = _calculateDeltaByMonth(books),
-        pagesByMonth = _calculatePagesByMonth(books),
-        minutesByMonth = _calculateMinutesByMonth(books);
+class ProgressPerMonthChart extends ConsumerWidget {
+  ProgressPerMonthChart({required this.books, super.key})
+      : deltaByMonth = diffPerMonth(books, (book) => book.progressDiffs),
+        pagesByMonth = diffPerMonth(books, (book) => book.pagesDiffs),
+        minutesByMonth = diffPerMonth(books, (book) => book.fiveMinDiffs);
 
   final List<LibraryBook> books;
 
-  // TODO(cleanup): Convert these fields into getters/methods?
   final List<MapEntry<String, double>> deltaByMonth;
   final List<MapEntry<String, double>> pagesByMonth;
   final List<MapEntry<String, double>> minutesByMonth;
@@ -26,28 +25,12 @@ class DeltaProgressChart extends ConsumerWidget {
       [deltaByMonth, pagesByMonth, minutesByMonth];
   static final yyMmFormat = DateFormat('yyyy-MM');
 
-  static List<MapEntry<String, double>> _calculateDeltaByMonth(
-          List<LibraryBook> books) =>
+  static List<MapEntry<String, double>> diffPerMonth(
+    List<LibraryBook> books,
+    List<MapEntry<DateTime, double>> Function(LibraryBook) getDiffs,
+  ) =>
       books
-          .expand((b) => b.progressDiffs)
-          .fold(<String, double>{}, _sumByMonth)
-          .entries
-          .toList()
-        ..sort((a, b) => a.key.compareTo(b.key));
-
-  static List<MapEntry<String, double>> _calculatePagesByMonth(
-          List<LibraryBook> books) =>
-      books
-          .expand((b) => b.pagesDiffs)
-          .fold(<String, double>{}, _sumByMonth)
-          .entries
-          .toList()
-        ..sort((a, b) => a.key.compareTo(b.key));
-
-  static List<MapEntry<String, double>> _calculateMinutesByMonth(
-          List<LibraryBook> books) =>
-      books
-          .expand((b) => b.fiveMinDiffs)
+          .expand(getDiffs)
           .fold(<String, double>{}, _sumByMonth)
           .entries
           .toList()
@@ -69,18 +52,18 @@ class DeltaProgressChart extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final List<DateTime> eventTimes =
-        deltaByMonth.mapL((e) => yyMmFormat.parse(e.key));
+        lineDatas.flatten.mapL((e) => yyMmFormat.parse(e.key));
     final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
     const borderSide = BorderSide(color: Colors.black, width: 2);
 
     return LineChart(
       LineChartData(
         minY: 0,
-        maxY: deltaByMonth.map((e) => e.value).max,
+        maxY: lineDatas.flatten.map((e) => e.value).max,
         minX: timespan.beginning.millisSinceEpoch,
         maxX: timespan.end.millisSinceEpoch,
         gridData: FlGridData(
-          horizontalInterval: DeltaProgressChart.horizontalInterval,
+          horizontalInterval: ProgressPerMonthChart.horizontalInterval,
           drawVerticalLine: false,
         ),
         titlesData: labelAxes(timespan),
