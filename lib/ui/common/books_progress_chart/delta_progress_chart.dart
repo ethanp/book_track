@@ -47,8 +47,7 @@ class DeltaProgressChart extends ConsumerWidget {
   static List<MapEntry<String, double>> _calculateMinutesByMonth(
           List<LibraryBook> books) =>
       books
-          // TODO(incomplete): Implement b.minutesDiffs to use here instead.
-          .expand((b) => b.progressDiffs)
+          .expand((b) => b.fiveMinDiffs)
           .fold(<String, double>{}, _sumByMonth)
           .entries
           .toList()
@@ -106,6 +105,8 @@ class DeltaProgressChart extends ConsumerWidget {
     );
   }
 
+  // TODO(feat): The last point should be scaled based on how much of the month has
+  //  elapsed, to make it an "estimate" of the "full" month's data.
   LineChartBarData dataByMonthLine(List<MapEntry<String, double>> dataByMonth) {
     return LineChartBarData(
       spots: dataByMonth.mapL(

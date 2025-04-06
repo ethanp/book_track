@@ -100,6 +100,19 @@ class LibraryBook {
     });
   }
 
+  List<MapEntry<DateTime, double>> get fiveMinDiffs {
+    if (bookFormat != BookFormat.audiobook) return [];
+    if (bookLength == null) return [];
+
+    return progressHistory.zipWithPrev((prev, curr) {
+      final double progressNow = minutesAt(curr);
+      final double priorProgress = minutesAt(prev);
+      final double progressDelta = progressNow - priorProgress;
+      final DateTime progressTimestamp = curr.end;
+      return MapEntry(progressTimestamp, progressDelta / 5);
+    });
+  }
+
   int intPercentProgressAt(ProgressEvent p) => percentProgressAt(p)!.floor();
 
   /// Eg. if the book is 50% complete, this method will return `50`.
@@ -128,6 +141,13 @@ class LibraryBook {
   double pagesAt(ProgressEvent event) {
     if (bookLength == null) return 0;
     if (event.format == ProgressEventFormat.pageNum)
+      return event.progress.toDouble();
+    return event.progress / 100.0 * bookLength!;
+  }
+
+  double minutesAt(ProgressEvent event) {
+    if (bookLength == null) return 0;
+    if (event.format == ProgressEventFormat.minutes)
       return event.progress.toDouble();
     return event.progress / 100.0 * bookLength!;
   }
