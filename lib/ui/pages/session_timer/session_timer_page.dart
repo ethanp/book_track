@@ -52,21 +52,23 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
   }
 
   Widget beginSessionButton() {
-    final SessionStartTime read = ref.read(sessionStartTimeProvider.notifier);
+    final SessionStartTime readSession =
+        ref.read(sessionStartTimeProvider.notifier);
     return toggleSessionButton(
-      onPressed: () => read.start(),
+      onPressed: () => readSession.start(),
       backgroundColor: Colors.lightGreen,
       text: 'Begin Session',
     );
   }
 
   Widget endSessionButton() {
-    final SessionStartTime read = ref.read(sessionStartTimeProvider.notifier);
+    final SessionStartTime readSession =
+        ref.read(sessionStartTimeProvider.notifier);
     final DateTime? startTime = ref.read(sessionStartTimeProvider);
 
     return toggleSessionButton(
       onPressed: () {
-        read.stop();
+        readSession.stop();
         UpdateProgressDialogPage.show(
           ref,
           widget.book,
@@ -80,9 +82,10 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
   }
 
   Widget cancelSessionButton() {
-    final SessionStartTime read = ref.read(sessionStartTimeProvider.notifier);
+    final SessionStartTime readSession =
+        ref.read(sessionStartTimeProvider.notifier);
     return toggleSessionButton(
-      onPressed: () => read.stop(),
+      onPressed: () => readSession.stop(),
       backgroundColor: Colors.red,
       text: 'Cancel Session',
     );
@@ -188,16 +191,14 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
                   scrollDirection: Axis.vertical,
                   child: Table(
                     columnWidths: {0: FixedColumnWidth(110)},
-                    children: progressEvents.mapL((ev) {
-                      final percentage =
-                          widget.book.intPercentProgressAt(ev) ?? '? ';
-                      return TableRow(children: [
+                    children: progressEvents.mapL(
+                      (ev) => TableRow(children: [
                         Text(TimeHelpers.monthDayYear(ev.end)),
                         Text(TimeHelpers.hourMinuteAmPm(ev.end)),
-                        Text('$percentage%'),
+                        Text('${widget.book.intPercentProgressAt(ev)}%'),
                         Text(ev.stringWSuffix),
-                      ]);
-                    }),
+                      ]),
+                    ),
                   ),
                 ),
               ),

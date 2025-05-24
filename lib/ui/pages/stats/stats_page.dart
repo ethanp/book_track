@@ -8,6 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class StatsPage extends ConsumerWidget {
+  // TODO(feature) add a line chart with all the currently-reading books.
+  // TODO(feature): a line-chart of pages read per week, across time.
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return CupertinoPageScaffold(

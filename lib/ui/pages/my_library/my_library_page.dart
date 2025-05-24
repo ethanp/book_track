@@ -61,6 +61,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // TODO(feature) add an indicator of pages read in the past week.
         sortSelector(),
         userLibraryByStatus(library),
         if (library.any((b) => b.archived)) archivedSection(library),
@@ -69,16 +70,18 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
   }
 
   Widget sortSelector() {
-    return CupertinoSegmentedControl<_LibraryOrder>(
-      groupValue: _libraryOrder,
-      children: {
-        for (final value in _LibraryOrder.values)
-          value: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(value.nameAsCapitalizedWords),
-          ),
-      },
-      onValueChanged: (choice) => setState(() => _libraryOrder = choice),
+    return Center(
+      child: CupertinoSegmentedControl<_LibraryOrder>(
+        groupValue: _libraryOrder,
+        children: {
+          for (final value in _LibraryOrder.values)
+            value: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(value.nameAsCapitalizedWords),
+            ),
+        },
+        onValueChanged: (choice) => setState(() => _libraryOrder = choice),
+      ),
     );
   }
 
@@ -88,7 +91,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
       children: [
         showArchivedToggleButton(),
         if (_showingArchived)
-          bookSection('Archived', library.where((b) => b.archived)),
+          bookSection('Archived', library.where((b) => b.archived).toList()),
       ],
     );
   }
@@ -127,44 +130,40 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
   }
 
   Widget userLibraryByStatus(Iterable<LibraryBook> fullLibrary) {
-    // TODO(feature) add a line chart with all the currently-reading books.
-    // TODO(feature) add a line chart of the progress across all books in
-    //   the past year (and varying and customizable periods).
-    // TODO(feature) add an indicator of pages read in the past week, and a chart
-    //  of pages read per week, across time.
     final liveBooks = fullLibrary.where((b) => !b.archived);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: ReadingStatus.values.mapL(
         (readingStatus) => bookSection(readingStatus.name,
-            liveBooks.where((b) => b.readingStatus == readingStatus)),
+            liveBooks.where((b) => b.readingStatus == readingStatus).toList()),
       ),
     );
   }
 
-  Widget bookSection(String name, Iterable<LibraryBook> books) {
+  Widget bookSection(String name, List<LibraryBook> books) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          statusTitle(name),
-          ListView(
+          statusTitle(name, books.length),
+          ListView.builder(
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            children: books.zipWithIndex.mapL((e) => BookTile(e.elem, e.idx)),
+            itemCount: books.length,
+            itemBuilder: (ctx, idx) => BookTile(books[idx], idx),
           ),
         ],
       ),
     );
   }
 
-  Widget statusTitle(String name) {
+  Widget statusTitle(String name, int count) {
     return Padding(
       padding: const EdgeInsets.all(12),
       child: Text(
-        name.capitalize,
+        '${name.capitalize} ($count)',
         style: TextStyles().h1,
       ),
     );
