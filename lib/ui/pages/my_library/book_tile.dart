@@ -1,5 +1,7 @@
 import 'package:book_track/data_model.dart';
+import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart' show FlutterHelpers;
+import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,31 +24,34 @@ class BookTile extends ConsumerWidget {
   }
 
   Widget bookListTile(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          coverArt(),
-          SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [Expanded(child: title()), progressPercentage()],
-                ),
-                SizedBox(height: 2),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [author(), pagesRead()],
-                ),
-                SizedBox(height: 8),
-                progressBar(),
-              ],
+    return GestureDetector(
+      onTap: () => context.push(LibraryBookPage(book)),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            coverArt(),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [Expanded(child: title()), progressPercentage()],
+                  ),
+                  SizedBox(height: 2),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [author(), pagesRead()],
+                  ),
+                  SizedBox(height: 8),
+                  progressBar(),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
