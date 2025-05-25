@@ -11,31 +11,47 @@ import 'package:intl/intl.dart';
 
 class ProgressPerMonthChart extends ConsumerWidget {
   ProgressPerMonthChart({required this.books, super.key})
-      : deltaByMonth = diffPerMonth(books, (book) => book.progressDiffs),
-        pagesByMonth = diffPerMonth(books, (book) => book.pagesDiffs),
-        minutesByMonth = diffPerMonth(books, (book) => book.fiveMinDiffs);
+      : deltaByMonth = diffPerMonth(
+          books,
+          Colors.green[900]!,
+          (book) => book.progressDiffs,
+        ),
+        pagesByMonth = diffPerMonth(
+          books,
+          Colors.blue[900]!,
+          (book) => book.pagesDiffs,
+        ),
+        minutesByMonth = diffPerMonth(
+          books,
+          Colors.red[900]!,
+          (book) => book.fiveMinDiffs,
+        );
 
   final List<LibraryBook> books;
 
-  final List<MapEntry<String, double>> deltaByMonth;
-  final List<MapEntry<String, double>> pagesByMonth;
-  final List<MapEntry<String, double>> minutesByMonth;
+  final DiffPerMonth deltaByMonth;
+  final DiffPerMonth pagesByMonth;
+  final DiffPerMonth minutesByMonth;
 
-  List<List<MapEntry<String, double>>> get lineDatas =>
+  List<DiffPerMonth> get lineDatas =>
       [deltaByMonth, pagesByMonth, minutesByMonth];
 
   static final yyyyMM = DateFormat('yyyy-MM');
 
-  static List<MapEntry<String, double>> diffPerMonth(
+  static DiffPerMonth diffPerMonth(
     List<LibraryBook> books,
+    Color color,
     Iterable<MapEntry<DateTime, double>> Function(LibraryBook) getDiffs,
   ) =>
-      books
-          .expand(getDiffs)
-          .fold(<String, double>{}, _sumByMonth)
-          .entries
-          .toList()
-        ..sort((a, b) => a.key.compareTo(b.key));
+      DiffPerMonth(
+        color: color,
+        data: books
+            .expand(getDiffs)
+            .fold(<String, double>{}, _sumByMonth)
+            .entries
+            .toList()
+          ..sort((a, b) => a.key.compareTo(b.key)),
+      );
 
   static Map<String, double> _sumByMonth(
     Map<String, double> acc,
@@ -53,14 +69,14 @@ class ProgressPerMonthChart extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final List<DateTime> eventTimes =
-        lineDatas.flatten.mapL((e) => yyyyMM.parse(e.key));
+        lineDatas.map((e) => e.data).flatten.mapL((e) => yyyyMM.parse(e.key));
     final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
     const borderSide = BorderSide(color: Colors.black, width: 2);
 
     return LineChart(
       LineChartData(
         minY: 0,
-        maxY: lineDatas.flatten.map((e) => e.value).max,
+        maxY: lineDatas.map((e) => e.data).flatten.map((e) => e.value).max,
         minX: timespan.beginning.millisSinceEpoch,
         maxX: timespan.end.millisSinceEpoch,
         gridData: FlGridData(
@@ -89,11 +105,11 @@ class ProgressPerMonthChart extends ConsumerWidget {
     );
   }
 
-  LineChartBarData dataByMonthLine(List<MapEntry<String, double>> dataByMonth) {
+  LineChartBarData dataByMonthLine(DiffPerMonth dataByMonth) {
     final DateTime now = DateTime.now();
     final String currMonth = yyyyMM.format(now);
     return LineChartBarData(
-      spots: dataByMonth.mapL((x) => FlSpot(
+      spots: dataByMonth.map((x) => x.data)!.toList().mapL((x) => FlSpot(
           yyyyMM.parse(x.key).millisSinceEpoch,
           // Scale the last point based on how much of the month has
           // elapsed, to make it an "estimate" of the "full" month's data.
@@ -103,7 +119,7 @@ class ProgressPerMonthChart extends ConsumerWidget {
       isCurved: true,
       curveSmoothness: .05,
       belowBarData: gradientFill(),
-      color: Colors.grey[700]!.withValues(alpha: .7),
+      color: dataByMonth.color.withValues(alpha: .7),
       dotData: FlDotData(
         show: true,
         getDotPainter: (spot, xPercentage, bar, index) {
@@ -162,4 +178,11 @@ class ProgressPerMonthChart extends ConsumerWidget {
       : {9, 4, 6, 11}.contains(month)
           ? 30
           : 31;
+}
+
+class DiffPerMonth {
+  const DiffPerMonth({required this.data, required this.color});
+
+  final List<MapEntry<String, double>> data;
+  final Color color;
 }
