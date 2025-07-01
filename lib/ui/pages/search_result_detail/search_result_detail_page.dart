@@ -6,7 +6,6 @@ import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/services/supabase_library_service.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'cover_art.dart';
@@ -49,11 +48,11 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
       padding: const EdgeInsets.only(top: 30),
       child: Column(
         children: [
-          Text("I'm reading this in", style: TextStyles().h1),
+          Text("I'm reading this in", style: TextStyles.h1),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: _saving
-                ? CircularProgressIndicator()
+                ? const CupertinoActivityIndicator()
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: BookFormat.values.mapL(typeButton),
@@ -71,14 +70,14 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
         onPressed: () => addBookToLibrary(bookType),
         padding: const EdgeInsets.symmetric(horizontal: 6),
         color: switch (bookType) {
-          BookFormat.audiobook => Colors.orange[400],
-          BookFormat.eBook => Colors.blue[400],
-          BookFormat.paperback => Colors.red[300],
-          BookFormat.hardcover => Colors.green[200],
+          BookFormat.audiobook => CupertinoColors.systemOrange,
+          BookFormat.eBook => CupertinoColors.systemBlue,
+          BookFormat.paperback => CupertinoColors.systemRed,
+          BookFormat.hardcover => CupertinoColors.systemGreen,
         },
         child: Text(
           bookType.name,
-          style: TextStyles().h4.copyWith(fontSize: 13),
+          style: TextStyles.h4.copyWith(fontSize: 13),
         ),
       ),
     );
@@ -110,20 +109,33 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
   }
 
   Widget keyValueText(String key, String value) {
-    final TextStyle black = TextStyles().h3;
+    final TextStyle black = TextStyles.h3;
     final TextStyle bold = black.copyWith(fontWeight: FontWeight.w700);
     final Widget keyWidget = SizedBox(
       width: 90,
-      child: Text(key, style: bold, maxLines: 3, textAlign: TextAlign.right),
+      child: Text(
+        key,
+        style: bold,
+        maxLines: 3,
+        textAlign: TextAlign.right,
+      ),
     );
     final Widget valueWidget = SizedBox(
       width: 200,
-      child: Text(value, style: black, maxLines: 3),
+      child: Text(
+        value,
+        style: black,
+        maxLines: 3,
+      ),
     );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
-        children: [keyWidget, SizedBox(width: 16), valueWidget],
+        children: [
+          keyWidget,
+          SizedBox(width: 16),
+          valueWidget,
+        ],
       ),
     );
   }

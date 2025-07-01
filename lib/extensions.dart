@@ -11,8 +11,23 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 extension BuildContextExtension on BuildContext {
   static SimpleLogger log = SimpleLogger(prefix: 'BuildContextExtension');
 
-  void showSnackBar(String message, {bool isError = false}) =>
-      log('snack bar: $message', error: isError);
+  void showSnackBar(String message, {bool isError = false}) {
+    showCupertinoDialog(
+      context: this,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Text(isError ? 'Error' : 'Info'),
+        content: Text(message),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            child: const Text('Ok'),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   void pushReplacementPage(Widget widget) => Navigator.of(this)
       .pushReplacement(CupertinoPageRoute(builder: (context) => widget));
@@ -79,7 +94,7 @@ extension ListExtension<T> on List<T> {
 }
 
 extension ComparableExtension<T extends Comparable<T>> on T {
-  operator <(T other) => compareTo(other) < 0;
+  bool operator <(T other) => compareTo(other) < 0;
 
   T min(T other) => this < other ? this : other;
 }

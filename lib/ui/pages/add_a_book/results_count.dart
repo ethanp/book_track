@@ -19,19 +19,19 @@ class ResultsCount extends StatelessWidget {
           children: [
             TextSpan(
               text: 'Showing ',
-              style: TextStyles().h2Skinny,
+              style: TextStyles.h2Skinny,
             ),
             TextSpan(
               text: '$shownCount',
-              style: TextStyles().h2Fat,
+              style: TextStyles.h2Fat,
             ),
             TextSpan(
               text: ' items, out of ',
-              style: TextStyles().h2Skinny,
+              style: TextStyles.h2Skinny,
             ),
             TextSpan(
               text: '$fullCount',
-              style: TextStyles().h2Fat,
+              style: TextStyles.h2Fat,
             ),
           ],
         ),

@@ -49,9 +49,8 @@ class _OpenLibraryBookUniverseRepository {
       Uri.parse('https://covers.openlibrary.org/b/id/$coverId-$size.jpg');
 
   Future<BookSearchResults> search(String containing) async {
-    String safe(String str) => str.replaceAll(r'\S', '+');
     final Uri url = apiUrl.replace(queryParameters: {
-      'q': safe(containing),
+      'q': Uri.encodeQueryComponent(containing),
       'limit': '10',
     });
     final http.Response response = await http.get(url);

@@ -1,11 +1,10 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
-import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/books_progress_chart/date_axis.dart';
 import 'package:book_track/ui/common/books_progress_chart/timespan.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -13,17 +12,17 @@ class ProgressPerMonthChart extends ConsumerWidget {
   ProgressPerMonthChart({required this.books, super.key})
       : deltaByMonth = diffPerMonth(
           books,
-          Colors.green[900]!,
+          CupertinoColors.systemGreen,
           (book) => book.progressDiffs,
         ),
         pagesByMonth = diffPerMonth(
           books,
-          Colors.blue[900]!,
+          CupertinoColors.systemBlue,
           (book) => book.pagesDiffs,
         ),
         minutesByMonth = diffPerMonth(
           books,
-          Colors.red[900]!,
+          CupertinoColors.systemRed,
           (book) => book.fiveMinDiffs,
         );
 
@@ -71,7 +70,7 @@ class ProgressPerMonthChart extends ConsumerWidget {
     final List<DateTime> eventTimes =
         lineDatas.map((e) => e.data).flatten.mapL((e) => yyyyMM.parse(e.key));
     final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
-    const borderSide = BorderSide(color: Colors.black, width: 2);
+    const borderSide = BorderSide(color: CupertinoColors.black, width: 2);
 
     return LineChart(
       LineChartData(
@@ -98,7 +97,7 @@ class ProgressPerMonthChart extends ConsumerWidget {
 
   static FlTitlesData labelAxes(TimeSpan timespan) {
     return FlTitlesData(
-      leftTitles: progressAxisTitles(shiftTitle: Offset(20, -10)),
+      leftTitles: progressAxisTitles(shiftTitle: const Offset(20, -10)),
       rightTitles: noAxisTitles,
       bottomTitles: DateAxis(timespan).titles(),
       topTitles: noAxisTitles,
@@ -119,7 +118,7 @@ class ProgressPerMonthChart extends ConsumerWidget {
       isCurved: true,
       curveSmoothness: .05,
       belowBarData: gradientFill(),
-      color: dataByMonth.color.withValues(alpha: .7),
+      color: dataByMonth.color.withAlpha((0.7 * 255).toInt()),
       dotData: FlDotData(
         show: true,
         getDotPainter: (spot, xPercentage, bar, index) {
@@ -128,11 +127,11 @@ class ProgressPerMonthChart extends ConsumerWidget {
           return FlDotCirclePainter(
             radius: 2,
             color: Color.lerp(
-              Colors.blue.withValues(alpha: .7),
-              Colors.blueGrey.withValues(alpha: .8),
+              CupertinoColors.systemBlue.withAlpha((0.7 * 255).toInt()),
+              CupertinoColors.systemGrey.withAlpha((0.8 * 255).toInt()),
               .4,
             )!,
-            strokeColor: Colors.black,
+            strokeColor: CupertinoColors.black,
           );
         },
       ),
@@ -144,10 +143,10 @@ class ProgressPerMonthChart extends ConsumerWidget {
       show: true,
       gradient: LinearGradient(
         colors: [
-          Colors.teal[400]!.withValues(alpha: .15),
-          Colors.blue.withValues(alpha: .04)
+          CupertinoColors.systemTeal.withAlpha((0.15 * 255).toInt()),
+          CupertinoColors.systemBlue.withAlpha((0.04 * 255).toInt())
         ],
-        stops: [.4, 1],
+        stops: const [.4, 1],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
       ),
@@ -156,9 +155,9 @@ class ProgressPerMonthChart extends ConsumerWidget {
 
   static AxisTitles progressAxisTitles({required Offset shiftTitle}) {
     return AxisTitles(
-      axisNameWidget: FlutterHelpers.transform(
-        shift: shiftTitle,
-        child: Text('Progress (%)', style: TextStyles().sideAxisLabel),
+      axisNameWidget: Transform.translate(
+        offset: shiftTitle,
+        child: Text('Progress (%)', style: TextStyles.sideAxisLabel),
       ),
       sideTitles: SideTitles(
         interval: horizontalInterval,

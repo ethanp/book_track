@@ -3,15 +3,16 @@ import 'dart:typed_data';
 import 'package:book_track/extensions.dart';
 
 class LibraryBook {
-  const LibraryBook(
+  LibraryBook(
     this.supaId,
     this.book,
-    this.progressHistory,
-    this.statusHistory,
+    List<ProgressEvent> progressHistory,
+    List<StatusEvent> statusHistory,
     this.bookFormat,
     this.bookLength,
     this.archived,
-  );
+  )   : progressHistory = List.unmodifiable(progressHistory),
+        statusHistory = List.unmodifiable(statusHistory);
 
   final int supaId;
   final Book book;
@@ -30,7 +31,9 @@ class LibraryBook {
         _ => ProgressEventFormat.pageNum,
       };
 
-  DateTime get startTime => progressHistory.first.end;
+  DateTime get startTime =>
+      progressHistory.firstOrNull?.end ??
+      DateTime.fromMillisecondsSinceEpoch(0);
 
   String get _suffix => isAudiobook ? 'h:m' : 'pgs';
 
@@ -43,7 +46,7 @@ class LibraryBook {
   }
 
   String bookProgressString(ProgressEvent ev) =>
-      _formatBookLengthString(ev.progress);
+      _formatBookLengthString(ev.progress, ev.format);
 
   String get bookLengthStringWSuffix =>
       '${bookLengthString ?? 'unknown'} $_suffix';
@@ -113,7 +116,8 @@ class LibraryBook {
     });
   }
 
-  int intPercentProgressAt(ProgressEvent p) => percentProgressAt(p)!.floor();
+  int intPercentProgressAt(ProgressEvent p) =>
+      (percentProgressAt(p) ?? 0).floor();
 
   /// Eg. if the book is 50% complete, this method will return `50`.
   double? percentProgressAt(ProgressEvent p) {

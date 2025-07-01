@@ -58,6 +58,25 @@ class SupabaseProgressService {
       .delete()
       .eq(_SupaProgress.supaIdCol, ev.supaId)
       .captureStackTraceOnError();
+
+  static Future<Map<int, List<ProgressEvent>>> historyForLibraryBooks(
+      List<int> libraryBookIds) async {
+    final queryResults = await _progressClient
+        .select()
+        .filter(_SupaProgress.libraryBookIdCol, 'in', '(${libraryBookIds.join(',')})')
+        .eq(_SupaProgress.userIdCol, SupabaseAuthService.loggedInUserId!)
+        .order(_SupaProgress.endCol, ascending: true)
+        .captureStackTraceOnError();
+
+    final Map<int, List<ProgressEvent>> progressEventsMap = {};
+    for (final result in queryResults) {
+      final supaProgress = _SupaProgress(result);
+      progressEventsMap
+          .putIfAbsent(supaProgress.libraryBookId, () => [])
+          .add(supaProgress.toProgressEvent);
+    }
+    return progressEventsMap;
+  }
 }
 
 class _SupaProgress {

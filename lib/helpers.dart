@@ -55,9 +55,5 @@ class SimpleLogger {
 
   String _msg(Object? s) => '${TimeHelpers.timestamp} $prefix: $s';
 
-/*
-  static const String _redColor = '\x1B[31m';
-  static const String _defaultColor = '\x1B[0m';
-  String _red(String string) => '$_redColor$string$_defaultColor';
-  */
+
 }

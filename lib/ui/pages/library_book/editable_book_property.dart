@@ -1,8 +1,6 @@
 import 'package:book_track/extensions.dart';
-import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class TextFieldValueAndSuffix {
@@ -46,26 +44,22 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          titleAndValueLeft(),
-          SizedBox(height: 40, width: 1),
-          trailingButtonsRight(),
-        ],
+        children: [titleAndValueLeft(), trailingButtonsRight()],
       ),
     );
   }
 
   Widget titleAndValueLeft() {
     return Row(children: [
-      Text('${widget.title}: ', style: TextStyles().title),
+      Text('${widget.title}: ', style: TextStyles.title),
       SizedBox(width: 10),
       if (_editing)
         textField()
       else
-        Text(widget.value, style: TextStyles().value),
+        Text(widget.value, style: TextStyles.value),
     ]);
   }
 
@@ -79,12 +73,13 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
               height: 26,
               child: CupertinoTextField(
                 decoration: BoxDecoration(
-                  color: Colors.grey[100]!.withValues(alpha: .8),
-                  border: Border.all(color: Colors.grey[400]!, width: 1),
+                  color: CupertinoColors.systemGrey.withOpacity(0.1),
+                  border:
+                      Border.all(color: CupertinoColors.systemGrey, width: 1),
                   borderRadius: BorderRadius.circular(5),
                 ),
                 padding: EdgeInsets.only(top: 5, left: 4),
-                style: TextStyle(fontSize: 14, color: Colors.grey[900]),
+                style: TextStyle(fontSize: 14, color: CupertinoColors.label),
                 autocorrect: false,
                 controller: field.key,
                 onSubmitted: (_) => onSubmit(),
@@ -95,7 +90,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
                 padding: const EdgeInsets.only(left: 3, right: 4),
                 child: Text(
                   field.value!,
-                  style: TextStyles().value,
+                  style: TextStyles.value,
                 ),
               ),
           ],
@@ -122,11 +117,11 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
 
   Widget submitButton() {
     return buttonStyle(
-      color: Colors.lightGreen.shade300,
+      color: CupertinoColors.systemGreen,
       onPressed: onSubmit,
       child: Icon(
-        Icons.check,
-        color: Color.lerp(Colors.black87, Colors.green[100], .3),
+        CupertinoIcons.check_mark,
+        color: CupertinoColors.white,
       ),
     );
   }
@@ -134,22 +129,20 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
   void setEditing(bool v) => setState(() => _editing = v);
 
   Widget updateButton() {
-    return ElevatedButton(
-      style: Buttons.updateButtonStyle(
-        color: CupertinoColors.systemGrey6,
-      ),
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
       onPressed: () => setEditing(true),
-      child: Text('Update'),
+      child: Text('Update', style: TextStyles.valueButton),
     );
   }
 
   Widget cancelEditingButton() {
     return buttonStyle(
-      color: Colors.red[300]!,
+      color: CupertinoColors.systemRed,
       onPressed: () => setEditing(false),
       child: Icon(
-        Icons.clear,
-        color: Color.lerp(Colors.red[900], Colors.black54, .5),
+        CupertinoIcons.clear,
+        color: CupertinoColors.white,
       ),
     );
   }
@@ -159,14 +152,9 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
     required Widget child,
     required Color color,
   }) =>
-      MaterialButton(
+      CupertinoButton(
         onPressed: onPressed,
         color: color,
-        elevation: 0.3,
-        shape: FlutterHelpers.roundedRect(radius: 10),
-        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        minWidth: 44,
-        height: 30,
         padding: EdgeInsets.zero,
         child: child,
       );

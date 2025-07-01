@@ -2,7 +2,7 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/common/books_progress_chart/books_progress_chart.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ProgressChart extends ConsumerStatefulWidget {
@@ -30,14 +30,24 @@ class _ProgressChartState extends ConsumerState<ProgressChart> {
       //  to set something when adding the book to library.
       return Text("This book's length is unknown. Update it above.");
     }
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(left: 16, right: 16, top: 28),
-      color: Colors.grey[100],
-      elevation: 0.2,
+      decoration: BoxDecoration(
+        color: CupertinoColors.systemGrey6,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: CupertinoColors.systemGrey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: Column(children: [
-          Text('Progress', style: TextStyles().h2),
+          Text('Progress', style: TextStyles.h2),
           _latestBook.progressHistory.isEmpty
               ? Text('No progress updates yet')
               : SizedBox(height: 300, child: ref.userLibrary(body))

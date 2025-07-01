@@ -1,7 +1,5 @@
-import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 class BookDetailButton extends StatelessWidget {
   const BookDetailButton({
@@ -22,39 +20,33 @@ class BookDetailButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(top: dense ? 0 : 14),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: buttonStyle(),
-        child: buttonBody(),
+    return SizedBox(
+      width: 196,
+      child: Padding(
+        padding: EdgeInsets.only(top: dense ? 0 : 14),
+        child: CupertinoButton(
+          padding: EdgeInsets.symmetric(
+            horizontal: dense ? 10 : 20,
+            vertical: dense ? 0 : 10,
+          ),
+          onPressed: onPressed,
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(10),
+          child: buttonBody(),
+        ),
       ),
-    );
-  }
-
-  ButtonStyle buttonStyle() {
-    return ElevatedButton.styleFrom(
-      padding: EdgeInsets.symmetric(
-        horizontal: dense ? 10 : 20,
-        vertical: dense ? 0 : 10,
-      ),
-      shape: FlutterHelpers.roundedRect(radius: 10),
-      fixedSize: dense ? Size(174, 44) : Size(300, 75),
-      side: BorderSide(width: dense ? .2 : .1),
-      backgroundColor: backgroundColor,
-      elevation: dense ? 0 : 4,
     );
   }
 
   Widget buttonBody() {
     final titleText = Text(
       title,
-      style: dense ? TextStyles().h4.copyWith(fontSize: 13) : TextStyles().h3,
+      style: dense ? TextStyles.h4.copyWith(fontSize: 13) : TextStyles.h3,
     );
     final subtitleText = Text(
       subtitle,
       style: TextStyle(
-        color: CupertinoColors.black.withValues(alpha: .72),
+        color: CupertinoColors.black.withAlpha((0.72 * 255).toInt()),
         fontSize: dense ? 9 : 14.5,
       ),
     );
@@ -69,7 +61,7 @@ class BookDetailButton extends StatelessWidget {
     );
     final iconWidget = Icon(
       icon,
-      color: CupertinoColors.black.withValues(alpha: .5),
+      color: CupertinoColors.black.withAlpha((0.5 * 255).toInt()),
       size: dense ? 25 : 46,
     );
     return Row(

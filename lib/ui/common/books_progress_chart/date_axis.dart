@@ -23,12 +23,12 @@ class DateAxis {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Date', style: TextStyles().sideAxisLabel),
+          Text('Date', style: TextStyles.sideAxisLabel),
           Padding(
             padding: const EdgeInsets.only(top: 1, left: 10),
             child: Text(
               'Starting ${TimeHelpers.monthDayYear(timespan.beginning)}',
-              style: TextStyles().sideAxisLabelThin,
+              style: TextStyles.sideAxisLabelThin,
             ),
           ),
         ],

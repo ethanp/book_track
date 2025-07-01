@@ -24,11 +24,11 @@ class SearchResults extends ConsumerWidget {
         children: [
           Text(
             'Request to OpenLibrary failed. Please search again.',
-            style: TextStyles().h3,
+            style: TextStyles.h3,
           ),
           Text(
             '\n${searchResult.failure}',
-            style: TextStyles().value,
+            style: TextStyles.value,
           )
         ],
       );
@@ -65,7 +65,7 @@ class SearchResults extends ConsumerWidget {
       style: TextStyle(
         fontStyle: FontStyle.italic,
         fontWeight: FontWeight.w500,
-        color: Colors.grey[800],
+        color: CupertinoColors.systemGrey,
       ),
     );
   }
@@ -77,7 +77,7 @@ class SearchResults extends ConsumerWidget {
       style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w700,
-        color: Colors.grey[900],
+        color: CupertinoColors.systemGrey,
       ),
     );
   }

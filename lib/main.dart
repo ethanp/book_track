@@ -21,11 +21,39 @@ Future<void> main() async {
   runApp(ProviderScope(child: const TopLevelWidget()));
 }
 
-class TopLevelWidget extends ConsumerWidget {
+class TopLevelWidget extends ConsumerStatefulWidget {
   const TopLevelWidget({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TopLevelWidget> createState() => _TopLevelWidgetState();
+}
+
+class _TopLevelWidgetState extends ConsumerState<TopLevelWidget> {
+  late final StreamSubscription<AuthState> _authStateSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _authStateSubscription = SupabaseAuthService.onAuthStateChange(
+      onEvent: (AuthState state) {
+        // Force a rebuild when auth state changes
+        setState(() {});
+      },
+      onError: (Object error) {
+        // Log the error, but don't prevent the app from trying to render
+        print('Auth state change error: $error');
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _authStateSubscription.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return CupertinoApp(
       title: 'The app itself',
       debugShowCheckedModeBanner: false,

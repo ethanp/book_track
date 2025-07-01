@@ -5,7 +5,6 @@ import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/sign_out_button.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'book_tile.dart';
@@ -36,7 +35,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
   CupertinoNavigationBar navigationBar(BuildContext context) {
     return CupertinoNavigationBar(
       leading: addABookButton(context),
-      middle: Text('My Library'),
+      middle: const Text('My Library'),
       trailing: SignOutButton(),
     );
   }
@@ -100,20 +99,20 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     return CupertinoButton(
       child: Text(
         '${_showingArchived ? 'Hide' : 'See'} archived books...',
-        style: TextStyles().h3.copyWith(color: CupertinoColors.activeBlue),
+        style: TextStyles.h3.copyWith(color: CupertinoColors.activeBlue),
       ),
       onPressed: () => setState(() => _showingArchived = !_showingArchived),
     );
   }
 
-  Widget errorScreen(err, stack) {
+  Widget errorScreen(Object err, StackTrace stack) {
     final String errorMessage = 'Error loading your library $err $stack';
     log(errorMessage, error: true);
-    return Text(errorMessage, style: TextStyles().h1);
+    return Text(errorMessage, style: TextStyles.h1);
   }
 
   Widget loadingScreen() =>
-      Text('Loading your library...', style: TextStyles().h1);
+      Text('Loading your library...', style: TextStyles.h1);
 
   Widget addABookButton(BuildContext context) {
     return CupertinoButton(
@@ -122,8 +121,8 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.add, size: 20),
-          Text('Add book', style: TextStyle(fontSize: 13))
+          Icon(CupertinoIcons.add, size: 20),
+          Text('Add book', style: const TextStyle(fontSize: 13))
         ],
       ),
     );
@@ -149,7 +148,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
         children: [
           statusTitle(name, books.length),
           ListView.builder(
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: books.length,
             itemBuilder: (ctx, idx) => BookTile(books[idx], idx),
@@ -164,7 +163,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
       padding: const EdgeInsets.all(12),
       child: Text(
         '${name.capitalize} ($count)',
-        style: TextStyles().h1,
+        style: TextStyles.h1,
       ),
     );
   }

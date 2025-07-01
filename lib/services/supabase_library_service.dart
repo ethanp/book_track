@@ -16,8 +16,17 @@ class SupabaseLibraryService {
 
   static Future<List<LibraryBook>> myBooks() async {
     final List<_SupaLibrary> library = await _forLoggedInUser();
-    final Iterable<Future<LibraryBook>> libraryBooks =
-        library.map((supaBook) => supaBook.toLibraryBook);
+    final List<int> libraryBookIds = library.map((e) => e.supaId).toList();
+
+    final Map<int, List<ProgressEvent>> allProgressEvents =
+        await SupabaseProgressService.historyForLibraryBooks(libraryBookIds);
+    final Map<int, List<StatusEvent>> allStatusEvents =
+        await SupabaseStatusService.historyForLibraryBooks(libraryBookIds);
+
+    final Iterable<Future<LibraryBook>> libraryBooks = library.map((supaBook) =>
+        supaBook.toLibraryBook(
+            allProgressEvents[supaBook.supaId] ?? [],
+            allStatusEvents[supaBook.supaId] ?? []));
     return Future.wait(libraryBooks);
   }
 
@@ -108,11 +117,13 @@ class SupabaseLibraryService {
 }
 
 class _SupaLibrary {
-  Future<LibraryBook> get toLibraryBook async => LibraryBook(
+  Future<LibraryBook> toLibraryBook(List<ProgressEvent> progressHistory,
+          List<StatusEvent> statusHistory) async =>
+      LibraryBook(
         supaId,
         await SupabaseBookService.getBookById(bookId),
-        await SupabaseProgressService.history(supaId),
-        await SupabaseStatusService.history(supaId),
+        progressHistory,
+        statusHistory,
         format,
         length,
         archived,

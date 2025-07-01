@@ -46,8 +46,8 @@ class BookDetailButtons extends ConsumerWidget {
       child: dense
           ? Center(
               child: Wrap(
-                spacing: 8,
-                runSpacing: 6,
+                spacing: 10,
+                runSpacing: 10,
                 children: children,
               ),
             )

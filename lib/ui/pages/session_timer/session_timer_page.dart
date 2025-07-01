@@ -7,7 +7,6 @@ import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:segment_display/segment_display.dart';
 
@@ -27,15 +26,15 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
   Widget build(BuildContext context) {
     updateTimer();
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(middle: Text('Session')),
+      navigationBar: const CupertinoNavigationBar(middle: Text('Session')),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(top: 40),
           child: Column(children: [
             segmentDisplay(),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             toggleButtons(),
-            SizedBox(height: 80),
+            const SizedBox(height: 80),
             progressHistory(),
           ]),
         ),
@@ -56,7 +55,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
         ref.read(sessionStartTimeProvider.notifier);
     return toggleSessionButton(
       onPressed: () => readSession.start(),
-      backgroundColor: Colors.lightGreen,
+      backgroundColor: CupertinoColors.systemGreen,
       text: 'Begin Session',
     );
   }
@@ -76,7 +75,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
           initialEndTime: DateTime.now(),
         );
       },
-      backgroundColor: Colors.orange,
+      backgroundColor: CupertinoColors.systemOrange,
       text: 'End Session',
     );
   }
@@ -86,7 +85,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
         ref.read(sessionStartTimeProvider.notifier);
     return toggleSessionButton(
       onPressed: () => readSession.stop(),
-      backgroundColor: Colors.red,
+      backgroundColor: CupertinoColors.systemRed,
       text: 'Cancel Session',
     );
   }
@@ -96,29 +95,31 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
     required Color backgroundColor,
     required String text,
   }) =>
-      ElevatedButton(
+      CupertinoButton(
         onPressed: () {
           onPressed();
           repaint();
         },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
-          foregroundColor: Colors.black,
-          fixedSize: Size(170, 88),
-          shape: FlutterHelpers.roundedRect(radius: 30),
-          elevation: 4,
+        color: backgroundColor,
+        padding: EdgeInsets.zero,
+        borderRadius: BorderRadius.circular(30),
+        child: SizedBox(
+          width: 170,
+          height: 88,
+          child: Center(
+            child: Text(text, style: TextStyles.h2, textAlign: TextAlign.center),
+          ),
         ),
-        child: Text(text, style: TextStyles().h2, textAlign: TextAlign.center),
       );
 
   Widget segmentDisplay() {
     final DateTime? currStartTime = ref.read(sessionStartTimeProvider);
-    final Color? backgroundColor =
-        sessionInProgress ? Colors.lightGreen[200] : Colors.blueGrey[100];
+    final Color backgroundColor =
+        sessionInProgress ? CupertinoColors.systemGreen.withAlpha((0.2 * 255).toInt()) : CupertinoColors.systemGrey.withAlpha((0.2 * 255).toInt());
     Widget border({required Widget child}) {
       return Container(
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[700]!, width: 8),
+          border: Border.all(color: CupertinoColors.systemGrey, width: 8),
           borderRadius: BorderRadius.circular(10),
           color: backgroundColor,
         ),
@@ -130,11 +131,11 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
 
     final clockFace = SevenSegmentDisplay(
       value: duration(currStartTime),
-      backgroundColor: Colors.white.withValues(alpha: 0),
+      backgroundColor: CupertinoColors.white.withAlpha(0),
       segmentStyle: HexSegmentStyle(
         segmentBaseSize: const Size(.85, 3.0),
-        disabledColor: Color.lerp(backgroundColor, Colors.grey[400], .3),
-        enabledColor: Colors.black,
+        disabledColor: Color.lerp(backgroundColor, CupertinoColors.systemGrey, .3),
+        enabledColor: CupertinoColors.black,
       ),
     );
 
@@ -147,14 +148,12 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
 
   void updateTimer() {
     if (sessionInProgress) {
-      _timer ??= repaintEverySecond();
+      _timer ??= Timer.periodic(const Duration(seconds: 1), repaint);
     } else {
       _timer?.cancel();
       _timer = null;
     }
   }
-
-  Timer repaintEverySecond() => Timer.periodic(Duration(seconds: 1), repaint);
 
   void repaint([dynamic _]) => mounted ? setState(() {}) : {};
 
@@ -176,21 +175,24 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
     final List<ProgressEvent> progressEvents = widget.book.progressHistory;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14),
-      child: Card(
-        color: Colors.blueGrey[100],
+      child: Container(
+        decoration: BoxDecoration(
+          color: CupertinoColors.systemGrey6,
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
           constraints: const BoxConstraints(minHeight: 200, maxHeight: 270),
           child: Column(children: [
             title(),
             if (progressEvents.isEmpty)
-              Text('None', style: TextStyles().h2)
+              Text('None', style: TextStyles.h2)
             else
               Expanded(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.vertical,
                   child: Table(
-                    columnWidths: {0: FixedColumnWidth(110)},
+                    columnWidths: const {0: FixedColumnWidth(110)},
                     children: progressEvents.mapL(
                       (ev) => TableRow(children: [
                         Text(TimeHelpers.monthDayYear(ev.end)),
@@ -210,12 +212,13 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
 
   Widget title() {
     return Container(
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.black)),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: CupertinoColors.black)),
       ),
       padding: const EdgeInsets.only(bottom: 2),
       margin: const EdgeInsets.only(bottom: 12),
-      child: Text('Progress Events', style: TextStyles().h1),
+      child: Text('Progress Events', style: TextStyles.h1),
     );
   }
 }
+

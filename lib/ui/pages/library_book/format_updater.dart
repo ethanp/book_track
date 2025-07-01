@@ -2,7 +2,6 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FormatUpdater extends ConsumerStatefulWidget {
@@ -31,7 +30,7 @@ class _FormatUpdaterState extends ConsumerState<FormatUpdater> {
           children: [
             _editing
                 ? formatSelector()
-                : Text(_currFormat.name, style: TextStyles().value),
+                : Text(_currFormat.name, style: TextStyles.value),
             updateButton(),
           ],
         ),
@@ -82,12 +81,11 @@ class _FormatUpdaterState extends ConsumerState<FormatUpdater> {
   }
 
   Widget updateButton() {
-    return ElevatedButton(
-      style: Buttons.updateButtonStyle(
-        color: _editing ? Colors.red.shade300 : CupertinoColors.systemGrey6,
-      ),
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
       onPressed: () => setState(() => _editing = !_editing),
-      child: Text(_editing ? 'Cancel' : 'Update'),
+      child:
+          Text(_editing ? 'Cancel' : 'Update', style: TextStyles.valueButton),
     );
   }
 }

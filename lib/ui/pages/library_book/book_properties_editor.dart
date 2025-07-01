@@ -6,7 +6,6 @@ import 'package:book_track/services/supabase_book_service.dart';
 import 'package:book_track/services/supabase_library_service.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'editable_book_property.dart';
@@ -85,11 +84,11 @@ class BookPropertiesEditor extends ConsumerWidget {
 
   Widget bookFormat() {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3.4),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
         children: [
-          SizedBox(width: 9),
-          Text('Format: ', style: TextStyles().title),
+          SizedBox(width: 7),
+          Text('Format: ', style: TextStyles.title),
           SizedBox(width: 7.3),
           FormatUpdater(
             libraryBook.bookFormat,

@@ -5,4 +5,4 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 final SupabaseClient supabase = Supabase.instance.client;
 
 /// Parses a data time from Postgres.
-DateTime? parseDateCol(value) => (value as String?).map(DateTime.parse);
+DateTime? parseDateCol(dynamic value) => (value as String?).map(DateTime.parse);

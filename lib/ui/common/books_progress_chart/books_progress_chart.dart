@@ -137,7 +137,7 @@ class BooksProgressChart extends ConsumerWidget {
         shift: shiftTitle,
         child: Text(
           'Percentage',
-          style: TextStyles().sideAxisLabel,
+          style: TextStyles.sideAxisLabel,
         ),
       ),
       sideTitles: SideTitles(
