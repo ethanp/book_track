@@ -16,15 +16,14 @@ class ProgressPerMonthChart extends ConsumerWidget {
           (book) => book.pagesDiffs(percentage: true),
           'Percent',
         ),
-        // TODO(bug): this line is not showing up
         pagesByMonth = diffPerMonth(
-          books,
+          books.where((b) => !b.isAudiobook).toList(),
           CupertinoColors.systemBlue,
           (book) => book.pagesDiffs(),
           'Pages',
         ),
         minutesByMonth = diffPerMonth(
-          books,
+          books.where((b) => b.isAudiobook).toList(),
           CupertinoColors.systemRed,
           (book) => book.pagesDiffs(),
           'Minutes / 5',
