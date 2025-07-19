@@ -80,39 +80,19 @@ class LibraryBook {
     return intPercentProgressAt(progressHistory.last);
   }
 
-  Iterable<MapEntry<DateTime, double>> get progressDiffs {
-    return progressHistory.zipWithDiff(1, (prev, curr) {
-      final double progressNow = percentProgressAt(curr)!;
-      final double priorProgress = percentProgressAt(prev)!;
-      final double progressDelta = progressNow - priorProgress;
-      final DateTime progressTimestamp = curr.end;
-      return MapEntry(progressTimestamp, progressDelta);
-    });
-  }
-
-  Iterable<MapEntry<DateTime, double>> get pagesDiffs {
-    if (bookFormat == BookFormat.audiobook) return [];
+  /// At each progress event, how many pages were read; sorted by date.
+  Iterable<MapEntry<DateTime, double>> pagesDiffs({bool percentage = false}) {
     if (bookLength == null) return [];
-
     return progressHistory.zipWithDiff(1, (prev, curr) {
-      final double progressNow = pagesAt(curr);
-      final double priorProgress = pagesAt(prev);
-      final double progressDelta = progressNow - priorProgress;
-      final DateTime progressTimestamp = curr.end;
-      return MapEntry(progressTimestamp, progressDelta);
-    });
-  }
-
-  Iterable<MapEntry<DateTime, double>> get fiveMinDiffs {
-    if (bookFormat != BookFormat.audiobook) return [];
-    if (bookLength == null) return [];
-
-    return progressHistory.zipWithDiff(1, (prev, curr) {
-      final double progressNow = minutesAt(curr);
-      final double priorProgress = minutesAt(prev);
-      final double progressDelta = progressNow - priorProgress;
-      final DateTime progressTimestamp = curr.end;
-      return MapEntry(progressTimestamp, progressDelta / 5);
+      double value;
+      if (percentage) {
+        value = percentProgressAt(curr)! - percentProgressAt(prev)!;
+      } else if (bookFormat == BookFormat.audiobook) {
+        value = (minutesAt(curr) - minutesAt(prev)) / 5;
+      } else {
+        value = pagesAt(curr) - pagesAt(prev);
+      }
+      return MapEntry(curr.end, value);
     });
   }
 

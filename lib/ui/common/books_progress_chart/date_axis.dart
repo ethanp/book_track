@@ -65,7 +65,7 @@ class DateAxis {
     final dateTime = DateTime.fromMillisecondsSinceEpoch(value.floor());
     return Text(
       formatter(dateTime),
-      style: TextStyle(letterSpacing: -.4, fontSize: 11),
+      style: TextStyle(letterSpacing: -.4, fontSize: 10),
     );
   }
 }

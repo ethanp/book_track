@@ -13,17 +13,21 @@ class ProgressPerMonthChart extends ConsumerWidget {
       : deltaByMonth = diffPerMonth(
           books,
           CupertinoColors.systemGreen,
-          (book) => book.progressDiffs,
+          (book) => book.pagesDiffs(percentage: true),
+          'Percent',
         ),
+        // TODO(bug): this line is not showing up
         pagesByMonth = diffPerMonth(
           books,
           CupertinoColors.systemBlue,
-          (book) => book.pagesDiffs,
+          (book) => book.pagesDiffs(),
+          'Pages',
         ),
         minutesByMonth = diffPerMonth(
           books,
           CupertinoColors.systemRed,
-          (book) => book.fiveMinDiffs,
+          (book) => book.pagesDiffs(),
+          'Minutes / 5',
         );
 
   final List<LibraryBook> books;
@@ -39,8 +43,9 @@ class ProgressPerMonthChart extends ConsumerWidget {
 
   static DiffPerMonth diffPerMonth(
     List<LibraryBook> books,
-    Color color,
+    CupertinoDynamicColor color,
     Iterable<MapEntry<DateTime, double>> Function(LibraryBook) getDiffs,
+    String name,
   ) =>
       DiffPerMonth(
         color: color,
@@ -50,6 +55,7 @@ class ProgressPerMonthChart extends ConsumerWidget {
             .entries
             .toList()
           ..sort((a, b) => a.key.compareTo(b.key)),
+        name: name,
       );
 
   static Map<String, double> _sumByMonth(
@@ -67,30 +73,66 @@ class ProgressPerMonthChart extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    return Row(children: [
+      lineChart(),
+      SizedBox(width: 8),
+      chartLegend(),
+    ]);
+  }
+
+  Widget lineChart() {
     final List<DateTime> eventTimes =
         lineDatas.map((e) => e.data).flatten.mapL((e) => yyyyMM.parse(e.key));
     final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
     const borderSide = BorderSide(color: CupertinoColors.black, width: 2);
-
-    return LineChart(
-      LineChartData(
-        minY: 0,
-        maxY: lineDatas.map((e) => e.data).flatten.map((e) => e.value).max,
-        minX: timespan.beginning.millisSinceEpoch,
-        maxX: timespan.end.millisSinceEpoch,
-        gridData: FlGridData(
-          horizontalInterval: ProgressPerMonthChart.horizontalInterval,
-          drawVerticalLine: false,
-        ),
-        titlesData: labelAxes(timespan),
-        lineBarsData: lineDatas.mapL(dataByMonthLine),
-        borderData: FlBorderData(
-          show: true,
-          border: Border(
-            left: borderSide,
-            bottom: borderSide,
+    return Flexible(
+      child: LineChart(
+        LineChartData(
+          minY: 0,
+          maxY: lineDatas.map((e) => e.data).flatten.map((e) => e.value).max,
+          minX: timespan.beginning.millisSinceEpoch,
+          maxX: timespan.end.millisSinceEpoch,
+          gridData: FlGridData(
+            horizontalInterval: ProgressPerMonthChart.horizontalInterval,
+            drawVerticalLine: false,
+          ),
+          titlesData: labelAxes(timespan),
+          lineBarsData: lineDatas.mapL(dataByMonthLine),
+          borderData: FlBorderData(
+            show: true,
+            border: Border(
+              left: borderSide,
+              bottom: borderSide,
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget chartLegend() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: lineDatas.mapL((l) => lineKey(color: l.color, label: l.name)),
+    );
+  }
+
+  Widget lineKey({required Color color, required String label}) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Container(
+              width: 10,
+              height: 10,
+              color: color,
+            ),
+          ),
+          Text(label, style: TextStyle(fontSize: 14)),
+        ],
       ),
     );
   }
@@ -118,7 +160,7 @@ class ProgressPerMonthChart extends ConsumerWidget {
       isCurved: true,
       curveSmoothness: .05,
       belowBarData: gradientFill(),
-      color: dataByMonth.color.withAlpha((0.7 * 255).toInt()),
+      color: dataByMonth.color.withOpacity(0.7),
       dotData: FlDotData(
         show: true,
         getDotPainter: (spot, xPercentage, bar, index) {
@@ -127,8 +169,8 @@ class ProgressPerMonthChart extends ConsumerWidget {
           return FlDotCirclePainter(
             radius: 2,
             color: Color.lerp(
-              CupertinoColors.systemBlue.withAlpha((0.7 * 255).toInt()),
-              CupertinoColors.systemGrey.withAlpha((0.8 * 255).toInt()),
+              CupertinoColors.systemBlue.withOpacity(0.7),
+              CupertinoColors.systemGrey.withOpacity(0.8),
               .4,
             )!,
             strokeColor: CupertinoColors.black,
@@ -143,8 +185,8 @@ class ProgressPerMonthChart extends ConsumerWidget {
       show: true,
       gradient: LinearGradient(
         colors: [
-          CupertinoColors.systemTeal.withAlpha((0.15 * 255).toInt()),
-          CupertinoColors.systemBlue.withAlpha((0.04 * 255).toInt())
+          CupertinoColors.systemTeal.withOpacity(0.15),
+          CupertinoColors.systemBlue.withOpacity(0.04),
         ],
         stops: const [.4, 1],
         begin: Alignment.topCenter,
@@ -164,24 +206,30 @@ class ProgressPerMonthChart extends ConsumerWidget {
         reservedSize: 30,
         showTitles: true,
         getTitlesWidget: (double value, TitleMeta meta) =>
-            Text(value.floor().toString()),
+            Text(value.floor().toString(), style: TextStyle(fontSize: 10)),
       ),
       axisNameSize: 22,
     );
   }
 
-  static num monthLength(int month, int year) => month == 2
-      ? year % 4 == 0
-          ? 29
-          : 28
-      : {9, 4, 6, 11}.contains(month)
-          ? 30
-          : 31;
+  static num monthLength(int month, int year) => //newline
+      month == 2
+          ? year % 4 == 0
+              ? 29
+              : 28
+          : {9, 4, 6, 11}.contains(month)
+              ? 30
+              : 31;
 }
 
 class DiffPerMonth {
-  const DiffPerMonth({required this.data, required this.color});
+  const DiffPerMonth({
+    required this.data,
+    required this.color,
+    required this.name,
+  });
 
   final List<MapEntry<String, double>> data;
-  final Color color;
+  final CupertinoDynamicColor color;
+  final String name;
 }

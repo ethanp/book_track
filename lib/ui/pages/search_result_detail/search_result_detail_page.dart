@@ -55,8 +55,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
                 ? const CupertinoActivityIndicator()
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: BookFormat.values.mapL(typeButton),
-                  ),
+                    children: BookFormat.values.mapL(typeButton)),
           ),
         ],
       ),
