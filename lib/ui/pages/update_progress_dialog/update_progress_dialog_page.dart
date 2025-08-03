@@ -71,29 +71,30 @@ class _UpdateProgressDialogState
   late DateTime _selectedUpdateTimestamp =
       widget.eventToUpdate?.end ?? widget.initialEndTime ?? DateTime.now();
 
-  late final Map<ProgressEventFormat, List<TextEditingController>>
+  // TODO This should be its own class, which includes the extension on
+  //  List<_FocusableController>? below.
+  late final Map<ProgressEventFormat, List<_FocusableController>>
       _textControllers = () {
-    final baseline = {
+    final controllersPerFormat = {
       ProgressEventFormat.minutes: [
-        TextEditingController(),
-        TextEditingController()
+        _FocusableController(),
+        _FocusableController()
       ],
-      ProgressEventFormat.pageNum: [TextEditingController()],
-      ProgressEventFormat.percent: [TextEditingController()],
+      ProgressEventFormat.pageNum: [_FocusableController()],
+      ProgressEventFormat.percent: [_FocusableController()],
     };
-    if (widget.eventToUpdate == null) return baseline;
+    if (widget.eventToUpdate == null) return controllersPerFormat;
+
+    // Update an existing event
     final ProgressEvent eventToUpdate = widget.eventToUpdate!;
     final progress = eventToUpdate.progress;
     final format = eventToUpdate.format;
     if (format == ProgressEventFormat.minutes) {
-      baseline[format] = [
-        TextEditingController(text: progress.hours.toString()),
-        TextEditingController(text: progress.minutes.toString()),
-      ];
+      controllersPerFormat[format]?.updateWith(progress);
     } else {
-      baseline[format] = [TextEditingController(text: progress.toString())];
+      controllersPerFormat[format]?.updateText(progress.toString());
     }
-    return baseline;
+    return controllersPerFormat;
   }();
 
   @override
@@ -115,7 +116,7 @@ class _UpdateProgressDialogState
 
   Widget progressAmountForm() {
     final controllers = _textControllers[_selectedProgressEventFormat]!;
-    Widget inputField(TextEditingController c) {
+    Widget inputField(_FocusableController c) {
       return SizedBox(
         width: _selectedProgressEventFormat == ProgressEventFormat.pageNum
             ? 36
@@ -130,7 +131,12 @@ class _UpdateProgressDialogState
           padding: EdgeInsets.only(top: 5, left: 4),
           style: TextStyle(fontSize: 14, color: Colors.grey[900]),
           autocorrect: false,
-          controller: c,
+          enableSuggestions: false,
+          autofocus: true,
+          focusNode: c.focusNode,
+          keyboardType: TextInputType.number,
+          controller: c.controller,
+          onChanged: (c) => setState(() {}),
         ),
       );
     }
@@ -194,21 +200,34 @@ class _UpdateProgressDialogState
     ]);
   }
 
-  List<Widget> submitAndCancelButtons() => [
-        CupertinoButton(
-          onPressed: () => context.pop(false),
-          child: Text('Cancel'),
-        ),
-        CupertinoButton(
-          onPressed: _submit,
-          child: Text('Submit'),
-        ),
-      ];
+  List<Widget> submitAndCancelButtons() {
+    final firstEmptyFormField = _textControllers[_selectedProgressEventFormat]!
+        .where((e) => e.controller.text.isEmpty)
+        .firstOrNull;
+    print('Reevaluating, $firstEmptyFormField');
+    final cancelButton = CupertinoButton(
+      onPressed: () => context.pop(false),
+      child: Text('Cancel'),
+    );
+    final nextFormField = CupertinoButton(
+      onPressed: () => firstEmptyFormField?.focusNode.requestFocus(),
+      child: Text('Fill'),
+    );
+    final submitButton = CupertinoButton(
+      onPressed: _submit,
+      child: Text('Submit'),
+    );
+    return [
+      cancelButton,
+      if (firstEmptyFormField == null) submitButton else nextFormField,
+    ];
+  }
 
   /// Pop [true] iff UI needs to reload to see updated data.
   Future<void> _submit() async {
     final List<TextEditingController> userInputValues =
-        _textControllers[_selectedProgressEventFormat]!;
+        _textControllers[_selectedProgressEventFormat]!
+            .mapL((e) => e.controller);
     final String lengthText = userInputValues.map((e) => e.text).join(':');
     final int? newLen = widget.book.parseLengthText(lengthText);
     if (newLen == null) {
@@ -237,4 +256,24 @@ class _UpdateProgressDialogState
     }
     if (mounted) context.pop(true);
   }
+}
+
+extension on List<_FocusableController>? {
+  void updateWith(int progress) {
+    this?.first.controller.text = progress.hours.toString();
+    this?.last.controller.text = progress.minutes.toString();
+  }
+
+  void updateText(String string) {
+    this?.first.controller.text = string;
+  }
+}
+
+class _FocusableController {
+  _FocusableController()
+      : controller = TextEditingController(),
+        focusNode = FocusNode();
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
 }
