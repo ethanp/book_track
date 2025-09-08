@@ -4,12 +4,10 @@ import 'package:book_track/ui/common/books_progress_chart/books_progress_chart.d
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/progress_per_month_chart.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class StatsPage extends ConsumerWidget {
-  // TODO(feature) add a line chart with all the currently-reading books.
-  // TODO(feature): a line-chart of pages read per week, across time.
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return CupertinoPageScaffold(
@@ -23,13 +21,30 @@ class StatsPage extends ConsumerWidget {
       child: SingleChildScrollView(
         child: Column(
           children: [
+            // TODO(feature) add a toggle to show only non-archived books
             ChartCard(
               title: 'Read Lines',
               chart: BooksProgressChart(books: userLibrary),
             ),
+            // TODO(feature): Consider making a "running 30 day average" version of
+            //  this chart as well. Since reading doesn't happen on a month-cyclic
+            //  basis, the "per month" level view is not that helpful. A "Strava
+            //  fitness score" sort of "running metric" is a better fit for my
+            //  purpose on this.
             ChartCard(
               title: 'Progress per Month',
               chart: ProgressPerMonthChart(books: userLibrary),
+            ),
+            ChartCard(
+              title: 'Recent Stats',
+              chart: Card(
+                child: Text(
+                  'Books read in the past 30 days',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                  // TODO(feature): Also display what *percentage* of that book
+                  //  has been read over the past 30 days.
+                ),
+              ),
             ),
           ],
         ),

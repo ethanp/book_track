@@ -102,6 +102,10 @@ class ProgressPerMonthChart extends ConsumerWidget {
             drawVerticalLine: false,
           ),
           titlesData: labelAxes(timespan),
+          lineTouchData: LineTouchData(
+              // TODO(feature): Show list of book(cover, name) with events in
+              //  the touched month.
+              ),
           lineBarsData: lineDatas.mapL(_dataByMonthLine),
           borderData: FlBorderData(
             show: true,
@@ -120,6 +124,7 @@ class ProgressPerMonthChart extends ConsumerWidget {
       top: 0,
       right: 0,
       child: Card(
+        elevation: 2,
         color: Colors.yellow[100]!.withValues(alpha: .7),
         shadowColor: Colors.green[100]!.withValues(alpha: .5),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
@@ -224,7 +229,7 @@ class ProgressPerMonthChart extends ConsumerWidget {
       axisNameSize: 20,
       axisNameWidget: Transform.translate(
         offset: shiftTitle,
-        child: Text('Progress (%)', style: TextStyles.sideAxisLabel),
+        child: Text('Progress', style: TextStyles.sideAxisLabel),
       ),
       sideTitles: SideTitles(
         interval: horizontalInterval,
