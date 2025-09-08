@@ -14,7 +14,7 @@ class BottomNavbarElement {
 }
 
 class MainstageAndBottomNavbar extends ConsumerWidget {
-  static final List<BottomNavbarElement> elements = [
+  static final List<BottomNavbarElement> bottomNavbarElements = [
     BottomNavbarElement(
       page: MyLibraryPage(),
       item: BottomNavigationBarItem(
@@ -38,13 +38,13 @@ class MainstageAndBottomNavbar extends ConsumerWidget {
         ref.read(selectedBottomBarIdxProvider.notifier);
     return CupertinoTabScaffold(
       tabBar: CupertinoTabBar(
-        items: elements.mapL((e) => e.item),
+        items: bottomNavbarElements.mapL((e) => e.item),
         currentIndex: curIdx,
         onTap: (idx) => idxSelector.update(idx),
       ),
       backgroundColor: Color.lerp(Colors.lightGreen, Colors.grey[100], .92),
       tabBuilder: (context, idx) => CupertinoTabView(
-        builder: (context) => elements[idx].page,
+        builder: (context) => bottomNavbarElements[idx].page,
       ),
     );
   }

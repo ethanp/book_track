@@ -48,7 +48,7 @@ class ProgressPerMonthChart extends ConsumerWidget {
   ) =>
       DiffPerMonth(
         color: color,
-        data: books
+        valuePerMonth: books
             .expand(getDiffs)
             .fold(<String, double>{}, _sumByMonth)
             .entries
@@ -80,15 +80,21 @@ class ProgressPerMonthChart extends ConsumerWidget {
   }
 
   Widget lineChart() {
-    final List<DateTime> eventTimes =
-        lineDatas.map((e) => e.data).flatten.mapL((e) => yyyyMM.parse(e.key));
+    final List<DateTime> eventTimes = lineDatas
+        .map((e) => e.valuePerMonth)
+        .flatten
+        .mapL((e) => yyyyMM.parse(e.key));
     final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
     const borderSide = BorderSide(color: CupertinoColors.black, width: 2);
     return Flexible(
       child: LineChart(
         LineChartData(
           minY: 0,
-          maxY: lineDatas.map((e) => e.data).flatten.map((e) => e.value).max,
+          maxY: lineDatas
+              .map((e) => e.valuePerMonth)
+              .flatten
+              .map((e) => e.value)
+              .max,
           minX: timespan.beginning.millisSinceEpoch,
           maxX: timespan.end.millisSinceEpoch,
           gridData: FlGridData(
@@ -140,7 +146,7 @@ class ProgressPerMonthChart extends ConsumerWidget {
     return FlTitlesData(
       leftTitles: progressAxisTitles(shiftTitle: const Offset(20, -10)),
       rightTitles: noAxisTitles,
-      bottomTitles: DateAxis(timespan).titles(),
+      bottomTitles: MonthAxis(timespan).titles(),
       topTitles: noAxisTitles,
     );
   }
@@ -149,13 +155,14 @@ class ProgressPerMonthChart extends ConsumerWidget {
     final DateTime now = DateTime.now();
     final String currMonth = yyyyMM.format(now);
     return LineChartBarData(
-      spots: dataByMonth.map((x) => x.data)!.toList().mapL((x) => FlSpot(
-          yyyyMM.parse(x.key).millisSinceEpoch,
-          // Scale the last point based on how much of the month has
-          // elapsed, to make it an "estimate" of the "full" month's data.
-          x.key == currMonth
-              ? x.value / now.day * monthLength(now.month, now.year)
-              : x.value)),
+      spots: dataByMonth.valuePerMonth.mapL((monthVal) {
+        final dateAsMillis = yyyyMM.parse(monthVal.key).millisSinceEpoch;
+        final isCurrMonth = monthVal.key == currMonth;
+        return FlSpot(
+          dateAsMillis,
+          isCurrMonth ? _scaleEstimate(monthVal.value, now) : monthVal.value,
+        );
+      }),
       isCurved: true,
       curveSmoothness: .05,
       belowBarData: gradientFill(),
@@ -179,6 +186,11 @@ class ProgressPerMonthChart extends ConsumerWidget {
     );
   }
 
+  /// Scale the last point based on how much of the month has
+  /// elapsed, to make it an "estimate" of the "full" month's data.
+  double _scaleEstimate(double x, DateTime now) =>
+      x / now.day * monthLength(now.month, now.year);
+
   static BarAreaData gradientFill() {
     return BarAreaData(
       show: true,
@@ -196,18 +208,25 @@ class ProgressPerMonthChart extends ConsumerWidget {
 
   static AxisTitles progressAxisTitles({required Offset shiftTitle}) {
     return AxisTitles(
+      axisNameSize: 20,
       axisNameWidget: Transform.translate(
         offset: shiftTitle,
         child: Text('Progress (%)', style: TextStyles.sideAxisLabel),
       ),
       sideTitles: SideTitles(
         interval: horizontalInterval,
-        reservedSize: 30,
+        reservedSize: 26,
         showTitles: true,
-        getTitlesWidget: (double value, TitleMeta meta) =>
-            Text(value.floor().toString(), style: TextStyle(fontSize: 10)),
+        maxIncluded: false,
+        getTitlesWidget: (double value, TitleMeta meta) => Padding(
+          padding: const EdgeInsets.only(right: 3),
+          child: Text(
+            value.floor().toString(),
+            style: TextStyle(fontSize: 10),
+            textAlign: TextAlign.right,
+          ),
+        ),
       ),
-      axisNameSize: 22,
     );
   }
 
@@ -223,12 +242,12 @@ class ProgressPerMonthChart extends ConsumerWidget {
 
 class DiffPerMonth {
   const DiffPerMonth({
-    required this.data,
+    required this.valuePerMonth,
     required this.color,
     required this.name,
   });
 
-  final List<MapEntry<String, double>> data;
+  final List<MapEntry<String, double>> valuePerMonth;
   final CupertinoDynamicColor color;
   final String name;
 }

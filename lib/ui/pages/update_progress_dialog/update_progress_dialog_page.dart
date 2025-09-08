@@ -232,6 +232,7 @@ class _UpdateProgressDialogState
   }
 }
 
+// TODO(clean up): Move these into the _FieldControllers class?
 extension on List<_FocusableController>? {
   void updateWith(int progress) {
     this?.first.controller.text = progress.hours.toString();

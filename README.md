@@ -43,11 +43,11 @@ flutter clean;
 ```
 
 ### Updating app on the phone
-
+q
 This way we can run the app on the phone without tethering to the dev env.
 
-* Start with
-  ```
+* Start with a flutter build for ios in release mode (20sec)
+  ```shell
   flutter build ios --release
   ```
 * In XCode open the "blue on white" version of the xcode file

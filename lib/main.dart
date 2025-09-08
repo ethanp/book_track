@@ -57,10 +57,7 @@ class _TopLevelWidgetState extends ConsumerState<TopLevelWidget> {
     return CupertinoApp(
       title: 'The app itself',
       debugShowCheckedModeBanner: false,
-      theme: CupertinoThemeData(
-        // Always use light mode (for now, for simplicity).
-        brightness: Brightness.light,
-      ),
+      theme: CupertinoThemeData(brightness: Brightness.light),
       home: SupabaseAuthService.isLoggedOut
           ? const LoginPage()
           : MainstageAndBottomNavbar(),
