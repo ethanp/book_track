@@ -1,10 +1,11 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
-import 'package:book_track/ui/common/books_progress_chart/date_axis.dart';
+import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/books_progress_chart/timespan.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -72,9 +73,8 @@ class ProgressPerMonthChart extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Row(children: [
+    return Stack(children: [
       lineChart(),
-      SizedBox(width: 8),
       chartLegend(),
     ]);
   }
@@ -102,7 +102,7 @@ class ProgressPerMonthChart extends ConsumerWidget {
             drawVerticalLine: false,
           ),
           titlesData: labelAxes(timespan),
-          lineBarsData: lineDatas.mapL(dataByMonthLine),
+          lineBarsData: lineDatas.mapL(_dataByMonthLine),
           borderData: FlBorderData(
             show: true,
             border: Border(
@@ -116,27 +116,40 @@ class ProgressPerMonthChart extends ConsumerWidget {
   }
 
   Widget chartLegend() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: lineDatas.mapL((l) => lineKey(color: l.color, label: l.name)),
+    return Positioned(
+      top: 0,
+      right: 0,
+      child: Card(
+        color: Colors.yellow[100]!.withValues(alpha: .7),
+        shadowColor: Colors.green[100]!.withValues(alpha: .5),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
+        child: Padding(
+          padding: const EdgeInsets.all(3),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children:
+                lineDatas.mapL((l) => lineKey(color: l.color, label: l.name)),
+          ),
+        ),
+      ),
     );
   }
 
   Widget lineKey({required Color color, required String label}) {
     return Padding(
-      padding: const EdgeInsets.only(top: 6),
+      padding: const EdgeInsets.only(top: 1),
       child: Row(
         children: [
           Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.only(right: 6),
             child: Container(
-              width: 10,
-              height: 10,
+              width: 8,
+              height: 8,
               color: color,
             ),
           ),
-          Text(label, style: TextStyle(fontSize: 14)),
+          Text(label, style: TextStyle(fontSize: 9)),
         ],
       ),
     );
@@ -146,12 +159,12 @@ class ProgressPerMonthChart extends ConsumerWidget {
     return FlTitlesData(
       leftTitles: progressAxisTitles(shiftTitle: const Offset(20, -10)),
       rightTitles: noAxisTitles,
-      bottomTitles: MonthAxis(timespan).titles(),
+      bottomTitles: _MonthAxis(timespan).titles(),
       topTitles: noAxisTitles,
     );
   }
 
-  LineChartBarData dataByMonthLine(DiffPerMonth dataByMonth) {
+  LineChartBarData _dataByMonthLine(DiffPerMonth dataByMonth) {
     final DateTime now = DateTime.now();
     final String currMonth = yyyyMM.format(now);
     return LineChartBarData(
@@ -250,4 +263,73 @@ class DiffPerMonth {
   final List<MapEntry<String, double>> valuePerMonth;
   final CupertinoDynamicColor color;
   final String name;
+}
+
+class _MonthAxis {
+  const _MonthAxis(this.timespan);
+
+  final TimeSpan timespan;
+
+  AxisTitles titles() {
+    return AxisTitles(
+      axisNameWidget: monthAxisName(),
+      sideTitles: monthTextLabels(),
+      axisNameSize: 24,
+    );
+  }
+
+  Widget monthAxisName() {
+    return FlutterHelpers.transform(
+      shift: Offset(20, 0),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('Month', style: TextStyles.sideAxisLabel),
+          Padding(
+            padding: const EdgeInsets.only(top: 1, left: 10),
+            child: Text(
+              'Starting ${TimeHelpers.monthDayYear(timespan.beginning)}',
+              style: TextStyles.sideAxisLabelThin,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  SideTitles monthTextLabels() {
+    return SideTitles(
+      showTitles: true,
+      minIncluded: false,
+      maxIncluded: true,
+      reservedSize: 26,
+      interval: Duration(days: 1).inMilliseconds.toDouble(),
+      getTitlesWidget: (double value, TitleMeta c) {
+        if (DateTime.fromMillisecondsSinceEpoch(value.toInt()).day == 1) {
+          return FlutterHelpers.transform(
+            shift: Offset(2, 2),
+            angleDegrees: 40,
+            child: dateText(value),
+          );
+        } else {
+          return SizedBox.shrink();
+        }
+      },
+    );
+  }
+
+  Widget dateText(double value) {
+    final dateTime = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+    if (dateTime.month == 1) {
+      return Text(
+        DateFormat('MMM yy').format(dateTime),
+        style: TextStyle(letterSpacing: -.4, fontSize: 10),
+      );
+    } else {
+      return Text(
+        DateFormat('MMM').format(dateTime),
+        style: TextStyle(letterSpacing: -.4, fontSize: 10),
+      );
+    }
+  }
 }
