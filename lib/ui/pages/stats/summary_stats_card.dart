@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:book_track/ui/pages/stats/async_stats_card.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Divider;
 
@@ -11,11 +12,19 @@ class SummaryStatsCard extends StatelessWidget {
   });
 
   final List<LibraryBook> books;
-  final DateTime periodCutoff;
+  final DateTime? periodCutoff;
 
   @override
   Widget build(BuildContext context) {
-    final stats = _calculateStats();
+    return AsyncStatsCard<_Stats>(
+      cacheKey: '${books.length}-${periodCutoff?.millisecondsSinceEpoch ?? 0}',
+      compute: () => _calculateStats(books, periodCutoff),
+      loadingHeight: 180,
+      builder: (stats) => _buildCard(stats),
+    );
+  }
+
+  Widget _buildCard(_Stats stats) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -105,10 +114,13 @@ class SummaryStatsCard extends StatelessWidget {
     return n.toString();
   }
 
-  _Stats _calculateStats() {
+  static _Stats _calculateStats(
+      List<LibraryBook> books, DateTime? periodCutoff) {
     // Filter to books with activity in the period
     final booksInPeriod = books
-        .where((b) => b.progressHistory.any((e) => e.end.isAfter(periodCutoff)))
+        .where((b) =>
+            periodCutoff == null ||
+            b.progressHistory.any((e) => e.end.isAfter(periodCutoff)))
         .toList();
 
     final finished = booksInPeriod
@@ -132,9 +144,11 @@ class SummaryStatsCard extends StatelessWidget {
     for (final book in booksInPeriod) {
       if (book.progressHistory.isEmpty || book.formats.isEmpty) continue;
 
-      final eventsInPeriod = book.progressHistory
-          .where((e) => e.end.isAfter(periodCutoff))
-          .toList();
+      final eventsInPeriod = periodCutoff == null
+          ? book.progressHistory
+          : book.progressHistory
+              .where((e) => e.end.isAfter(periodCutoff))
+              .toList();
       if (eventsInPeriod.isEmpty) continue;
 
       // Sort events chronologically
@@ -144,7 +158,7 @@ class SummaryStatsCard extends StatelessWidget {
       // Calculate deltas for each event in the period
       for (int i = 0; i < sorted.length; i++) {
         final event = sorted[i];
-        if (event.end.isBefore(periodCutoff)) continue;
+        if (periodCutoff != null && event.end.isBefore(periodCutoff)) continue;
 
         final format = book.formatById(event.formatId);
         if (format == null || !format.hasLength) continue;
@@ -170,7 +184,9 @@ class SummaryStatsCard extends StatelessWidget {
         }
 
         // Handle case where previous event was before period cutoff
-        if (prevEvent != null && prevEvent.end.isBefore(periodCutoff)) {
+        if (periodCutoff != null &&
+            prevEvent != null &&
+            prevEvent.end.isBefore(periodCutoff)) {
           // Only count progress from cutoff point onwards
           final cutoffPercent = book.progressPercentAt(prevEvent);
           if (cutoffPercent != null) {
@@ -222,4 +238,3 @@ class _Stats {
 
   int get totalHours => totalMinutes ~/ 60;
 }
-

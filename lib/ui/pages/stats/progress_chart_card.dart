@@ -14,7 +14,7 @@ class ProgressChartCard extends StatefulWidget {
   });
 
   final List<LibraryBook> books;
-  final DateTime periodCutoff;
+  final DateTime? periodCutoff;
 
   @override
   State<ProgressChartCard> createState() => _ProgressChartCardState();
@@ -88,47 +88,59 @@ class _ProgressChartCardState extends State<ProgressChartCard> {
   }
 
   _TrendData _calculateTrend() {
-    // Compare reading volume: last 30 days vs previous 30 days
+    // Compare reading volume: current calendar month vs previous calendar month
     final now = DateTime.now();
-    final thirtyDaysAgo = now.subtract(const Duration(days: 30));
-    final sixtyDaysAgo = now.subtract(const Duration(days: 60));
+    final currentMonthStart = DateTime(now.year, now.month, 1);
+    final previousMonthStart = DateTime(now.year, now.month - 1, 1);
+    final daysInCurrentMonth = DateTime(now.year, now.month + 1, 0).day;
+    final daysElapsed = now.day;
 
-    double recentVolume = 0;
-    double previousVolume = 0;
+    double currentMonthVolume = 0;
+    double previousMonthVolume = 0;
 
     for (final book in widget.books) {
       if (book.formats.isEmpty) continue;
       final diffs = book.pagesDiffs();
+      // Convert audiobook minutes to equivalent pages (5 mins = 1 page)
+      final conversionFactor = book.isAudiobook ? 1.0 / 5.0 : 1.0;
 
       for (final diff in diffs) {
-        if (diff.key.isAfter(thirtyDaysAgo)) {
-          recentVolume += diff.value;
-        } else if (diff.key.isAfter(sixtyDaysAgo) &&
-            diff.key.isBefore(thirtyDaysAgo)) {
-          previousVolume += diff.value;
+        final value = diff.value * conversionFactor;
+        if (!diff.key.isBefore(currentMonthStart)) {
+          currentMonthVolume += value;
+        } else if (!diff.key.isBefore(previousMonthStart) &&
+            diff.key.isBefore(currentMonthStart)) {
+          previousMonthVolume += value;
         }
       }
     }
 
-    if (previousVolume == 0 && recentVolume > 0) {
+    // Estimate full month based on days elapsed
+    final estimatedCurrentMonth = daysElapsed > 0
+        ? currentMonthVolume / daysElapsed * daysInCurrentMonth
+        : 0.0;
+
+    if (previousMonthVolume == 0 && currentMonthVolume > 0) {
       return const _TrendData(
         emoji: '📈',
         description: 'Started reading this month!',
       );
     }
-    if (previousVolume == 0 && recentVolume == 0) {
+    if (previousMonthVolume == 0 && currentMonthVolume == 0) {
       return const _TrendData(
         emoji: '➡️',
         description: 'No recent reading activity',
       );
     }
 
-    final trend = previousVolume > 0 ? recentVolume / previousVolume : 1.0;
+    final trend = previousMonthVolume > 0
+        ? estimatedCurrentMonth / previousMonthVolume
+        : 1.0;
 
     if ((trend - 1.0).abs() < 0.05) {
       return const _TrendData(
         emoji: '➡️',
-        description: 'Reading at a steady pace',
+        description: 'On pace with last month',
       );
     }
 
@@ -136,12 +148,12 @@ class _ProgressChartCardState extends State<ProgressChartCard> {
     if (trend > 1) {
       return _TrendData(
         emoji: '📈',
-        description: 'Reading $percent% more than last month',
+        description: 'On pace for $percent% more than last month',
       );
     } else {
       return _TrendData(
         emoji: '📉',
-        description: 'Reading $percent% less than last month',
+        description: 'On pace for $percent% less than last month',
       );
     }
   }
@@ -175,4 +187,3 @@ class _TrendData {
   final String emoji;
   final String description;
 }
-

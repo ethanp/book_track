@@ -1,5 +1,6 @@
 import 'dart:math' show max;
 
+import 'package:book_track/data_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show DateUtils;
 import 'package:intl/intl.dart';
@@ -7,18 +8,26 @@ import 'package:intl/intl.dart';
 class CalendarHeatmap extends StatefulWidget {
   const CalendarHeatmap({
     required this.activityByDay,
+    required this.books,
     this.weeksToShow = 26,
     this.periodCutoff,
+    this.isProgressMode = false,
     super.key,
   });
 
   final Map<DateTime, int> activityByDay;
+
+  /// Books to show details for when a day is selected.
+  final List<LibraryBook> books;
 
   /// Number of weeks to display (default 26 = 6 months).
   final int weeksToShow;
 
   /// Only show dates after this cutoff (inclusive).
   final DateTime? periodCutoff;
+
+  /// If true, show percentage labels instead of update counts.
+  final bool isProgressMode;
 
   /// Color scale (5 levels like GitHub).
   static const colors = [
@@ -35,6 +44,13 @@ class CalendarHeatmap extends StatefulWidget {
 
 class _CalendarHeatmapState extends State<CalendarHeatmap> {
   DateTime? selectedDate;
+
+  /// Max activity value for relative color scaling
+  int get _maxActivity {
+    if (widget.activityByDay.isEmpty) return 1;
+    final max = widget.activityByDay.values.reduce((a, b) => a > b ? a : b);
+    return max > 0 ? max : 1;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -271,15 +287,29 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
 
   int _activityToColorIndex(int activity) {
     if (activity == 0) return 0;
-    if (activity == 1) return 1;
-    if (activity <= 3) return 2;
-    if (activity <= 5) return 3;
+    // Use relative scale: divide into 4 buckets based on max value
+    final ratio = activity / _maxActivity;
+    if (ratio <= 0.25) return 1;
+    if (ratio <= 0.50) return 2;
+    if (ratio <= 0.75) return 3;
     return 4;
   }
 
   Widget _dayDetails(DateTime date) {
-    final activity = widget.activityByDay[date] ?? 0;
     final dateStr = DateFormat('MMM d, yyyy').format(date);
+    final normalizedDate = DateUtils.dateOnly(date);
+
+    // Find books with progress events on this day
+    final booksOnDay = <({LibraryBook book, int progressPercent})>[];
+    for (final book in widget.books) {
+      for (final event in book.progressHistory) {
+        if (DateUtils.isSameDay(event.end, normalizedDate)) {
+          final percent = book.progressPercentAt(event)?.round() ?? 0;
+          booksOnDay.add((book: book, progressPercent: percent));
+          break; // Only add each book once per day
+        }
+      }
+    }
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -288,16 +318,63 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
         color: CupertinoColors.systemGrey6,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(dateStr, style: const TextStyle(fontWeight: FontWeight.w500)),
-          Text(
-            activity == 1 ? '1 update' : '$activity updates',
-            style: const TextStyle(color: CupertinoColors.systemGrey),
-          ),
+          Text(dateStr, style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          if (booksOnDay.isEmpty)
+            const Text(
+              'No reading activity',
+              style: TextStyle(color: CupertinoColors.systemGrey),
+            )
+          else
+            ...booksOnDay.map((entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    children: [
+                      _bookCover(entry.book),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          entry.book.book.title,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ),
+                      Text(
+                        '${entry.progressPercent}%',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: CupertinoColors.systemGreen,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
         ],
       ),
+    );
+  }
+
+  Widget _bookCover(LibraryBook book) {
+    const double size = 30;
+    if (book.book.coverArtS != null && book.book.coverArtS!.length >= 4) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(3),
+        child: Image.memory(
+          book.book.coverArtS!,
+          width: size * 0.75,
+          height: size,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+    return SizedBox(
+      width: size * 0.75,
+      height: size,
+      child: const Icon(CupertinoIcons.book, size: 16),
     );
   }
 }
@@ -331,6 +408,42 @@ class ReadingActivityData {
       if (cutoffDate != null && date.isBefore(cutoffDate)) continue;
 
       activityByDay[date] = (activityByDay[date] ?? 0) + 1;
+    }
+
+    // Calculate streaks
+    final (current, longest) = _calculateStreaks(activityByDay.keys.toList());
+
+    return ReadingActivityData(
+      activityByDay: activityByDay,
+      currentStreak: current,
+      longestStreak: longest,
+    );
+  }
+
+  /// Calculate reading activity based on progress percentage made per day.
+  factory ReadingActivityData.fromProgress(
+    List<LibraryBook> books, {
+    DateTime? periodCutoff,
+  }) {
+    final activityByDay = <DateTime, int>{};
+    final cutoffDate =
+        periodCutoff != null ? DateUtils.dateOnly(periodCutoff) : null;
+
+    for (final book in books) {
+      // Use percentage mode to get % deltas directly
+      final diffs = book.pagesDiffs(percentage: true);
+      for (final diff in diffs) {
+        final date = DateUtils.dateOnly(diff.key);
+
+        // Filter by period cutoff
+        if (cutoffDate != null && date.isBefore(cutoffDate)) continue;
+
+        final percentDelta = diff.value;
+        if (percentDelta > 0) {
+          activityByDay[date] =
+              (activityByDay[date] ?? 0) + percentDelta.round();
+        }
+      }
     }
 
     // Calculate streaks

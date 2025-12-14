@@ -1,9 +1,12 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:book_track/ui/pages/stats/async_stats_card.dart';
 import 'package:book_track/ui/pages/stats/calendar_heatmap.dart';
+import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ReadingStreakCard extends StatelessWidget {
+class ReadingStreakCard extends ConsumerWidget {
   const ReadingStreakCard({
     required this.books,
     required this.periodCutoff,
@@ -11,19 +14,42 @@ class ReadingStreakCard extends StatelessWidget {
   });
 
   final List<LibraryBook> books;
-  final DateTime periodCutoff;
+  final DateTime? periodCutoff;
 
   @override
-  Widget build(BuildContext context) {
-    // Collect all event dates
-    final eventDates =
-        books.expand((b) => b.progressHistory).map((e) => e.end).toList();
-
-    final data = ReadingActivityData.fromEvents(
-      eventDates,
-      periodCutoff: periodCutoff,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final countMode = ref.watch(statsCountModeProvider);
+    return AsyncStatsCard<ReadingActivityData>(
+      cacheKey:
+          '${books.length}-${periodCutoff?.millisecondsSinceEpoch ?? 0}-${countMode.name}',
+      compute: () => _computeData(books, periodCutoff, countMode),
+      loadingHeight: 280,
+      builder: (data) => _buildCard(data, countMode),
     );
+  }
 
+  static ReadingActivityData _computeData(
+    List<LibraryBook> books,
+    DateTime? periodCutoff,
+    StatsCountMode countMode,
+  ) {
+    if (countMode == StatsCountMode.sessions) {
+      final eventDates =
+          books.expand((b) => b.progressHistory).map((e) => e.end).toList();
+      return ReadingActivityData.fromEvents(
+        eventDates,
+        periodCutoff: periodCutoff,
+      );
+    } else {
+      // Progress mode: sum percentage progress per day
+      return ReadingActivityData.fromProgress(
+        books,
+        periodCutoff: periodCutoff,
+      );
+    }
+  }
+
+  Widget _buildCard(ReadingActivityData data, StatsCountMode countMode) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -48,7 +74,9 @@ class ReadingStreakCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: CalendarHeatmap(
               activityByDay: data.activityByDay,
+              books: books,
               periodCutoff: periodCutoff,
+              isProgressMode: countMode == StatsCountMode.progress,
             ),
           ),
           const SizedBox(height: 12),

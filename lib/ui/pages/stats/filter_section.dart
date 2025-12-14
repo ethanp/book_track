@@ -7,31 +7,14 @@ class FilterSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final showArchived = ref.watch(showArchivedProvider);
     final selectedPeriod = ref.watch(statsPeriodProvider);
+    final countMode = ref.watch(statsCountModeProvider);
 
-    return Column(
-      children: [
-        // Archive toggle row
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Include archived books'),
-              CupertinoSwitch(
-                value: showArchived,
-                onChanged: (value) {
-                  ref.read(showArchivedProvider.notifier).state = value;
-                },
-              ),
-            ],
-          ),
-        ),
-        // Period selector
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: CupertinoSlidingSegmentedControl<StatsPeriod>(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        children: [
+          CupertinoSlidingSegmentedControl<StatsPeriod>(
             groupValue: selectedPeriod,
             children: {
               for (final period in StatsPeriod.values)
@@ -47,10 +30,24 @@ class FilterSection extends ConsumerWidget {
               }
             },
           ),
-        ),
-        const SizedBox(height: 8),
-      ],
+          const SizedBox(height: 8),
+          CupertinoSlidingSegmentedControl<StatsCountMode>(
+            groupValue: countMode,
+            children: {
+              for (final mode in StatsCountMode.values)
+                mode: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(mode.label, style: const TextStyle(fontSize: 13)),
+                ),
+            },
+            onValueChanged: (value) {
+              if (value != null) {
+                ref.read(statsCountModeProvider.notifier).state = value;
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }
-

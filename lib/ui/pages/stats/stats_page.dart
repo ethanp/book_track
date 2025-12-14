@@ -34,31 +34,55 @@ class StatsPage extends ConsumerWidget {
         : userLibrary.where((b) => !b.archived).toList();
 
     return SafeArea(
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            const FilterSection(),
-            SummaryStatsCard(books: books, periodCutoff: periodCutoff),
-            ReadingStreakCard(
-              key: ValueKey('streak-${books.length}-$showArchived'),
-              books: books,
-              periodCutoff: periodCutoff,
+      child: Column(
+        children: [
+          const FilterSection(),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Abandoned books toggle
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Include abandoned books'),
+                        CupertinoSwitch(
+                          value: showArchived,
+                          onChanged: (value) {
+                            ref.read(showArchivedProvider.notifier).state =
+                                value;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  SummaryStatsCard(books: books, periodCutoff: periodCutoff),
+                  ReadingStreakCard(
+                    key: ValueKey('streak-${books.length}-$showArchived'),
+                    books: books,
+                    periodCutoff: periodCutoff,
+                  ),
+                  ChartCard(
+                    title: 'Read Lines',
+                    chart: BooksProgressChart(
+                        books: books, periodCutoff: periodCutoff),
+                  ),
+                  ProgressChartCard(books: books, periodCutoff: periodCutoff),
+                  FormatBreakdownCard(books: books, periodCutoff: periodCutoff),
+                  ReadingPatternsCard(books: books, periodCutoff: periodCutoff),
+                  ChartCard(
+                    title: 'Recent Stats',
+                    chart: RecentBooksWidget(
+                        books: books, periodCutoff: periodCutoff),
+                  ),
+                ],
+              ),
             ),
-            ChartCard(
-              title: 'Read Lines',
-              chart:
-                  BooksProgressChart(books: books, periodCutoff: periodCutoff),
-            ),
-            ProgressChartCard(books: books, periodCutoff: periodCutoff),
-            FormatBreakdownCard(books: books, periodCutoff: periodCutoff),
-            ReadingPatternsCard(books: books, periodCutoff: periodCutoff),
-            ChartCard(
-              title: 'Recent Stats',
-              chart:
-                  RecentBooksWidget(books: books, periodCutoff: periodCutoff),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -97,10 +121,10 @@ class ChartCard extends StatelessWidget {
             child: Text(title, style: TextStyles.h3),
           ),
           SizedBox(
-            height: 250,
+            height: 300,
             child: Padding(
               padding: const EdgeInsets.only(
-                  left: 18, right: 35, top: 20, bottom: 14),
+                  left: 18, right: 35, top: 8, bottom: 14),
               child: chart,
             ),
           ),
@@ -118,13 +142,15 @@ class RecentBooksWidget extends StatelessWidget {
   });
 
   final List<LibraryBook> books;
-  final DateTime periodCutoff;
+  final DateTime? periodCutoff;
 
   @override
   Widget build(BuildContext context) {
+    final cutoff = periodCutoff;
     final recentBooks = books
-        .where((book) => book.progressHistory
-            .any((event) => event.end.isAfter(periodCutoff)))
+        .where((book) =>
+            cutoff == null ||
+            book.progressHistory.any((event) => event.end.isAfter(cutoff)))
         .toList();
 
     if (recentBooks.isEmpty) {
@@ -137,11 +163,14 @@ class RecentBooksWidget extends StatelessWidget {
     }
 
     // Calculate progress made for each book and sort
-    final booksWithProgress = recentBooks.map((book) {
+    final booksWithProgress = recentBooks
+        .where((book) => book.progressHistory.isNotEmpty)
+        .map((book) {
       final sorted = book.progressHistory.toList()
         ..sort((a, b) => a.end.compareTo(b.end));
-      final beforeWindow =
-          sorted.where((e) => e.end.isBefore(periodCutoff)).lastOrNull;
+      final beforeWindow = cutoff == null
+          ? null
+          : sorted.where((e) => e.end.isBefore(cutoff)).lastOrNull;
       final startPercent =
           beforeWindow == null ? 0 : book.intPercentProgressAt(beforeWindow);
       final endPercent = book.intPercentProgressAt(sorted.last);
@@ -177,6 +206,8 @@ class RecentBooksWidget extends StatelessWidget {
               final progressMade = entry.progressMade;
               return Row(
                 children: [
+                  _bookCover(book),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       book.book.title,
@@ -198,6 +229,26 @@ class RecentBooksWidget extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _bookCover(LibraryBook book) {
+    const double size = 30;
+    if (book.book.coverArtS != null && book.book.coverArtS!.length >= 4) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(3),
+        child: Image.memory(
+          book.book.coverArtS!,
+          width: size * 0.75,
+          height: size,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+    return SizedBox(
+      width: size * 0.75,
+      height: size,
+      child: const Icon(CupertinoIcons.book, size: 16),
     );
   }
 }

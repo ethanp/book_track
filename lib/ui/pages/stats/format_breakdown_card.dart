@@ -1,13 +1,12 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/data_model/library_book_format.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-enum FormatMetric { bookCount, volume }
-
-class FormatBreakdownCard extends StatefulWidget {
+class FormatBreakdownCard extends ConsumerWidget {
   const FormatBreakdownCard({
     required this.books,
     required this.periodCutoff,
@@ -15,14 +14,7 @@ class FormatBreakdownCard extends StatefulWidget {
   });
 
   final List<LibraryBook> books;
-  final DateTime periodCutoff;
-
-  @override
-  State<FormatBreakdownCard> createState() => _FormatBreakdownCardState();
-}
-
-class _FormatBreakdownCardState extends State<FormatBreakdownCard> {
-  FormatMetric metric = FormatMetric.bookCount;
+  final DateTime? periodCutoff;
 
   static const formatColors = <BookFormat, Color>{
     BookFormat.audiobook: CupertinoColors.systemOrange,
@@ -32,11 +24,15 @@ class _FormatBreakdownCardState extends State<FormatBreakdownCard> {
   };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final countMode = ref.watch(statsCountModeProvider);
+
     // Filter to books with activity in the period
-    final booksInPeriod = widget.books
+    final cutoff = periodCutoff;
+    final booksInPeriod = books
         .where((b) =>
-            b.progressHistory.any((e) => e.end.isAfter(widget.periodCutoff)))
+            cutoff == null ||
+            b.progressHistory.any((e) => e.end.isAfter(cutoff)))
         .toList();
 
     return Container(
@@ -57,12 +53,11 @@ class _FormatBreakdownCardState extends State<FormatBreakdownCard> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _title(),
-          _metricToggle(),
           const SizedBox(height: 8),
           if (booksInPeriod.isEmpty)
             _emptyState()
           else
-            _chartContent(booksInPeriod),
+            _chartContent(booksInPeriod, countMode),
           const SizedBox(height: 16),
         ],
       ),
@@ -73,25 +68,6 @@ class _FormatBreakdownCardState extends State<FormatBreakdownCard> {
     return Padding(
       padding: const EdgeInsets.only(top: 18, bottom: 12),
       child: Text('Reading by Format', style: TextStyles.h3),
-    );
-  }
-
-  Widget _metricToggle() {
-    return CupertinoSlidingSegmentedControl<FormatMetric>(
-      groupValue: metric,
-      children: const {
-        FormatMetric.bookCount: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Text('Formats', style: TextStyle(fontSize: 13)),
-        ),
-        FormatMetric.volume: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Text('Volume', style: TextStyle(fontSize: 13)),
-        ),
-      },
-      onValueChanged: (value) {
-        if (value != null) setState(() => metric = value);
-      },
     );
   }
 
@@ -111,8 +87,9 @@ class _FormatBreakdownCardState extends State<FormatBreakdownCard> {
     );
   }
 
-  Widget _chartContent(List<LibraryBook> booksInPeriod) {
-    final data = _calculateData(booksInPeriod);
+  Widget _chartContent(
+      List<LibraryBook> booksInPeriod, StatsCountMode countMode) {
+    final data = _calculateData(booksInPeriod, countMode);
     if (data.isEmpty) return _emptyState();
 
     return Padding(
@@ -125,14 +102,15 @@ class _FormatBreakdownCardState extends State<FormatBreakdownCard> {
               child: _pieChart(data),
             ),
           ),
-          _legend(data),
+          _legend(data, countMode),
         ],
       ),
     );
   }
 
-  Map<BookFormat, double> _calculateData(List<LibraryBook> books) {
-    if (metric == FormatMetric.bookCount) {
+  Map<BookFormat, double> _calculateData(
+      List<LibraryBook> books, StatsCountMode countMode) {
+    if (countMode == StatsCountMode.sessions) {
       return _countFormats(books);
     } else {
       return _volumeByFormat(books);
@@ -162,9 +140,10 @@ class _FormatBreakdownCardState extends State<FormatBreakdownCard> {
         ..sort((a, b) => a.end.compareTo(b.end));
 
       // Calculate deltas for each event in the period
+      final cutoff = periodCutoff;
       for (int i = 0; i < sorted.length; i++) {
         final event = sorted[i];
-        if (event.end.isBefore(widget.periodCutoff)) continue;
+        if (cutoff != null && event.end.isBefore(cutoff)) continue;
 
         final format = book.formatById(event.formatId);
         if (format == null || !format.hasLength) continue;
@@ -188,9 +167,9 @@ class _FormatBreakdownCardState extends State<FormatBreakdownCard> {
 
         final delta = event.progress - prevProgress;
         if (delta > 0) {
-          // Convert to display units
+          // Convert to equivalent pages (5 mins audiobook = 1 page)
           final displayValue = format.isAudiobook
-              ? delta / 60.0 // Convert minutes to hours
+              ? delta / 5.0 // Convert minutes to equivalent pages
               : delta.toDouble();
           volume[format.format] = (volume[format.format] ?? 0) + displayValue;
         }
@@ -224,21 +203,23 @@ class _FormatBreakdownCardState extends State<FormatBreakdownCard> {
     );
   }
 
-  Widget _legend(Map<BookFormat, double> data) {
+  Widget _legend(Map<BookFormat, double> data, StatsCountMode countMode) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: data.keys.map((format) => _legendItem(format, data)).toList(),
+      children: data.keys
+          .map((format) => _legendItem(format, data, countMode))
+          .toList(),
     );
   }
 
-  Widget _legendItem(BookFormat format, Map<BookFormat, double> data) {
+  Widget _legendItem(BookFormat format, Map<BookFormat, double> data,
+      StatsCountMode countMode) {
     final value = data[format] ?? 0;
-    final displayValue = metric == FormatMetric.bookCount
+    // In progress mode, all formats show equivalent pages (5 mins audio = 1 page)
+    final displayValue = countMode == StatsCountMode.sessions
         ? '${value.round()}'
-        : format == BookFormat.audiobook
-            ? '${value.round()}h'
-            : '${value.round()} pgs';
+        : '${value.round()} pgs';
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -263,4 +244,3 @@ class _FormatBreakdownCardState extends State<FormatBreakdownCard> {
     );
   }
 }
-

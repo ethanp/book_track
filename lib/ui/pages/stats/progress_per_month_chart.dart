@@ -28,11 +28,14 @@ class ProgressPerMonthChart extends ConsumerWidget {
           'Pages',
           periodCutoff,
         ),
+        // Convert audiobook minutes to equivalent pages (5 mins = 1 page)
         minutesByMonth = diffPerMonth(
           books.where((b) => b.isAudiobook).toList(),
           CupertinoColors.systemRed,
-          (book) => book.pagesDiffs(),
-          'Minutes',
+          (book) => book.pagesDiffs().map(
+                (e) => MapEntry(e.key, e.value / 5.0),
+              ),
+          'Audio (pgs)',
           periodCutoff,
         );
 

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:book_track/data_model.dart';
+import 'package:intl/intl.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/books_progress_chart/date_axis.dart';
@@ -31,8 +32,11 @@ class BooksProgressChart extends StatefulWidget {
 }
 
 class _BooksProgressChartState extends State<BooksProgressChart> {
-  LineTouchResponse? _touchedSpot;
-  Offset? _touchPosition;
+  /// Holds selected event info: (book, event, percent)
+  (LibraryBook, ProgressEvent, double)? _selectedEvent;
+
+  /// Holds selected spot indices for highlighting: (barIndex, spotIndex)
+  (int, int)? _selectedSpotIndices;
 
   static const noAxisTitles =
       AxisTitles(sideTitles: SideTitles(showTitles: false));
@@ -77,97 +81,77 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
     }
 
     final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
-    return GestureDetector(
-      onTapDown: (details) {
-        // Store tap position for tooltip placement
-        setState(() {
-          _touchPosition = details.localPosition;
-        });
-      },
-      onTapUp: (_) {
-        // Don't dismiss on tap up - let the chart's touch callback handle it
-      },
-      child: Stack(
-        children: [
-          Column(
-            children: [
-              Expanded(
-                child: LineChart(
-                  LineChartData(
-                    minY: 0,
-                    maxY: 100,
-                    minX: timespan.beginning.millisSinceEpoch,
-                    maxX: timespan.end.millisSinceEpoch,
-                    gridData: grid(),
-                    titlesData: labelAxes(timespan),
-                    lineBarsData: _plotLines(filteredBooks),
-                    borderData: border(),
-                    lineTouchData: LineTouchData(
-                      touchTooltipData: LineTouchTooltipData(
-                        getTooltipItems: (touchedSpots) {
-                          return touchedSpots.map((spot) {
-                            return LineTooltipItem('', const TextStyle());
-                          }).toList();
-                        },
-                      ),
-                      touchCallback:
-                          (FlTouchEvent event, LineTouchResponse? response) {
-                        if (event is FlTapUpEvent) {
-                          // Keep tooltip visible on tap up if there's a valid response
-                          if (response != null &&
-                              response.lineBarSpots != null &&
-                              response.lineBarSpots!.isNotEmpty) {
-                            setState(() {
-                              _touchedSpot = response;
-                            });
-                          } else {
-                            // Dismiss if tapping empty area
-                            setState(() {
-                              _touchedSpot = null;
-                              _touchPosition = null;
-                            });
-                          }
-                        } else if (response != null &&
-                            response.lineBarSpots != null &&
-                            response.lineBarSpots!.isNotEmpty) {
-                          // Show tooltip on touch down
-                          setState(() {
-                            _touchedSpot = response;
-                          });
-                        }
-                      },
-                    ),
-                  ),
+    return Column(
+      children: [
+        _buildSelectedEventInfo(),
+        Expanded(
+          child: LineChart(
+            LineChartData(
+              minY: 0,
+              maxY: 100,
+              minX: timespan.beginning.millisSinceEpoch,
+              maxX: timespan.end.millisSinceEpoch,
+              gridData: grid(),
+              titlesData: labelAxes(timespan),
+              lineBarsData: _plotLines(filteredBooks),
+              borderData: border(),
+              lineTouchData: LineTouchData(
+                handleBuiltInTouches: false, // We handle selection ourselves
+                touchSpotThreshold: 20,
+                touchTooltipData: LineTouchTooltipData(
+                  getTooltipColor: (_) => Colors.transparent,
+                  tooltipPadding: EdgeInsets.zero,
+                  tooltipMargin: 0,
+                  getTooltipItems: (spots) => spots.map((_) => null).toList(),
                 ),
+                touchCallback:
+                    (FlTouchEvent event, LineTouchResponse? response) {
+                  if (event is FlTapUpEvent &&
+                      response != null &&
+                      response.lineBarSpots != null &&
+                      response.lineBarSpots!.isNotEmpty) {
+                    _handleSpotTap(
+                        filteredBooks, response, event.localPosition, timespan);
+                  }
+                },
               ),
-              if (widget.colorByFormat && _hasMultipleFormats(filteredBooks))
-                _formatLegend(filteredBooks),
-            ],
+            ),
           ),
-          if (_touchedSpot != null &&
-              _touchedSpot!.lineBarSpots != null &&
-              _touchedSpot!.lineBarSpots!.isNotEmpty &&
-              _touchPosition != null)
-            _buildTooltip(context, filteredBooks, _touchedSpot!) ??
-                const SizedBox.shrink(),
-        ],
-      ),
+        ),
+        if (widget.colorByFormat && _hasMultipleFormats(filteredBooks))
+          _formatLegend(filteredBooks),
+      ],
     );
   }
 
-  Widget? _buildTooltip(BuildContext context, List<LibraryBook> filteredBooks,
-      LineTouchResponse response) {
-    if (response.lineBarSpots == null || response.lineBarSpots!.isEmpty) {
-      return null;
+  void _handleSpotTap(List<LibraryBook> filteredBooks,
+      LineTouchResponse response, Offset? touchPos, TimeSpan timespan) {
+    // Find the closest spot to the touch position
+    final spots = response.lineBarSpots!;
+    LineBarSpot closestSpot = spots.first;
+
+    if (touchPos != null && spots.length > 1) {
+      // fl_chart returns spots with similar X values, so compare Y distance.
+      // touchPos.dy is pixels from top; spot.y is percentage (0=bottom, 100=top)
+      // Convert touch Y to percentage: top of chart = 100%, bottom = 0%
+      // Assuming ~200px chart height after accounting for info bar
+      const chartHeight = 200.0;
+      final touchYPercent = 100.0 - (touchPos.dy / chartHeight * 100.0);
+
+      double minDistance = double.infinity;
+      for (final spot in spots) {
+        final yDiff = (spot.y - touchYPercent).abs();
+        if (yDiff < minDistance) {
+          minDistance = yDiff;
+          closestSpot = spot;
+        }
+      }
     }
 
-    final spot = response.lineBarSpots!.first;
-    final barIndex = spot.barIndex;
-    final spotIndex = spot.spotIndex;
+    final barIndex = closestSpot.barIndex;
+    final spotIndex = closestSpot.spotIndex;
 
-    if (barIndex < 0 || barIndex >= filteredBooks.length) {
-      return null;
-    }
+    if (barIndex < 0 || barIndex >= filteredBooks.length) return;
 
     final book = filteredBooks[barIndex];
     final bookEvents = book.progressHistory
@@ -175,80 +159,88 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
             widget.periodCutoff == null || e.end.isAfter(widget.periodCutoff!))
         .toList();
 
-    // Use the same filtering as in _plotLines to match spot indices
     final filteredEvents = _filterToLastEventPerDay(book, bookEvents)
         .where((ev) => book.progressPercentAt(ev) != null)
         .toList();
 
-    if (spotIndex < 0 || spotIndex >= filteredEvents.length) {
-      return null;
-    }
+    if (spotIndex < 0 || spotIndex >= filteredEvents.length) return;
 
     final event = filteredEvents[spotIndex];
     final percent = book.progressPercentAt(event) ?? 0;
 
-    // Position tooltip near the touch point
-    if (_touchPosition == null) return null;
-    return Positioned(
-      left: _touchPosition!.dx - 120, // Offset to center tooltip
-      top: _touchPosition!.dy - 100, // Offset above touch point
-      child: GestureDetector(
-        onTap: () => setState(() => _touchedSpot = null),
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: CupertinoColors.systemBackground,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: CupertinoColors.black.withOpacity(0.2),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _bookCover(book),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      book.book.title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${percent.round()}%',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: CupertinoColors.systemGreen,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+    setState(() {
+      _selectedEvent = (book, event, percent);
+      _selectedSpotIndices = (barIndex, spotIndex);
+    });
+  }
+
+  Widget _buildSelectedEventInfo() {
+    if (_selectedEvent == null) {
+      return const SizedBox(
+        height: 50,
+        child: Center(
+          child: Text(
+            'Tap a point to see details',
+            style: TextStyle(
+              color: CupertinoColors.systemGrey,
+              fontSize: 13,
             ),
           ),
         ),
+      );
+    }
+
+    final (book, event, percent) = _selectedEvent!;
+    final dateStr = DateFormat('MMM d, yyyy').format(event.end);
+
+    return Container(
+      height: 50,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        children: [
+          _bookCover(book, size: 40),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              book.book.title,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${percent.round()}%',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: CupertinoColors.systemGreen,
+                ),
+              ),
+              Text(
+                dateStr,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: CupertinoColors.systemGrey,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _bookCover(LibraryBook book) {
-    final double height = 60;
-    final double width = 45;
+  Widget _bookCover(LibraryBook book, {double size = 60}) {
+    final double height = size;
+    final double width = size * 0.75;
 
     Widget bookArt = SizedBox(
       height: height,
@@ -384,56 +376,63 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
     }
     final double xRange = lastDate.toDouble() - firstDate;
 
-    return filteredBooks.mapL(
-      (LibraryBook book) {
-        final bookEvents = book.progressHistory
-            .where((e) =>
-                widget.periodCutoff == null ||
-                e.end.isAfter(widget.periodCutoff!))
-            .toList();
+    final result = <LineChartBarData>[];
+    for (int barIndex = 0; barIndex < filteredBooks.length; barIndex++) {
+      final book = filteredBooks[barIndex];
+      final bookEvents = book.progressHistory
+          .where((e) =>
+              widget.periodCutoff == null ||
+              e.end.isAfter(widget.periodCutoff!))
+          .toList();
 
-        // Filter to show only the last event per day to avoid vertical blips
-        final filteredEvents = _filterToLastEventPerDay(book, bookEvents);
+      // Filter to show only the last event per day to avoid vertical blips
+      final filteredEvents = _filterToLastEventPerDay(book, bookEvents);
 
-        return LineChartBarData(
-          spots: filteredEvents
-              .where((ev) => book.progressPercentAt(ev) != null)
-              .mapL((curr) => eventToSpot(book, curr)),
-          isCurved: true,
-          curveSmoothness: .05,
-          belowBarData: gradientFill(),
-          color: Colors.grey[700]!.withValues(alpha: .7),
-          dotData: FlDotData(
-            show: true,
-            getDotPainter: (spot, xPercentage, bar, index) {
-              // Get the event at this index to determine format
-              final event = filteredEvents[index];
-              final format = book.formatById(event.formatId);
+      result.add(LineChartBarData(
+        spots: filteredEvents
+            .where((ev) => book.progressPercentAt(ev) != null)
+            .mapL((curr) => eventToSpot(book, curr)),
+        isCurved: true,
+        curveSmoothness: .05,
+        belowBarData: gradientFill(),
+        color: Colors.grey[700]!.withValues(alpha: .7),
+        dotData: FlDotData(
+          show: true,
+          getDotPainter: (spot, xPercentage, bar, spotIndex) {
+            // Check if this is the selected spot
+            final isSelected = _selectedSpotIndices != null &&
+                _selectedSpotIndices!.$1 == barIndex &&
+                _selectedSpotIndices!.$2 == spotIndex;
 
-              // Calculate proper x percentage
-              xPercentage =
-                  xRange > 0 ? (spot.x - firstDate) / xRange * 100 : 50;
-              final double radius = xPercentage / 100 / 1.2 + 2;
+            // Get the event at this index to determine format
+            final event = filteredEvents[spotIndex];
+            final format = book.formatById(event.formatId);
 
-              // Use format-based color if enabled
-              final Color dotColor = widget.colorByFormat
-                  ? colorForFormat(format?.format)
-                  : Color.lerp(
-                      Colors.blue.withValues(alpha: .7),
-                      Colors.blueGrey.withValues(alpha: .8),
-                      xPercentage / 100,
-                    )!;
+            // Calculate proper x percentage
+            xPercentage = xRange > 0 ? (spot.x - firstDate) / xRange * 100 : 50;
+            final double baseRadius = xPercentage / 100 / 1.2 + 2;
+            final double radius = isSelected ? baseRadius + 3 : baseRadius;
 
-              return FlDotCirclePainter(
-                radius: radius,
-                color: dotColor,
-                strokeColor: Colors.black,
-              );
-            },
-          ),
-        );
-      },
-    );
+            // Use format-based color if enabled
+            final Color dotColor = widget.colorByFormat
+                ? colorForFormat(format?.format)
+                : Color.lerp(
+                    Colors.blue.withValues(alpha: .7),
+                    Colors.blueGrey.withValues(alpha: .8),
+                    xPercentage / 100,
+                  )!;
+
+            return FlDotCirclePainter(
+              radius: radius,
+              color: isSelected ? CupertinoColors.systemRed : dotColor,
+              strokeColor: isSelected ? Colors.white : Colors.black,
+              strokeWidth: isSelected ? 2 : 0,
+            );
+          },
+        ),
+      ));
+    }
+    return result;
   }
 
   static BarAreaData gradientFill() {
