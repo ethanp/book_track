@@ -19,17 +19,16 @@ class SupabaseProgressService {
     required ProgressEventFormat format,
     DateTime? start,
     DateTime? end,
-  }) async =>
-      await _progressClient.insert({
+  }) =>
+      _progressClient.insert({
         _SupaProgress.libraryBookIdCol: libraryBookId,
         _SupaProgress.formatIdCol: formatId,
         _SupaProgress.userIdCol: SupabaseAuthService.loggedInUserId,
         _SupaProgress.formatCol: format.name,
         _SupaProgress.progressCol: newValue,
-        // This is the date-time format that works well with Supabase/Postgres.
         _SupaProgress.startCol: start?.toIso8601String(),
         _SupaProgress.endCol: (end ?? DateTime.now()).toIso8601String(),
-      }).captureStackTraceOnError();
+      }).withRetry(log);
 
   static Future<void> updateProgressEvent({
     required ProgressEvent preexistingEvent,
@@ -38,18 +37,17 @@ class SupabaseProgressService {
     required int formatId,
     DateTime? start,
     required DateTime end,
-  }) async =>
-      await _progressClient
+  }) =>
+      _progressClient
           .update({
             _SupaProgress.formatIdCol: formatId,
             _SupaProgress.progressCol: updatedValue,
             _SupaProgress.formatCol: format.name,
             _SupaProgress.startCol: start?.toIso8601String(),
             _SupaProgress.endCol: end.toIso8601String(),
-            // Out of lack of need thus far, we don't store "updated-at timestamp".
           })
           .eq(_SupaProgress.supaIdCol, preexistingEvent.supaId)
-          .captureStackTraceOnError();
+          .withRetry(log);
 
   static Future<List<ProgressEvent>> history(int bookId) async {
     final queryResults = await _progressClient
@@ -57,14 +55,14 @@ class SupabaseProgressService {
         .eq(_SupaProgress.libraryBookIdCol, bookId)
         .eq(_SupaProgress.userIdCol, SupabaseAuthService.loggedInUserId!)
         .order(_SupaProgress.endCol, ascending: true)
-        .captureStackTraceOnError();
+        .withRetry(log);
     return queryResults.mapL((result) => _SupaProgress(result).toProgressEvent);
   }
 
-  static Future<void> delete(ProgressEvent ev) async => await _progressClient
+  static Future<void> delete(ProgressEvent ev) => _progressClient
       .delete()
       .eq(_SupaProgress.supaIdCol, ev.supaId)
-      .captureStackTraceOnError();
+      .withRetry(log);
 
   static Future<Map<int, List<ProgressEvent>>> historyForLibraryBooks(
       List<int> libraryBookIds) async {
@@ -76,7 +74,7 @@ class SupabaseProgressService {
             '(${libraryBookIds.join(',')})')
         .eq(_SupaProgress.userIdCol, SupabaseAuthService.loggedInUserId!)
         .order(_SupaProgress.endCol, ascending: true)
-        .captureStackTraceOnError();
+        .withRetry(log);
 
     final Map<int, List<ProgressEvent>> progressEventsMap = {};
     for (final result in queryResults) {

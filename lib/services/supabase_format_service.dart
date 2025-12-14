@@ -1,6 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/data_model/library_book_format.dart';
-import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'supabase_auth_service.dart';
@@ -8,6 +8,7 @@ import 'supabase_service.dart';
 
 class SupabaseFormatService {
   static final _client = supabase.from('library_book_formats');
+  static final log = SimpleLogger(prefix: 'SupabaseFormatService');
 
   static Future<LibraryBookFormat> addFormat({
     required int libraryBookId,
@@ -23,31 +24,24 @@ class SupabaseFormatService {
         })
         .select()
         .single()
-        .captureStackTraceOnError();
+        .withRetry(log);
     return _SupaFormat(result).toLibraryBookFormat;
   }
 
-  static Future<void> updateLength(int formatId, int length) async {
-    await _client
-        .update({_SupaFormat.lengthCol: length})
-        .eq(_SupaFormat.supaIdCol, formatId)
-        .captureStackTraceOnError();
-  }
+  static Future<void> updateLength(int formatId, int length) => _client
+      .update({_SupaFormat.lengthCol: length})
+      .eq(_SupaFormat.supaIdCol, formatId)
+      .withRetry(log);
 
-  static Future<void> deleteFormat(int formatId) async {
-    await _client
-        .delete()
-        .eq(_SupaFormat.supaIdCol, formatId)
-        .captureStackTraceOnError();
-  }
+  static Future<void> deleteFormat(int formatId) =>
+      _client.delete().eq(_SupaFormat.supaIdCol, formatId).withRetry(log);
 
-  static Future<void> reassignEvents(int fromFormatId, int toFormatId) async {
-    await supabase
-        .from('progress_events')
-        .update({'format_id': toFormatId})
-        .eq('format_id', fromFormatId)
-        .captureStackTraceOnError();
-  }
+  static Future<void> reassignEvents(int fromFormatId, int toFormatId) =>
+      supabase
+          .from('progress_events')
+          .update({'format_id': toFormatId})
+          .eq('format_id', fromFormatId)
+          .withRetry(log);
 
   static Future<List<LibraryBookFormat>> formatsForBook(
       int libraryBookId) async {
@@ -55,7 +49,7 @@ class SupabaseFormatService {
         .select()
         .eq(_SupaFormat.libraryBookIdCol, libraryBookId)
         .order(_SupaFormat.formatCol, ascending: true)
-        .captureStackTraceOnError();
+        .withRetry(log);
     return results.mapL((r) => _SupaFormat(r).toLibraryBookFormat);
   }
 
@@ -69,7 +63,7 @@ class SupabaseFormatService {
             _SupaFormat.libraryBookIdCol, 'in', '(${libraryBookIds.join(',')})')
         .eq(_SupaFormat.userIdCol, SupabaseAuthService.loggedInUserId!)
         .order(_SupaFormat.formatCol, ascending: true)
-        .captureStackTraceOnError();
+        .withRetry(log);
 
     final Map<int, List<LibraryBookFormat>> formatsMap = {};
     for (final result in results) {
@@ -110,4 +104,3 @@ class _SupaFormat {
   int? get length => rawData[lengthCol];
   static const String lengthCol = 'length';
 }
-

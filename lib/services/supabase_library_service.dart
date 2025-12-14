@@ -17,18 +17,15 @@ class SupabaseLibraryService {
   static SimpleLogger log = SimpleLogger(prefix: 'SupabaseLibraryService');
 
   static Future<List<LibraryBook>> myBooks() async {
-    final library = await _forLoggedInUser().withNetworkRetry(logger: log);
+    final library = await _forLoggedInUser();
     final libraryBookIds = library.map((e) => e.supaId).toList();
 
     final allProgressEvents =
-        await SupabaseProgressService.historyForLibraryBooks(libraryBookIds)
-            .withNetworkRetry(logger: log);
+        await SupabaseProgressService.historyForLibraryBooks(libraryBookIds);
     final allStatusEvents =
-        await SupabaseStatusService.historyForLibraryBooks(libraryBookIds)
-            .withNetworkRetry(logger: log);
+        await SupabaseStatusService.historyForLibraryBooks(libraryBookIds);
     final allFormats =
-        await SupabaseFormatService.formatsForLibraryBooks(libraryBookIds)
-            .withNetworkRetry(logger: log);
+        await SupabaseFormatService.formatsForLibraryBooks(libraryBookIds);
 
     final libraryBooks = library.map(
       (supaBook) => supaBook.toLibraryBook(
@@ -69,24 +66,24 @@ class SupabaseLibraryService {
     );
   }
 
-  static Future<void> remove(LibraryBook book) async =>
+  static Future<void> remove(LibraryBook book) =>
       // We use ON DELETE CASCADE on foreign keys referencing this column,
       //  so the application doesn't need to worry about cleaning it up here.
-      await _libraryClient
+      _libraryClient
           .delete()
           .eq(_SupaLibrary.supaIdCol, book.supaId)
-          .captureStackTraceOnError();
+          .withRetry(log);
 
-  static Future<void> archive(LibraryBook book) async => await _libraryClient
+  static Future<void> archive(LibraryBook book) => _libraryClient
       .update({_SupaLibrary.archivedCol: !book.archived})
       .eq(_SupaLibrary.supaIdCol, book.supaId)
-      .captureStackTraceOnError();
+      .withRetry(log);
 
   static Future<List<_SupaLibrary>> _forLoggedInUser() async {
     final PostgrestList rawData = await _libraryClient
         .select()
         .eq(_SupaLibrary.userIdCol, SupabaseAuthService.loggedInUserId!)
-        .captureStackTraceOnError();
+        .withRetry(log);
     return rawData.mapL(_SupaLibrary.new);
   }
 
@@ -100,7 +97,7 @@ class SupabaseLibraryService {
         .eq(_SupaLibrary.userIdCol, SupabaseAuthService.loggedInUserId!)
         .limit(1)
         .maybeSingle()
-        .captureStackTraceOnError();
+        .withRetry(log);
     return preExistQuery.map(_SupaLibrary.new).map((res) => res.supaId);
   }
 
@@ -113,7 +110,7 @@ class SupabaseLibraryService {
         .select(_SupaLibrary.supaIdCol)
         .limit(1)
         .single()
-        .captureStackTraceOnError();
+        .withRetry(log);
     return supaEntity[_SupaLibrary.supaIdCol];
   }
 }

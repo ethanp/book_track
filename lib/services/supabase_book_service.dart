@@ -22,8 +22,7 @@ class SupabaseBookService {
         .select()
         .eq(_SupaBook.idCol, bookId)
         .single()
-        .captureStackTraceOnError()
-        .withNetworkRetry(logger: log);
+        .withRetry(log);
     final supaBook = _SupaBook(rawData);
     final coverArt =
         // Not sure why, but these angle brackets are necessary.
@@ -59,7 +58,7 @@ class SupabaseBookService {
         })
         .select()
         .single()
-        .captureStackTraceOnError();
+        .withRetry(log);
     return _SupaBook(result);
   }
 
@@ -71,7 +70,7 @@ class SupabaseBookService {
           .eq(_SupaBook.authorCol, book.firstAuthor)
           .limit(1)
           .maybeSingle()
-          .captureStackTraceOnError();
+          .withRetry(log);
       return existingBookMatch.map(_SupaBook.new).map((book) => book.supaId);
     } on StorageException catch (e) {
       log('pre-existing book query error $e');
@@ -121,11 +120,11 @@ class SupabaseBookService {
   static Future<void> updateAuthor(
     Book book,
     String updatedAuthor,
-  ) async =>
-      await _booksClient
+  ) =>
+      _booksClient
           .update({_SupaBook.authorCol: updatedAuthor})
           .eq(_SupaBook.idCol, book.supaId!)
-          .captureStackTraceOnError();
+          .withRetry(log);
 }
 
 class _SupaBook {

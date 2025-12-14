@@ -1,5 +1,5 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'supabase_auth_service.dart';
@@ -7,6 +7,7 @@ import 'supabase_service.dart';
 
 class SupabaseStatusService {
   static final SupabaseQueryBuilder _statusClient = supabase.from('status');
+  static final log = SimpleLogger(prefix: 'SupabaseStatusService');
 
   static Future<PostgrestMap> add(
     int libraryBookId,
@@ -23,7 +24,7 @@ class SupabaseStatusService {
         })
         .select()
         .single()
-        .captureStackTraceOnError();
+        .withRetry(log);
   }
 
   static Future<List<StatusEvent>> history(int libraryBookId) async {
@@ -31,7 +32,7 @@ class SupabaseStatusService {
         .select()
         .eq(_SupaStatus.libraryBookIdCol, libraryBookId)
         .eq(_SupaStatus.userIdCol, SupabaseAuthService.loggedInUserId!)
-        .captureStackTraceOnError();
+        .withRetry(log);
     final supaStatus = queryResults.map(_SupaStatus.new);
     final statuses = supaStatus.mapL((supaStatus) => StatusEvent(
           supaId: supaStatus.supaId,
@@ -42,18 +43,19 @@ class SupabaseStatusService {
     return statuses;
   }
 
-  static Future<void> delete(StatusEvent ev) async => await _statusClient
+  static Future<void> delete(StatusEvent ev) => _statusClient
       .delete()
       .eq(_SupaStatus.supaIdCol, ev.supaId)
-      .captureStackTraceOnError();
+      .withRetry(log);
 
   static Future<Map<int, List<StatusEvent>>> historyForLibraryBooks(
       List<int> libraryBookIds) async {
     final queryResults = await _statusClient
         .select()
-        .filter(_SupaStatus.libraryBookIdCol, 'in', '(${libraryBookIds.join(',')})')
+        .filter(
+            _SupaStatus.libraryBookIdCol, 'in', '(${libraryBookIds.join(',')})')
         .eq(_SupaStatus.userIdCol, SupabaseAuthService.loggedInUserId!)
-        .captureStackTraceOnError();
+        .withRetry(log);
 
     final Map<int, List<StatusEvent>> statusEventsMap = {};
     for (final result in queryResults) {

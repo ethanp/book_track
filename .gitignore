@@ -12,6 +12,7 @@
 .swiftpm/
 migrate_working_dir/
 .env
+.build_hash_iphone
 
 # IntelliJ related
 *.iml
