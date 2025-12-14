@@ -80,6 +80,7 @@ class BookDetailButtons extends ConsumerWidget {
         final format = book.lastUsedFormat ?? book.primaryFormat;
         if (format != null) {
           await SupabaseProgressService.addProgressEvent(
+            libraryBookId: book.supaId,
             formatId: format.supaId,
             newValue: 100,
             format: ProgressEventFormat.percent,

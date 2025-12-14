@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
@@ -54,4 +56,67 @@ class SimpleLogger {
   void _error(Object? obj) => debugPrint(_msg('⛔ERROR⛔: $obj'));
 
   String _msg(Object? s) => '${TimeHelpers.timestamp} $prefix: $s';
+}
+
+/// Extension for adding network retry capability to Futures.
+extension NetworkRetry<T> on Future<T> {
+  /// Retry this Future with exponential backoff on network errors.
+  ///
+  /// [maxRetries] defaults to 3, [initialDelay] defaults to 500ms.
+  /// Only retries on transient network errors.
+  Future<T> withNetworkRetry({
+    int maxRetries = 3,
+    Duration initialDelay = const Duration(milliseconds: 500),
+    SimpleLogger? logger,
+  }) async {
+    int attempt = 0;
+    while (true) {
+      try {
+        return await this;
+      } catch (e) {
+        attempt++;
+
+        if (!_isRetryableNetworkError(e) || attempt > maxRetries) {
+          if (logger != null && attempt > maxRetries) {
+            logger.error('Max retries ($maxRetries) reached: $e');
+          }
+          rethrow;
+        }
+
+        final delay = Duration(
+          milliseconds: initialDelay.inMilliseconds * (1 << (attempt - 1)),
+        );
+
+        logger?.call(
+          'Network error (attempt $attempt/$maxRetries), '
+          'retrying in ${delay.inMilliseconds}ms: ${e.runtimeType}',
+        );
+
+        await Future.delayed(delay);
+      }
+    }
+  }
+}
+
+/// Check if an error is a transient network issue worth retrying.
+bool _isRetryableNetworkError(Object e) {
+  // Check common network exception types
+  final typeName = e.runtimeType.toString();
+  if (typeName == 'SocketException' ||
+      typeName == 'ClientException' ||
+      typeName == 'TimeoutException' ||
+      typeName == 'HttpException') {
+    return true;
+  }
+
+  // Fallback: check error message for network-related keywords
+  final msg = e.toString().toLowerCase();
+  return msg.contains('connection closed') ||
+      msg.contains('connection refused') ||
+      msg.contains('connection reset') ||
+      msg.contains('connection timeout') ||
+      msg.contains('network is unreachable') ||
+      msg.contains('failed host lookup') ||
+      msg.contains('socket') ||
+      msg.contains('timed out');
 }

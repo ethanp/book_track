@@ -94,6 +94,13 @@ class _UpdateProgressDialogState
   @override
   void initState() {
     super.initState();
+    // Ensure _selectedFormat is never null - use first format as fallback
+    if (_selectedFormat == null && widget.book.formats.isNotEmpty) {
+      _selectedFormat = widget.book.formats.first;
+      _selectedProgressEventFormat = _selectedFormat!.isAudiobook
+          ? ProgressEventFormat.minutes
+          : ProgressEventFormat.pageNum;
+    }
     _previousFormat = _selectedFormat;
   }
 
@@ -101,6 +108,20 @@ class _UpdateProgressDialogState
 
   @override
   Widget build(BuildContext context) {
+    // Ensure we have at least one format
+    if (widget.book.formats.isEmpty) {
+      return CupertinoAlertDialog(
+        title: Text('Error'),
+        content: Text('This book has no formats. Please add a format first.'),
+        actions: [
+          CupertinoButton(
+            onPressed: () => context.pop(false),
+            child: Text('OK'),
+          ),
+        ],
+      );
+    }
+
     return CupertinoAlertDialog(
       title: Text('Update Progress'),
       content: Column(
@@ -127,6 +148,10 @@ class _UpdateProgressDialogState
       widget.book.lastProgressPercent != null;
 
   Widget _formatPicker() {
+    // Ensure we have a selected format
+    final currentFormatId =
+        _selectedFormat?.supaId ?? widget.book.formats.first.supaId;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -134,7 +159,7 @@ class _UpdateProgressDialogState
           Text('Format:', style: TextStyle(fontSize: 12)),
           SizedBox(height: 4),
           CupertinoSlidingSegmentedControl<int>(
-            groupValue: _selectedFormat?.supaId,
+            groupValue: currentFormatId,
             children: {
               for (final format in widget.book.formats)
                 format.supaId: Padding(
@@ -148,7 +173,10 @@ class _UpdateProgressDialogState
             onValueChanged: (formatId) {
               if (formatId == null) return;
               final newFormat = widget.book.formatById(formatId);
-              if (newFormat == null) return;
+              if (newFormat == null) {
+                log.error('Format not found for ID: $formatId');
+                return;
+              }
 
               setState(() {
                 _previousFormat = _selectedFormat;
@@ -315,10 +343,18 @@ class _UpdateProgressDialogState
 
   /// Pop [true] iff UI needs to reload to see updated data.
   Future<void> _submit() async {
+    // Ensure format is set - fallback to first format if somehow null
     if (_selectedFormat == null) {
-      log.error('No format selected');
-      context.pop(false);
-      return;
+      if (widget.book.formats.isEmpty) {
+        log.error('Book has no formats');
+        context.pop(false);
+        return;
+      }
+      _selectedFormat = widget.book.formats.first;
+      _selectedProgressEventFormat = _selectedFormat!.isAudiobook
+          ? ProgressEventFormat.minutes
+          : ProgressEventFormat.pageNum;
+      log('Format was null, using first format: ${_selectedFormat!.format.name}');
     }
 
     final String lengthText =
@@ -330,17 +366,21 @@ class _UpdateProgressDialogState
       context.pop(false);
       return;
     }
+
+    log('Submitting progress: formatId=${_selectedFormat!.supaId}, value=$newLen, format=${_selectedProgressEventFormat.name}');
     if (widget.eventToUpdate != null) {
       log('updating progress to $lengthText ($newLen)');
       await SupabaseProgressService.updateProgressEvent(
         preexistingEvent: widget.eventToUpdate!,
         updatedValue: newLen,
         format: _selectedProgressEventFormat,
+        formatId: _selectedFormat!.supaId,
         start: widget.startTime,
         end: _selectedUpdateTimestamp,
       );
     } else {
       await SupabaseProgressService.addProgressEvent(
+        libraryBookId: widget.book.supaId,
         formatId: _selectedFormat!.supaId,
         newValue: newLen,
         format: _selectedProgressEventFormat,

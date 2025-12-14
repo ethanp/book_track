@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/helpers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'supabase_auth_service.dart';
@@ -7,9 +8,12 @@ import 'supabase_service.dart';
 
 class SupabaseProgressService {
   static final _progressClient = supabase.from('progress_events');
+  static final SimpleLogger log =
+      SimpleLogger(prefix: 'SupabaseProgressService');
 
   /// [end] defaults to [DateTime.now].
   static Future<void> addProgressEvent({
+    required int libraryBookId,
     required int formatId,
     required int newValue,
     required ProgressEventFormat format,
@@ -17,6 +21,7 @@ class SupabaseProgressService {
     DateTime? end,
   }) async =>
       await _progressClient.insert({
+        _SupaProgress.libraryBookIdCol: libraryBookId,
         _SupaProgress.formatIdCol: formatId,
         _SupaProgress.userIdCol: SupabaseAuthService.loggedInUserId,
         _SupaProgress.formatCol: format.name,
@@ -30,11 +35,13 @@ class SupabaseProgressService {
     required ProgressEvent preexistingEvent,
     required int updatedValue,
     required ProgressEventFormat format,
+    required int formatId,
     DateTime? start,
     required DateTime end,
   }) async =>
       await _progressClient
           .update({
+            _SupaProgress.formatIdCol: formatId,
             _SupaProgress.progressCol: updatedValue,
             _SupaProgress.formatCol: format.name,
             _SupaProgress.startCol: start?.toIso8601String(),

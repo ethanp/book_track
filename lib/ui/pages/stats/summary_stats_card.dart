@@ -222,3 +222,4 @@ class _Stats {
 
   int get totalHours => totalMinutes ~/ 60;
 }
+

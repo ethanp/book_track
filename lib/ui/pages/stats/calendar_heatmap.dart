@@ -80,13 +80,33 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
   List<Widget> _buildMonths(DateTime today) {
     final months = <Widget>[];
 
-    // Determine the start date based on period cutoff or weeksToShow
+    // Find the earliest date with actual activity data
+    final earliestDataDate = widget.activityByDay.keys.isNotEmpty
+        ? widget.activityByDay.keys.reduce((a, b) => a.isBefore(b) ? a : b)
+        : null;
+
+    // Determine the start date based on:
+    // 1. periodCutoff (if set) - takes precedence
+    // 2. earliest data date (if exists), but cap at 2 years back max
+    // 3. weeksToShow back from today (fallback if no data)
     final cutoffDate = widget.periodCutoff != null
         ? DateUtils.dateOnly(widget.periodCutoff!)
         : null;
-    final effectiveStartDate = cutoffDate != null
-        ? cutoffDate
-        : today.subtract(Duration(days: widget.weeksToShow * 7));
+
+    DateTime effectiveStartDate;
+    if (cutoffDate != null) {
+      effectiveStartDate = cutoffDate;
+    } else if (earliestDataDate != null) {
+      // Use the earliest data date, but cap at 2 years back to avoid showing decades of empty data
+      final maxBackDate = today.subtract(const Duration(days: 365 * 2));
+      effectiveStartDate = earliestDataDate.isAfter(maxBackDate)
+          ? earliestDataDate
+          : maxBackDate;
+    } else {
+      // No data at all, use weeksToShow as fallback
+      effectiveStartDate =
+          today.subtract(Duration(days: widget.weeksToShow * 7));
+    }
 
     // Find the first day of the first month to show
     var currentMonthStart =

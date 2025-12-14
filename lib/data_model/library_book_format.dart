@@ -52,3 +52,4 @@ class LibraryBookFormat {
   String toString() =>
       'LibraryBookFormat(id: $supaId, format: ${format.name}, length: $length)';
 }
+

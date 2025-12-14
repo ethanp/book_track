@@ -17,12 +17,13 @@ class SupabaseBookService {
   static final SimpleLogger log = SimpleLogger(prefix: 'SupabaseBookService');
 
   static Future<Book> getBookById(int bookId) async {
-    final PostgrestMap rawData = await supabase
+    final rawData = await supabase
         .from('books')
         .select()
         .eq(_SupaBook.idCol, bookId)
         .single()
-        .captureStackTraceOnError();
+        .captureStackTraceOnError()
+        .withNetworkRetry(logger: log);
     final supaBook = _SupaBook(rawData);
     final coverArt =
         // Not sure why, but these angle brackets are necessary.

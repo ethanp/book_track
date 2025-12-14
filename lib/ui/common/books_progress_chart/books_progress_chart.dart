@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:book_track/data_model.dart';
-import 'package:book_track/data_model/library_book_format.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/books_progress_chart/date_axis.dart';
@@ -174,14 +173,18 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
     final bookEvents = book.progressHistory
         .where((e) =>
             widget.periodCutoff == null || e.end.isAfter(widget.periodCutoff!))
+        .toList();
+
+    // Use the same filtering as in _plotLines to match spot indices
+    final filteredEvents = _filterToLastEventPerDay(book, bookEvents)
         .where((ev) => book.progressPercentAt(ev) != null)
         .toList();
 
-    if (spotIndex < 0 || spotIndex >= bookEvents.length) {
+    if (spotIndex < 0 || spotIndex >= filteredEvents.length) {
       return null;
     }
 
-    final event = bookEvents[spotIndex];
+    final event = filteredEvents[spotIndex];
     final percent = book.progressPercentAt(event) ?? 0;
 
     // Position tooltip near the touch point
@@ -388,8 +391,12 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
                 widget.periodCutoff == null ||
                 e.end.isAfter(widget.periodCutoff!))
             .toList();
+
+        // Filter to show only the last event per day to avoid vertical blips
+        final filteredEvents = _filterToLastEventPerDay(book, bookEvents);
+
         return LineChartBarData(
-          spots: bookEvents
+          spots: filteredEvents
               .where((ev) => book.progressPercentAt(ev) != null)
               .mapL((curr) => eventToSpot(book, curr)),
           isCurved: true,
@@ -400,7 +407,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
             show: true,
             getDotPainter: (spot, xPercentage, bar, index) {
               // Get the event at this index to determine format
-              final event = bookEvents[index];
+              final event = filteredEvents[index];
               final format = book.formatById(event.formatId);
 
               // Calculate proper x percentage
@@ -462,6 +469,46 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
       ),
       axisNameSize: 22,
     );
+  }
+
+  /// Filter events to show only the last event per day (by date, not time).
+  /// This prevents vertical blips when multiple updates occur on the same day.
+  List<ProgressEvent> _filterToLastEventPerDay(
+    LibraryBook book,
+    List<ProgressEvent> events,
+  ) {
+    if (events.isEmpty) return [];
+
+    // Group events by date (normalized to midnight)
+    final eventsByDate = <DateTime, ProgressEvent>{};
+
+    for (final event in events) {
+      final date = DateUtils.dateOnly(event.end);
+      final existing = eventsByDate[date];
+
+      // Keep the event with the highest progress for each day
+      if (existing == null) {
+        eventsByDate[date] = event;
+      } else {
+        final existingPercent = book.progressPercentAt(existing);
+        final currentPercent = book.progressPercentAt(event);
+
+        // If current event has higher progress, or if existing has no valid percent, use current
+        if (currentPercent != null &&
+            (existingPercent == null || currentPercent > existingPercent)) {
+          eventsByDate[date] = event;
+        } else if (existingPercent == null && currentPercent == null) {
+          // If both are null, use the later one
+          if (event.end.isAfter(existing.end)) {
+            eventsByDate[date] = event;
+          }
+        }
+      }
+    }
+
+    // Return events sorted by date
+    final sortedDates = eventsByDate.keys.toList()..sort();
+    return sortedDates.map((date) => eventsByDate[date]!).toList();
   }
 
   FlSpot eventToSpot(LibraryBook book, ProgressEvent ev) {

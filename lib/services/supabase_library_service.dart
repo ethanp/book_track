@@ -17,17 +17,20 @@ class SupabaseLibraryService {
   static SimpleLogger log = SimpleLogger(prefix: 'SupabaseLibraryService');
 
   static Future<List<LibraryBook>> myBooks() async {
-    final List<_SupaLibrary> library = await _forLoggedInUser();
-    final List<int> libraryBookIds = library.map((e) => e.supaId).toList();
+    final library = await _forLoggedInUser().withNetworkRetry(logger: log);
+    final libraryBookIds = library.map((e) => e.supaId).toList();
 
-    final Map<int, List<ProgressEvent>> allProgressEvents =
-        await SupabaseProgressService.historyForLibraryBooks(libraryBookIds);
-    final Map<int, List<StatusEvent>> allStatusEvents =
-        await SupabaseStatusService.historyForLibraryBooks(libraryBookIds);
-    final Map<int, List<LibraryBookFormat>> allFormats =
-        await SupabaseFormatService.formatsForLibraryBooks(libraryBookIds);
+    final allProgressEvents =
+        await SupabaseProgressService.historyForLibraryBooks(libraryBookIds)
+            .withNetworkRetry(logger: log);
+    final allStatusEvents =
+        await SupabaseStatusService.historyForLibraryBooks(libraryBookIds)
+            .withNetworkRetry(logger: log);
+    final allFormats =
+        await SupabaseFormatService.formatsForLibraryBooks(libraryBookIds)
+            .withNetworkRetry(logger: log);
 
-    final Iterable<Future<LibraryBook>> libraryBooks = library.map(
+    final libraryBooks = library.map(
       (supaBook) => supaBook.toLibraryBook(
         allProgressEvents[supaBook.supaId] ?? [],
         allStatusEvents[supaBook.supaId] ?? [],
@@ -59,6 +62,7 @@ class SupabaseLibraryService {
 
     // Add initial progress event (0%)
     await SupabaseProgressService.addProgressEvent(
+      libraryBookId: libraryBookId,
       formatId: format.supaId,
       newValue: 0,
       format: ProgressEventFormat.percent,

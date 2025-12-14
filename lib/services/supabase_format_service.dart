@@ -110,3 +110,4 @@ class _SupaFormat {
   int? get length => rawData[lengthCol];
   static const String lengthCol = 'length';
 }
+

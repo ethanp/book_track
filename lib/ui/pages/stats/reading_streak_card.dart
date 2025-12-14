@@ -19,13 +19,6 @@ class ReadingStreakCard extends StatelessWidget {
     final eventDates =
         books.expand((b) => b.progressHistory).map((e) => e.end).toList();
 
-    // Debug: log event count and date range
-    if (eventDates.isNotEmpty) {
-      eventDates.sort();
-      print('ReadingStreakCard: ${eventDates.length} events, '
-          'earliest: ${eventDates.first}, latest: ${eventDates.last}');
-    }
-
     final data = ReadingActivityData.fromEvents(
       eventDates,
       periodCutoff: periodCutoff,

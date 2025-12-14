@@ -175,3 +175,4 @@ class _TrendData {
   final String emoji;
   final String description;
 }
+
