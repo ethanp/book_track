@@ -76,11 +76,15 @@ class BookDetailButtons extends ConsumerWidget {
       icon: Icons.check_box_outlined,
       onPressed: () async {
         await SupabaseStatusService.add(book.supaId, ReadingStatus.finished);
-        await SupabaseProgressService.addProgressEvent(
-          bookId: book.supaId,
-          newValue: 100,
-          format: ProgressEventFormat.percent,
-        );
+        // Use the last used format or primary format for completion
+        final format = book.lastUsedFormat ?? book.primaryFormat;
+        if (format != null) {
+          await SupabaseProgressService.addProgressEvent(
+            formatId: format.supaId,
+            newValue: 100,
+            format: ProgressEventFormat.percent,
+          );
+        }
         ref.invalidate(userLibraryProvider);
       },
       backgroundColor: Colors.green[300]!.withValues(alpha: .6),

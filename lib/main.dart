@@ -58,9 +58,15 @@ class _TopLevelWidgetState extends ConsumerState<TopLevelWidget> {
       title: 'The app itself',
       debugShowCheckedModeBanner: false,
       theme: CupertinoThemeData(brightness: Brightness.light),
-      home: SupabaseAuthService.isLoggedOut
-          ? const LoginPage()
-          : MainstageAndBottomNavbar(),
+      home: _buildHome(),
     );
+  }
+
+  Widget _buildHome() {
+    if (SupabaseAuthService.isLoggedOut) {
+      return const LoginPage();
+    }
+
+    return MainstageAndBottomNavbar();
   }
 }

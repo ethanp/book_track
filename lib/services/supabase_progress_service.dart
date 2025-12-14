@@ -10,14 +10,14 @@ class SupabaseProgressService {
 
   /// [end] defaults to [DateTime.now].
   static Future<void> addProgressEvent({
-    required int bookId,
+    required int formatId,
     required int newValue,
     required ProgressEventFormat format,
     DateTime? start,
     DateTime? end,
   }) async =>
       await _progressClient.insert({
-        _SupaProgress.libraryBookIdCol: bookId,
+        _SupaProgress.formatIdCol: formatId,
         _SupaProgress.userIdCol: SupabaseAuthService.loggedInUserId,
         _SupaProgress.formatCol: format.name,
         _SupaProgress.progressCol: newValue,
@@ -61,9 +61,12 @@ class SupabaseProgressService {
 
   static Future<Map<int, List<ProgressEvent>>> historyForLibraryBooks(
       List<int> libraryBookIds) async {
+    if (libraryBookIds.isEmpty) return {};
+
     final queryResults = await _progressClient
         .select()
-        .filter(_SupaProgress.libraryBookIdCol, 'in', '(${libraryBookIds.join(',')})')
+        .filter(_SupaProgress.libraryBookIdCol, 'in',
+            '(${libraryBookIds.join(',')})')
         .eq(_SupaProgress.userIdCol, SupabaseAuthService.loggedInUserId!)
         .order(_SupaProgress.endCol, ascending: true)
         .captureStackTraceOnError();
@@ -88,6 +91,7 @@ class _SupaProgress {
 
   ProgressEvent get toProgressEvent => ProgressEvent(
         supaId: supaId,
+        formatId: formatId,
         end: end,
         progress: progress,
         format: format,
@@ -95,30 +99,33 @@ class _SupaProgress {
       );
 
   int get supaId => rawData[supaIdCol];
-  static final String supaIdCol = 'id';
+  static const String supaIdCol = 'id';
 
   /// Returns [createdAt] in device-local timezone.
   /// Original field set by Postgres to UTC.
   DateTime get createdAt => DateTime.parse(rawData[createdAtCol]).toLocal();
 
-  static final String createdAtCol = 'created_at';
+  static const String createdAtCol = 'created_at';
 
   int get libraryBookId => rawData[libraryBookIdCol];
-  static final String libraryBookIdCol = 'library_book_id';
+  static const String libraryBookIdCol = 'library_book_id';
 
-  int get userId => rawData[userIdCol];
-  static final String userIdCol = 'user_id';
+  int get formatId => rawData[formatIdCol] ?? 0;
+  static const String formatIdCol = 'format_id';
+
+  String get userId => rawData[userIdCol];
+  static const String userIdCol = 'user_id';
 
   ProgressEventFormat get format =>
       ProgressEventFormat.map[rawData[formatCol]]!;
-  static final String formatCol = 'format';
+  static const String formatCol = 'format';
 
   int get progress => rawData[progressCol];
-  static final String progressCol = 'progress';
+  static const String progressCol = 'progress';
 
   DateTime? get start => parseDateCol(rawData[startCol]);
-  static final String startCol = 'start';
+  static const String startCol = 'start';
 
   DateTime get end => parseDateCol(rawData[endCol])!;
-  static final String endCol = 'end';
+  static const String endCol = 'end';
 }

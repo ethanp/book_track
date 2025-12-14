@@ -12,7 +12,8 @@ import 'results_count.dart';
 class SearchResults extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final BookSearchResults searchResult = ref.watch(bookSearchResultsProvider);
+    final BookSearchResults searchResult =
+        ref.watch(bookSearchResultsNotifierProvider);
     if (searchResult.isLoading) {
       return SizedBox(
         height: 400,

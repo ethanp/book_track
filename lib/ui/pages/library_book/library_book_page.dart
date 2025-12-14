@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'book_detail_buttons.dart';
 import 'book_properties_editor.dart';
 import 'event_timeline.dart';
+import 'formats_section.dart';
 import 'progress_chart/progress_chart.dart';
 
 class LibraryBookPage extends ConsumerStatefulWidget {
@@ -43,6 +44,7 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
               BookPropertiesEditor(_libraryBook),
               BookDetailButtons(book: _libraryBook),
               ProgressChart(_libraryBook),
+              FormatsSection(_libraryBook),
               EventTimeline(_libraryBook),
             ],
           ),

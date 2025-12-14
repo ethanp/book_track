@@ -68,7 +68,7 @@ class _AddBookModalBodyState extends ConsumerState<AddBookModalBody> {
   void _search(String text) {
     AddBookModalBody.log('searching for: $text');
     final BookSearchResultsNotifier results =
-        ref.read(bookSearchResultsProvider.notifier);
+        ref.read(bookSearchResultsNotifierProvider.notifier);
     results.notify(BookSearchResults.loading);
     BookUniverseService.search(text, results);
   }

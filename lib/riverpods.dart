@@ -42,7 +42,7 @@ class SessionStartTime extends _$SessionStartTime {
 }
 
 @riverpod
-class BookSearchResultsNotifier extends _$BookSearchResults {
+class BookSearchResultsNotifier extends _$BookSearchResultsNotifier {
   @override
   BookSearchResults build() => BookSearchResults.empty;
 

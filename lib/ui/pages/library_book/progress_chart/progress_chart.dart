@@ -25,10 +25,16 @@ class _ProgressChartState extends ConsumerState<ProgressChart> {
 
   @override
   Widget build(BuildContext context) {
-    if (_latestBook.bookLength == null) {
-      // TODO(ux,feature) Instead of letting it be unknown, force the user
-      //  to set something when adding the book to library.
-      return Text("This book's length is unknown. Update it above.");
+    // Check if any format has a length set
+    final hasAnyLength = _latestBook.formats.any((f) => f.hasLength);
+    if (!hasAnyLength) {
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text(
+          "Set a length for at least one format to see progress chart.",
+          style: TextStyle(color: CupertinoColors.systemGrey),
+        ),
+      );
     }
     return Container(
       margin: const EdgeInsets.only(left: 16, right: 16, top: 28),
@@ -72,7 +78,10 @@ class _ProgressChartState extends ConsumerState<ProgressChart> {
     _latestBook = updatedBook;
     return Padding(
       padding: const EdgeInsets.only(right: 24, bottom: 12, left: 4, top: 8),
-      child: BooksProgressChart(books: [_latestBook]),
+      child: BooksProgressChart(
+        books: [_latestBook],
+        colorByFormat: true, // Color-code by format on book detail page
+      ),
     );
   }
 }

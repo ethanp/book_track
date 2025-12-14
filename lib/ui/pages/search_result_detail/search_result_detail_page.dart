@@ -6,6 +6,7 @@ import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/services/supabase_library_service.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Colors;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'cover_art.dart';
@@ -66,7 +67,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
     return Padding(
       padding: const EdgeInsets.all(6),
       child: CupertinoButton(
-        onPressed: () => addBookToLibrary(bookType),
+        onPressed: () => _promptForLength(bookType),
         padding: const EdgeInsets.symmetric(horizontal: 6),
         color: switch (bookType) {
           BookFormat.audiobook => CupertinoColors.systemOrange,
@@ -82,10 +83,27 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
     );
   }
 
-  Future<void> addBookToLibrary(BookFormat bookType) async {
+  Future<void> _promptForLength(BookFormat bookType) async {
+    final isAudiobook = bookType == BookFormat.audiobook;
+    final initialLength = widget.book.numPagesMedian;
+
+    final result = await showCupertinoDialog<int>(
+      context: context,
+      builder: (context) => _LengthInputDialog(
+        isAudiobook: isAudiobook,
+        initialValue: isAudiobook ? null : initialLength,
+      ),
+    );
+
+    if (result != null && mounted) {
+      await addBookToLibrary(bookType, result);
+    }
+  }
+
+  Future<void> addBookToLibrary(BookFormat bookType, int length) async {
     setState(() => _saving = true);
     try {
-      await SupabaseLibraryService.addBook(widget.book, bookType);
+      await SupabaseLibraryService.addBook(widget.book, bookType, length);
     } catch (error, stack) {
       log('(${error.runtimeType}) $error $stack');
     } finally {
@@ -136,6 +154,133 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
           valueWidget,
         ],
       ),
+    );
+  }
+}
+
+class _LengthInputDialog extends StatefulWidget {
+  const _LengthInputDialog({
+    required this.isAudiobook,
+    this.initialValue,
+  });
+
+  final bool isAudiobook;
+  final int? initialValue;
+
+  @override
+  State<_LengthInputDialog> createState() => _LengthInputDialogState();
+}
+
+class _LengthInputDialogState extends State<_LengthInputDialog> {
+  late final TextEditingController _controller;
+  late final TextEditingController _hoursController;
+  late final TextEditingController _minutesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(
+      text: widget.initialValue?.toString() ?? '',
+    );
+    _hoursController = TextEditingController();
+    _minutesController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _hoursController.dispose();
+    _minutesController.dispose();
+    super.dispose();
+  }
+
+  int? _parseLength() {
+    if (widget.isAudiobook) {
+      final hours = int.tryParse(_hoursController.text) ?? 0;
+      final minutes = int.tryParse(_minutesController.text) ?? 0;
+      final total = hours * 60 + minutes;
+      return total > 0 ? total : null;
+    } else {
+      return int.tryParse(_controller.text);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoAlertDialog(
+      title: Text(widget.isAudiobook ? 'Audiobook Length' : 'Book Length'),
+      content: Padding(
+        padding: const EdgeInsets.only(top: 16),
+        child: widget.isAudiobook ? _audiobookInput() : _pageInput(),
+      ),
+      actions: [
+        CupertinoDialogAction(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        CupertinoDialogAction(
+          onPressed: () {
+            final length = _parseLength();
+            if (length != null && length > 0) {
+              Navigator.pop(context, length);
+            }
+          },
+          child: const Text('Add'),
+        ),
+      ],
+    );
+  }
+
+  Widget _pageInput() {
+    return Column(
+      children: [
+        const Text('How many pages?'),
+        const SizedBox(height: 8),
+        CupertinoTextField(
+          controller: _controller,
+          placeholder: 'e.g., 320',
+          keyboardType: TextInputType.number,
+          autofocus: true,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _audiobookInput() {
+    return Column(
+      children: [
+        const Text('How long is the audiobook?'),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 60,
+              child: CupertinoTextField(
+                controller: _hoursController,
+                placeholder: 'hrs',
+                keyboardType: TextInputType.number,
+                autofocus: true,
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Text(':'),
+            ),
+            SizedBox(
+              width: 60,
+              child: CupertinoTextField(
+                controller: _minutesController,
+                placeholder: 'min',
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

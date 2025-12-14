@@ -1,4 +1,5 @@
 import 'package:book_track/data_model.dart';
+import 'package:book_track/data_model/library_book_format.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
@@ -24,11 +25,20 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
   final DateTime? initialEndTime;
   final ProgressEvent? eventToUpdate;
 
-  late final ProgressEventFormat initialFormat = eventToUpdate?.format ??
-      book.progressHistory.lastOrNull?.format ??
-      book.defaultProgressFormat;
+  LibraryBookFormat? get _initialFormat {
+    if (eventToUpdate != null) {
+      return book.formatById(eventToUpdate!.formatId);
+    }
+    return book.lastUsedFormat ?? book.primaryFormat;
+  }
 
-  late final DateTime initialTimestamp =
+  ProgressEventFormat get initialProgressFormat =>
+      eventToUpdate?.format ??
+      (_initialFormat?.isAudiobook == true
+          ? ProgressEventFormat.minutes
+          : ProgressEventFormat.pageNum);
+
+  DateTime get initialTimestamp =>
       eventToUpdate?.end ?? initialEndTime ?? DateTime.now();
 
   @override
@@ -70,11 +80,24 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
 
 class _UpdateProgressDialogState
     extends ConsumerState<UpdateProgressDialogPage> {
-  late ProgressEventFormat _selectedProgressEventFormat = widget.initialFormat;
+  late LibraryBookFormat? _selectedFormat = widget._initialFormat;
+  late ProgressEventFormat _selectedProgressEventFormat =
+      widget.initialProgressFormat;
   late DateTime _selectedUpdateTimestamp = widget.initialTimestamp;
 
   late final _FieldControllers _fieldControllers =
       _FieldControllers(widget.eventToUpdate);
+
+  // Track the last format to detect switches
+  LibraryBookFormat? _previousFormat;
+
+  @override
+  void initState() {
+    super.initState();
+    _previousFormat = _selectedFormat;
+  }
+
+  bool get _hasMultipleFormats => widget.book.formats.length > 1;
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +106,10 @@ class _UpdateProgressDialogState
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (_hasMultipleFormats) ...[
+            _formatPicker(),
+            if (_showContinueFromHint) _continueFromHint(),
+          ],
           progressAmountForm(),
           updateFormatSelector(),
           SizedBox(height: 15),
@@ -90,6 +117,93 @@ class _UpdateProgressDialogState
         ],
       ),
       actions: submitAndCancelButtons(),
+    );
+  }
+
+  bool get _showContinueFromHint =>
+      _selectedFormat != null &&
+      _previousFormat != null &&
+      _selectedFormat!.supaId != _previousFormat!.supaId &&
+      widget.book.lastProgressPercent != null;
+
+  Widget _formatPicker() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        children: [
+          Text('Format:', style: TextStyle(fontSize: 12)),
+          SizedBox(height: 4),
+          CupertinoSlidingSegmentedControl<int>(
+            groupValue: _selectedFormat?.supaId,
+            children: {
+              for (final format in widget.book.formats)
+                format.supaId: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Text(
+                    format.format.name,
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+            },
+            onValueChanged: (formatId) {
+              if (formatId == null) return;
+              final newFormat = widget.book.formatById(formatId);
+              if (newFormat == null) return;
+
+              setState(() {
+                _previousFormat = _selectedFormat;
+                _selectedFormat = newFormat;
+
+                // Update progress format based on new format
+                _selectedProgressEventFormat = newFormat.isAudiobook
+                    ? ProgressEventFormat.minutes
+                    : ProgressEventFormat.pageNum;
+
+                // Prefill with suggested position
+                _prefillSuggestedPosition(newFormat);
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _prefillSuggestedPosition(LibraryBookFormat targetFormat) {
+    final suggestedPosition = widget.book.suggestPositionIn(targetFormat);
+    if (suggestedPosition == null) return;
+
+    if (targetFormat.isAudiobook) {
+      _fieldControllers.ctrl[ProgressEventFormat.minutes]
+          ?.updateWith(suggestedPosition);
+    } else {
+      _fieldControllers.ctrl[ProgressEventFormat.pageNum]
+          ?.updateText(suggestedPosition.toString());
+    }
+  }
+
+  Widget _continueFromHint() {
+    final percent = widget.book.lastProgressPercent;
+    if (percent == null || _selectedFormat == null) return const SizedBox();
+
+    final suggestedPosition = widget.book.suggestPositionIn(_selectedFormat!);
+    if (suggestedPosition == null) return const SizedBox();
+
+    final positionStr = _selectedFormat!.isAudiobook
+        ? suggestedPosition.minsToHhMm
+        : suggestedPosition.toString();
+    final unit = _selectedFormat!.isAudiobook ? '' : ' pages';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        'You were at ${percent.toStringAsFixed(0)}% (~$positionStr$unit)',
+        style: TextStyle(
+          fontSize: 11,
+          color: CupertinoColors.systemGrey,
+          fontStyle: FontStyle.italic,
+        ),
+      ),
     );
   }
 
@@ -160,7 +274,7 @@ class _UpdateProgressDialogState
     return Column(children: [
       Text('Set progress update\'s timestamp:'),
       Transform.scale(
-        // Flutter doesn’t allow direct styling of CupertinoDatePicker text,
+        // Flutter doesn't allow direct styling of CupertinoDatePicker text,
         // but you can just scale the whole widget.
         scale: 1,
         child: SizedBox(
@@ -201,9 +315,15 @@ class _UpdateProgressDialogState
 
   /// Pop [true] iff UI needs to reload to see updated data.
   Future<void> _submit() async {
+    if (_selectedFormat == null) {
+      log.error('No format selected');
+      context.pop(false);
+      return;
+    }
+
     final String lengthText =
         _fieldControllers.values(_selectedProgressEventFormat).join(':');
-    final int? newLen = widget.book.parseLengthText(lengthText);
+    final int? newLen = _parseLength(lengthText);
     if (newLen == null) {
       // TODO(feature) this should be a form validation instead.
       log.error('invalid length: $lengthText');
@@ -221,7 +341,7 @@ class _UpdateProgressDialogState
       );
     } else {
       await SupabaseProgressService.addProgressEvent(
-        bookId: widget.book.supaId,
+        formatId: _selectedFormat!.supaId,
         newValue: newLen,
         format: _selectedProgressEventFormat,
         start: widget.startTime,
@@ -229,6 +349,18 @@ class _UpdateProgressDialogState
       );
     }
     if (mounted) context.pop(true);
+  }
+
+  int? _parseLength(String text) {
+    if (_selectedFormat?.isAudiobook == true) {
+      final List<String> split = text.split(':');
+      if (split.length < 2) return int.tryParse(text);
+      final int? hrs = int.tryParse(split[0]);
+      final int? mins = int.tryParse(split[1]);
+      if (hrs == null || mins == null) return null;
+      return hrs * 60 + mins;
+    }
+    return int.tryParse(text);
   }
 }
 

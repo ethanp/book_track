@@ -10,27 +10,36 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 class ProgressPerMonthChart extends ConsumerWidget {
-  ProgressPerMonthChart({required this.books, super.key})
-      : deltaByMonth = diffPerMonth(
+  ProgressPerMonthChart({
+    required this.books,
+    this.periodCutoff,
+    super.key,
+  })  : deltaByMonth = diffPerMonth(
           books,
           CupertinoColors.systemGreen,
           (book) => book.pagesDiffs(percentage: true),
           'Percent',
+          periodCutoff,
         ),
         pagesByMonth = diffPerMonth(
           books.where((b) => !b.isAudiobook).toList(),
           CupertinoColors.systemBlue,
           (book) => book.pagesDiffs(),
           'Pages',
+          periodCutoff,
         ),
         minutesByMonth = diffPerMonth(
           books.where((b) => b.isAudiobook).toList(),
           CupertinoColors.systemRed,
           (book) => book.pagesDiffs(),
-          'Minutes / 5',
+          'Minutes',
+          periodCutoff,
         );
 
   final List<LibraryBook> books;
+
+  /// If provided, only show data after this date.
+  final DateTime? periodCutoff;
 
   final DiffPerMonth deltaByMonth;
   final DiffPerMonth pagesByMonth;
@@ -46,17 +55,20 @@ class ProgressPerMonthChart extends ConsumerWidget {
     CupertinoDynamicColor color,
     Iterable<MapEntry<DateTime, double>> Function(LibraryBook) getDiffs,
     String name,
-  ) =>
-      DiffPerMonth(
-        color: color,
-        valuePerMonth: books
-            .expand(getDiffs)
-            .fold(<String, double>{}, _sumByMonth)
-            .entries
-            .toList()
-          ..sort((a, b) => a.key.compareTo(b.key)),
-        name: name,
-      );
+    DateTime? periodCutoff,
+  ) {
+    var diffs = books.expand(getDiffs);
+    if (periodCutoff != null) {
+      diffs = diffs.where((entry) => entry.key.isAfter(periodCutoff));
+    }
+    return DiffPerMonth(
+      color: color,
+      valuePerMonth:
+          diffs.fold(<String, double>{}, _sumByMonth).entries.toList()
+            ..sort((a, b) => a.key.compareTo(b.key)),
+      name: name,
+    );
+  }
 
   static Map<String, double> _sumByMonth(
     Map<String, double> acc,
@@ -73,6 +85,14 @@ class ProgressPerMonthChart extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Check if there's any data to show
+    final hasData = lineDatas.any((d) => d.valuePerMonth.isNotEmpty);
+    if (!hasData) {
+      return const Center(
+        child: Text('No reading data in this period'),
+      );
+    }
+
     return Stack(children: [
       lineChart(),
       chartLegend(),
@@ -86,33 +106,31 @@ class ProgressPerMonthChart extends ConsumerWidget {
         .mapL((e) => yyyyMM.parse(e.key));
     final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
     const borderSide = BorderSide(color: CupertinoColors.black, width: 2);
-    return Flexible(
-      child: LineChart(
-        LineChartData(
-          minY: 0,
-          maxY: lineDatas
-              .map((e) => e.valuePerMonth)
-              .flatten
-              .map((e) => e.value)
-              .max,
-          minX: timespan.beginning.millisSinceEpoch,
-          maxX: timespan.end.millisSinceEpoch,
-          gridData: FlGridData(
-            horizontalInterval: ProgressPerMonthChart.horizontalInterval,
-            drawVerticalLine: false,
-          ),
-          titlesData: labelAxes(timespan),
-          lineTouchData: LineTouchData(
-              // TODO(feature): Show list of book(cover, name) with events in
-              //  the touched month.
-              ),
-          lineBarsData: lineDatas.mapL(_dataByMonthLine),
-          borderData: FlBorderData(
-            show: true,
-            border: Border(
-              left: borderSide,
-              bottom: borderSide,
+    return LineChart(
+      LineChartData(
+        minY: 0,
+        maxY: lineDatas
+            .map((e) => e.valuePerMonth)
+            .flatten
+            .map((e) => e.value)
+            .max,
+        minX: timespan.beginning.millisSinceEpoch,
+        maxX: timespan.end.millisSinceEpoch,
+        gridData: FlGridData(
+          horizontalInterval: ProgressPerMonthChart.horizontalInterval,
+          drawVerticalLine: false,
+        ),
+        titlesData: labelAxes(timespan),
+        lineTouchData: LineTouchData(
+            // TODO(feature): Show list of book(cover, name) with events in
+            //  the touched month.
             ),
+        lineBarsData: lineDatas.mapL(_dataByMonthLine),
+        borderData: FlBorderData(
+          show: true,
+          border: Border(
+            left: borderSide,
+            bottom: borderSide,
           ),
         ),
       ),
