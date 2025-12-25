@@ -325,14 +325,8 @@ class _UpdateProgressDialogState
     ]);
   }
 
-  List<Widget> submitAndCancelButtons() => [
-        CupertinoDialogAction(
-          onPressed: () => context.pop(false),
-          child: Text('Cancel'),
-        ),
-        _fieldControllers.dialogSaveButton(
-            _selectedProgressEventFormat, _submit),
-      ];
+  List<Widget> submitAndCancelButtons() => _fieldControllers.dialogActions(
+      context, _selectedProgressEventFormat, _submit);
 
   /// Pop [true] iff UI needs to reload to see updated data.
   Future<void> _submit() async {
@@ -414,14 +408,9 @@ class _FieldControllers {
 
   int? value(ProgressEventFormat format) => forFormat(format).value;
 
-  String saveLabel(ProgressEventFormat format) => forFormat(format).saveLabel;
-
-  CupertinoDialogAction dialogSaveButton(
-          ProgressEventFormat format, VoidCallback onSubmit) =>
-      CupertinoDialogAction(
-        onPressed: () => forFormat(format).fillOrSubmit(onSubmit),
-        child: Text(saveLabel(format)),
-      );
+  List<Widget> dialogActions(BuildContext context, ProgressEventFormat format,
+          VoidCallback onSubmit) =>
+      forFormat(format).dialogActions(context, onSubmit);
 
   void dispose() {
     _minutes.dispose();

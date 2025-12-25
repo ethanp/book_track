@@ -300,17 +300,7 @@ class _AddFormatSheetState extends State<_AddFormatSheet> {
           ],
         ],
       ),
-      actions: [
-        CupertinoDialogAction(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        if (_lengthController != null)
-          CupertinoDialogAction(
-            onPressed: () => _lengthController!.fillOrSubmit(onSubmit),
-            child: Text(_lengthController!.saveLabel),
-          ),
-      ],
+      actions: _lengthController?.dialogActions(context, onSubmit) ?? [],
     );
   }
 }
@@ -356,16 +346,7 @@ class _EditLengthSheetState extends State<_EditLengthSheet> {
         padding: const EdgeInsets.only(top: 16),
         child: LengthInput(controller: _controller),
       ),
-      actions: [
-        CupertinoDialogAction(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        CupertinoDialogAction(
-          onPressed: () => _controller.fillOrSubmit(onSubmit),
-          child: Text(_controller.saveLabel),
-        ),
-      ],
+      actions: _controller.dialogActions(context, onSubmit),
     );
   }
 }

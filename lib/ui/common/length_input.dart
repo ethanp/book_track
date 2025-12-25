@@ -108,6 +108,18 @@ class LengthInputController {
   /// Returns "Fill" if there's an empty field, otherwise "Save".
   String get saveLabel => hasEmptyField ? 'Fill' : 'Save';
 
+  /// Standard Cancel/Save dialog actions for length input forms.
+  List<Widget> dialogActions(BuildContext context, VoidCallback onSubmit) => [
+        CupertinoDialogAction(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        CupertinoDialogAction(
+          onPressed: () => fillOrSubmit(onSubmit),
+          child: Text(saveLabel),
+        ),
+      ];
+
   void dispose() {
     _hoursController.dispose();
     _minutesController.dispose();

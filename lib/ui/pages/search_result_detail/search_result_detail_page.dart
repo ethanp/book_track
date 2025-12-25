@@ -215,16 +215,7 @@ class _LengthInputDialogState extends State<_LengthInputDialog> {
           ],
         ),
       ),
-      actions: [
-        CupertinoDialogAction(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        CupertinoDialogAction(
-          onPressed: () => _controller.fillOrSubmit(onSubmit),
-          child: Text(_controller.saveLabel),
-        ),
-      ],
+      actions: _controller.dialogActions(context, onSubmit),
     );
   }
 }
