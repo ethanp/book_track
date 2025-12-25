@@ -13,8 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'book_detail_button.dart';
 
 class BookDetailButtons extends ConsumerWidget {
-  BookDetailButtons({required this.book})
-      : dense = book.progressHistory.isNotEmpty;
+  BookDetailButtons(this.book) : dense = book.progressHistory.isNotEmpty;
   final LibraryBook book;
   final bool dense;
 

@@ -10,42 +10,48 @@ import 'event_timeline.dart';
 import 'formats_section.dart';
 import 'progress_chart/progress_chart.dart';
 
-class LibraryBookPage extends ConsumerStatefulWidget {
-  const LibraryBookPage(this.libraryBook);
+class LibraryBookPage extends ConsumerWidget {
+  const LibraryBookPage(this.bookId);
 
-  final LibraryBook libraryBook;
-
-  @override
-  ConsumerState createState() => _LibraryBookPageState();
-}
-
-class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
-  late LibraryBook _libraryBook;
+  final int bookId;
 
   @override
-  void initState() {
-    super.initState();
-    _libraryBook = widget.libraryBook;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final libraryAsync = ref.watch(userLibraryProvider);
+    return libraryAsync.when(
+      loading: () => const CupertinoPageScaffold(
+        child: Center(child: CupertinoActivityIndicator()),
+      ),
+      error: (e, _) => CupertinoPageScaffold(
+        child: Center(child: Text('Error: $e')),
+      ),
+      data: (books) {
+        final book = books.where((b) => b.supaId == bookId).firstOrNull;
+        if (book == null) {
+          // Book was deleted, pop back
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.of(context).pop();
+          });
+          return const SizedBox.shrink();
+        }
+        return _buildPage(book);
+      },
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    ref.watch(userLibraryProvider).whenData((items) {
-      bool isShownBook(LibraryBook i) => i.supaId == widget.libraryBook.supaId;
-      _libraryBook = items.where(isShownBook).first;
-    });
+  Widget _buildPage(LibraryBook book) {
     return CupertinoPageScaffold(
-      navigationBar: navBar(),
+      navigationBar: _navBar(book),
       child: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              BookPropertiesEditor(_libraryBook),
-              BookDetailButtons(book: _libraryBook),
-              ProgressChart(_libraryBook),
-              FormatsSection(_libraryBook),
-              EventTimeline(_libraryBook),
+              BookPropertiesEditor(book),
+              BookDetailButtons(book),
+              ProgressChart(book),
+              FormatsSection(book),
+              EventTimeline(book),
             ],
           ),
         ),
@@ -53,20 +59,16 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
     );
   }
 
-  CupertinoNavigationBar navBar() {
-    final currentStatus = _libraryBook.readingStatus.name;
+  CupertinoNavigationBar _navBar(LibraryBook book) {
     return CupertinoNavigationBar(
       middle: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           Flexible(
             flex: 5,
-            child: Text('${_libraryBook.book.title} ($currentStatus)'),
+            child: Text('${book.book.title} (${book.readingStatus.name})'),
           ),
-          Flexible(
-            flex: 2,
-            child: ReadingProgressIndicator(_libraryBook),
-          ),
+          Flexible(flex: 2, child: ReadingProgressIndicator(book)),
         ],
       ),
     );

@@ -25,7 +25,7 @@ class BookTile extends ConsumerWidget {
 
   Widget bookListTile(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push(LibraryBookPage(book)),
+      onTap: () => context.push(LibraryBookPage(book.supaId)),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
