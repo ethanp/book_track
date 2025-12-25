@@ -235,8 +235,6 @@ class _AddFormatSheetState extends State<_AddFormatSheet> {
   BookFormat? _selectedFormat;
   LengthInputController? _lengthController;
 
-  bool get _isAudiobook => _selectedFormat == BookFormat.audiobook;
-
   void _onFormatSelected(BookFormat format) {
     _lengthController?.dispose();
     _lengthController = LengthInputController.fromAudiobook(
@@ -253,9 +251,16 @@ class _AddFormatSheetState extends State<_AddFormatSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoActionSheet(
+    var onSubmit = () {
+      if (_selectedFormat == null) return;
+      final length = _lengthController!.value;
+      if (length != null && length > 0) {
+        Navigator.pop(context, (_selectedFormat!, length));
+      }
+    };
+    return CupertinoAlertDialog(
       title: const Text('Add Format'),
-      message: Column(
+      content: Column(
         children: [
           const SizedBox(height: 12),
           Wrap(
@@ -296,26 +301,16 @@ class _AddFormatSheetState extends State<_AddFormatSheet> {
         ],
       ),
       actions: [
-        if (_isAudiobook && (_lengthController?.hasEmptyField ?? false))
-          CupertinoActionSheetAction(
-            onPressed: () => _lengthController?.firstEmptyField?.requestFocus(),
-            child: const Text('Fill'),
-          )
-        else
-          CupertinoActionSheetAction(
-            onPressed: () {
-              if (_selectedFormat == null) return;
-              final length = _lengthController?.value;
-              if (length == null || length <= 0) return;
-              Navigator.pop(context, (_selectedFormat!, length));
-            },
-            child: const Text('Add'),
+        CupertinoDialogAction(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        if (_lengthController != null)
+          CupertinoDialogAction(
+            onPressed: () => _lengthController!.fillOrSubmit(onSubmit),
+            child: Text(_lengthController!.saveLabel),
           ),
       ],
-      cancelButton: CupertinoActionSheetAction(
-        onPressed: () => Navigator.pop(context),
-        child: const Text('Cancel'),
-      ),
     );
   }
 }
@@ -349,27 +344,28 @@ class _EditLengthSheetState extends State<_EditLengthSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoActionSheet(
+    var onSubmit = () {
+      final length = _controller.value;
+      if (length != null && length > 0) {
+        Navigator.pop(context, length);
+      }
+    };
+    return CupertinoAlertDialog(
       title: Text('Edit ${widget.format.format.name} Length'),
-      message: Padding(
+      content: Padding(
         padding: const EdgeInsets.only(top: 16),
         child: LengthInput(controller: _controller),
       ),
       actions: [
-        CupertinoActionSheetAction(
-          onPressed: () {
-            final length = _controller.value;
-            if (length != null && length > 0) {
-              Navigator.pop(context, length);
-            }
-          },
-          child: const Text('Save'),
+        CupertinoDialogAction(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        CupertinoDialogAction(
+          onPressed: () => _controller.fillOrSubmit(onSubmit),
+          child: Text(_controller.saveLabel),
         ),
       ],
-      cancelButton: CupertinoActionSheetAction(
-        onPressed: () => Navigator.pop(context),
-        child: const Text('Cancel'),
-      ),
     );
   }
 }

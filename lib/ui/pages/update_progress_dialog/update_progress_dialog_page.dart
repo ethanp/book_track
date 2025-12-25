@@ -115,7 +115,7 @@ class _UpdateProgressDialogState
         title: Text('Error'),
         content: Text('This book has no formats. Please add a format first.'),
         actions: [
-          CupertinoButton(
+          CupertinoDialogAction(
             onPressed: () => context.pop(false),
             child: Text('OK'),
           ),
@@ -325,26 +325,14 @@ class _UpdateProgressDialogState
     ]);
   }
 
-  List<Widget> submitAndCancelButtons() {
-    final firstEmptyField =
-        _fieldControllers.firstEmptyFormField(_selectedProgressEventFormat);
-    final cancelButton = CupertinoButton(
-      onPressed: () => context.pop(false),
-      child: Text('Cancel'),
-    );
-    final nextFormField = CupertinoButton(
-      onPressed: () => firstEmptyField?.requestFocus(),
-      child: Text('Fill'),
-    );
-    final submitButton = CupertinoButton(
-      onPressed: _submit,
-      child: Text('Submit'),
-    );
-    return [
-      cancelButton,
-      if (firstEmptyField == null) submitButton else nextFormField,
-    ];
-  }
+  List<Widget> submitAndCancelButtons() => [
+        CupertinoDialogAction(
+          onPressed: () => context.pop(false),
+          child: Text('Cancel'),
+        ),
+        _fieldControllers.dialogSaveButton(
+            _selectedProgressEventFormat, _submit),
+      ];
 
   /// Pop [true] iff UI needs to reload to see updated data.
   Future<void> _submit() async {
@@ -425,6 +413,15 @@ class _FieldControllers {
       forFormat(format).firstEmptyField;
 
   int? value(ProgressEventFormat format) => forFormat(format).value;
+
+  String saveLabel(ProgressEventFormat format) => forFormat(format).saveLabel;
+
+  CupertinoDialogAction dialogSaveButton(
+          ProgressEventFormat format, VoidCallback onSubmit) =>
+      CupertinoDialogAction(
+        onPressed: () => forFormat(format).fillOrSubmit(onSubmit),
+        child: Text(saveLabel(format)),
+      );
 
   void dispose() {
     _minutes.dispose();

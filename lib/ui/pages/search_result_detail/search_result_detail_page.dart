@@ -191,6 +191,10 @@ class _LengthInputDialogState extends State<_LengthInputDialog> {
 
   @override
   Widget build(BuildContext context) {
+    var onSubmit = () {
+      final length = _controller.value;
+      if (length != null && length > 0) Navigator.pop(context, length);
+    };
     return CupertinoAlertDialog(
       title: Text(widget.isAudiobook ? 'Audiobook Length' : 'Book Length'),
       content: Padding(
@@ -216,21 +220,10 @@ class _LengthInputDialogState extends State<_LengthInputDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        if (_controller.hasEmptyField)
-          CupertinoDialogAction(
-            onPressed: () => _controller.firstEmptyField?.requestFocus(),
-            child: const Text('Fill'),
-          )
-        else
-          CupertinoDialogAction(
-            onPressed: () {
-              final length = _controller.value;
-              if (length != null && length > 0) {
-                Navigator.pop(context, length);
-              }
-            },
-            child: const Text('Add'),
-          ),
+        CupertinoDialogAction(
+          onPressed: () => _controller.fillOrSubmit(onSubmit),
+          child: Text(_controller.saveLabel),
+        ),
       ],
     );
   }

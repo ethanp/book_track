@@ -96,6 +96,18 @@ class LengthInputController {
 
   bool get hasEmptyField => firstEmptyField != null;
 
+  /// Handles Fill/Submit button logic: focuses empty field if any, else calls onSubmit.
+  void fillOrSubmit(VoidCallback onSubmit) {
+    if (hasEmptyField) {
+      firstEmptyField?.requestFocus();
+    } else {
+      onSubmit();
+    }
+  }
+
+  /// Returns "Fill" if there's an empty field, otherwise "Save".
+  String get saveLabel => hasEmptyField ? 'Fill' : 'Save';
+
   void dispose() {
     _hoursController.dispose();
     _minutesController.dispose();
