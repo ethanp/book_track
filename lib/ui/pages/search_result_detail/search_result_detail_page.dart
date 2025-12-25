@@ -5,8 +5,8 @@ import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/services/supabase_library_service.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:book_track/ui/common/length_input.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'cover_art.dart';
@@ -172,37 +172,21 @@ class _LengthInputDialog extends StatefulWidget {
 }
 
 class _LengthInputDialogState extends State<_LengthInputDialog> {
-  late final TextEditingController _controller;
-  late final TextEditingController _hoursController;
-  late final TextEditingController _minutesController;
+  late final LengthInputController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(
-      text: widget.initialValue?.toString() ?? '',
+    _controller = LengthInputController.fromAudiobook(
+      isAudiobook: widget.isAudiobook,
+      initialValue: widget.isAudiobook ? null : widget.initialValue,
     );
-    _hoursController = TextEditingController();
-    _minutesController = TextEditingController();
   }
 
   @override
   void dispose() {
     _controller.dispose();
-    _hoursController.dispose();
-    _minutesController.dispose();
     super.dispose();
-  }
-
-  int? _parseLength() {
-    if (widget.isAudiobook) {
-      final hours = int.tryParse(_hoursController.text) ?? 0;
-      final minutes = int.tryParse(_minutesController.text) ?? 0;
-      final total = hours * 60 + minutes;
-      return total > 0 ? total : null;
-    } else {
-      return int.tryParse(_controller.text);
-    }
   }
 
   @override
@@ -211,75 +195,42 @@ class _LengthInputDialogState extends State<_LengthInputDialog> {
       title: Text(widget.isAudiobook ? 'Audiobook Length' : 'Book Length'),
       content: Padding(
         padding: const EdgeInsets.only(top: 16),
-        child: widget.isAudiobook ? _audiobookInput() : _pageInput(),
+        child: Column(
+          children: [
+            Text(widget.isAudiobook
+                ? 'How long is the audiobook?'
+                : 'How many pages?'),
+            const SizedBox(height: 8),
+            LengthInput(
+              controller: _controller,
+              autofocus: true,
+              showLabel: !widget.isAudiobook,
+              fieldWidth: 60,
+              onChanged: () => setState(() {}),
+            ),
+          ],
+        ),
       ),
       actions: [
         CupertinoDialogAction(
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        CupertinoDialogAction(
-          onPressed: () {
-            final length = _parseLength();
-            if (length != null && length > 0) {
-              Navigator.pop(context, length);
-            }
-          },
-          child: const Text('Add'),
-        ),
-      ],
-    );
-  }
-
-  Widget _pageInput() {
-    return Column(
-      children: [
-        const Text('How many pages?'),
-        const SizedBox(height: 8),
-        CupertinoTextField(
-          controller: _controller,
-          placeholder: 'e.g., 320',
-          keyboardType: TextInputType.number,
-          autofocus: true,
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _audiobookInput() {
-    return Column(
-      children: [
-        const Text('How long is the audiobook?'),
-        const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 60,
-              child: CupertinoTextField(
-                controller: _hoursController,
-                placeholder: 'hrs',
-                keyboardType: TextInputType.number,
-                autofocus: true,
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Text(':'),
-            ),
-            SizedBox(
-              width: 60,
-              child: CupertinoTextField(
-                controller: _minutesController,
-                placeholder: 'min',
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-        ),
+        if (_controller.hasEmptyField)
+          CupertinoDialogAction(
+            onPressed: () => _controller.firstEmptyField?.requestFocus(),
+            child: const Text('Fill'),
+          )
+        else
+          CupertinoDialogAction(
+            onPressed: () {
+              final length = _controller.value;
+              if (length != null && length > 0) {
+                Navigator.pop(context, length);
+              }
+            },
+            child: const Text('Add'),
+          ),
       ],
     );
   }

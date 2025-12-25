@@ -44,6 +44,23 @@ class CalendarHeatmap extends StatefulWidget {
 
 class _CalendarHeatmapState extends State<CalendarHeatmap> {
   DateTime? selectedDate;
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   /// Max activity value for relative color scaling
   int get _maxActivity {
@@ -68,6 +85,7 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
     final months = _buildMonths(today);
 
     return SingleChildScrollView(
+      controller: _scrollController,
       scrollDirection: Axis.horizontal,
       physics: const BouncingScrollPhysics(),
       child: Row(

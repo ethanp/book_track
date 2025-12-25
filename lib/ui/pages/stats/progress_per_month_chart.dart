@@ -125,9 +125,37 @@ class ProgressPerMonthChart extends ConsumerWidget {
         ),
         titlesData: labelAxes(timespan),
         lineTouchData: LineTouchData(
-            // TODO(feature): Show list of book(cover, name) with events in
-            //  the touched month.
-            ),
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipItems: (spots) {
+              if (spots.isEmpty) return [];
+              final date =
+                  DateTime.fromMillisecondsSinceEpoch(spots.first.x.toInt());
+              final monthStr = DateFormat('MMM yyyy').format(date);
+              return spots.asMap().entries.map((entry) {
+                final isFirst = entry.key == 0;
+                final spot = entry.value;
+                final lineData = lineDatas[spot.barIndex];
+                final lineColor =
+                    Color.lerp(lineData.color, CupertinoColors.white, 0.5)!;
+                final prefix = isFirst ? '$monthStr\n' : '';
+                return LineTooltipItem(
+                  prefix,
+                  const TextStyle(
+                    color: CupertinoColors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: '${lineData.name}: ${spot.y.round()}',
+                      style: TextStyle(color: lineColor),
+                    ),
+                  ],
+                );
+              }).toList();
+            },
+          ),
+        ),
         lineBarsData: lineDatas.mapL(_dataByMonthLine),
         borderData: FlBorderData(
           show: true,

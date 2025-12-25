@@ -55,4 +55,3 @@ ALTER TABLE progress_events ADD COLUMN IF NOT EXISTS format_id INTEGER REFERENCE
 
 -- Index for efficient lookups
 CREATE INDEX IF NOT EXISTS idx_progress_events_format ON progress_events(format_id);
-

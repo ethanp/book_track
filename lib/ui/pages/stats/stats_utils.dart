@@ -40,4 +40,3 @@ class StatsUtils {
     return books.expand((b) => b.progressHistory).toList();
   }
 }
-

@@ -6,7 +6,7 @@ import 'package:book_track/ui/pages/stats/filter_section.dart';
 import 'package:book_track/ui/pages/stats/format_breakdown_card.dart';
 import 'package:book_track/ui/pages/stats/progress_chart_card.dart';
 import 'package:book_track/ui/pages/stats/reading_patterns_card.dart';
-import 'package:book_track/ui/pages/stats/reading_streak_card.dart';
+import 'package:book_track/ui/pages/stats/activity_calendar_card.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:book_track/ui/pages/stats/summary_stats_card.dart';
 import 'package:flutter/cupertino.dart';
@@ -60,8 +60,8 @@ class StatsPage extends ConsumerWidget {
                     ),
                   ),
                   SummaryStatsCard(books: books, periodCutoff: periodCutoff),
-                  ReadingStreakCard(
-                    key: ValueKey('streak-${books.length}-$showArchived'),
+                  ActivityCalendarCard(
+                    key: ValueKey('calendar-${books.length}-$showArchived'),
                     books: books,
                     periodCutoff: periodCutoff,
                   ),

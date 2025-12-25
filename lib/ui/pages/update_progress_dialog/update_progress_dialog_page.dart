@@ -4,6 +4,7 @@ import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_progress_service.dart';
+import 'package:book_track/ui/common/length_input.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -202,11 +203,13 @@ class _UpdateProgressDialogState
     if (suggestedPosition == null) return;
 
     if (targetFormat.isAudiobook) {
-      _fieldControllers.ctrl[ProgressEventFormat.minutes]
-          ?.updateWith(suggestedPosition);
+      _fieldControllers
+          .forFormat(ProgressEventFormat.minutes)
+          .setMinutes(suggestedPosition);
     } else {
-      _fieldControllers.ctrl[ProgressEventFormat.pageNum]
-          ?.updateText(suggestedPosition.toString());
+      _fieldControllers
+          .forFormat(ProgressEventFormat.pageNum)
+          .setPages(suggestedPosition);
     }
   }
 
@@ -236,7 +239,9 @@ class _UpdateProgressDialogState
   }
 
   Widget progressAmountForm() {
-    Widget inputField(_FocusableController c) {
+    final ctrl = _fieldControllers.forFormat(_selectedProgressEventFormat);
+
+    Widget inputField(TextEditingController controller, FocusNode focusNode) {
       return SizedBox(
         width: _selectedProgressEventFormat == ProgressEventFormat.pageNum
             ? 36
@@ -253,10 +258,10 @@ class _UpdateProgressDialogState
           autocorrect: false,
           enableSuggestions: false,
           autofocus: true,
-          focusNode: c.focusNode,
+          focusNode: focusNode,
           keyboardType: TextInputType.number,
-          controller: c.controller,
-          onChanged: (c) => setState(() {}),
+          controller: controller,
+          onChanged: (_) => setState(() {}),
         ),
       );
     }
@@ -267,18 +272,18 @@ class _UpdateProgressDialogState
           mainAxisAlignment: MainAxisAlignment.center,
           children: switch (_selectedProgressEventFormat) {
             ProgressEventFormat.minutes => [
-                inputField(_fieldControllers.hrs),
+                inputField(ctrl.hoursController, ctrl.hoursFocus),
                 Text(':'),
-                inputField(_fieldControllers.mins),
+                inputField(ctrl.minutesController, ctrl.minutesFocus),
                 Text(' hh:mm'),
               ],
             ProgressEventFormat.pageNum => [
                 Text('Page number:'),
                 SizedBox(width: 6),
-                inputField(_fieldControllers.page),
+                inputField(ctrl.pagesController, ctrl.pagesFocus),
               ],
             ProgressEventFormat.percent => [
-                inputField(_fieldControllers.percent),
+                inputField(ctrl.percentController, ctrl.percentFocus),
                 Text(' %'),
               ],
           }),
@@ -321,14 +326,14 @@ class _UpdateProgressDialogState
   }
 
   List<Widget> submitAndCancelButtons() {
-    final firstEmptyFormField =
+    final firstEmptyField =
         _fieldControllers.firstEmptyFormField(_selectedProgressEventFormat);
     final cancelButton = CupertinoButton(
       onPressed: () => context.pop(false),
       child: Text('Cancel'),
     );
     final nextFormField = CupertinoButton(
-      onPressed: () => firstEmptyFormField?.focusNode.requestFocus(),
+      onPressed: () => firstEmptyField?.requestFocus(),
       child: Text('Fill'),
     );
     final submitButton = CupertinoButton(
@@ -337,7 +342,7 @@ class _UpdateProgressDialogState
     );
     return [
       cancelButton,
-      if (firstEmptyFormField == null) submitButton else nextFormField,
+      if (firstEmptyField == null) submitButton else nextFormField,
     ];
   }
 
@@ -357,19 +362,16 @@ class _UpdateProgressDialogState
       log('Format was null, using first format: ${_selectedFormat!.format.name}');
     }
 
-    final String lengthText =
-        _fieldControllers.values(_selectedProgressEventFormat).join(':');
-    final int? newLen = _parseLength(lengthText);
+    final int? newLen = _fieldControllers.value(_selectedProgressEventFormat);
     if (newLen == null) {
-      // TODO(feature) this should be a form validation instead.
-      log.error('invalid length: $lengthText');
+      log.error('invalid length input');
       context.pop(false);
       return;
     }
 
     log('Submitting progress: formatId=${_selectedFormat!.supaId}, value=$newLen, format=${_selectedProgressEventFormat.name}');
     if (widget.eventToUpdate != null) {
-      log('updating progress to $lengthText ($newLen)');
+      log('updating progress to $newLen');
       await SupabaseProgressService.updateProgressEvent(
         preexistingEvent: widget.eventToUpdate!,
         updatedValue: newLen,
@@ -390,76 +392,43 @@ class _UpdateProgressDialogState
     }
     if (mounted) context.pop(true);
   }
-
-  int? _parseLength(String text) {
-    if (_selectedFormat?.isAudiobook == true) {
-      final List<String> split = text.split(':');
-      if (split.length < 2) return int.tryParse(text);
-      final int? hrs = int.tryParse(split[0]);
-      final int? mins = int.tryParse(split[1]);
-      if (hrs == null || mins == null) return null;
-      return hrs * 60 + mins;
-    }
-    return int.tryParse(text);
-  }
 }
 
-// TODO(clean up): Move these into the _FieldControllers class?
-extension on List<_FocusableController>? {
-  void updateWith(int progress) {
-    this?.first.controller.text = progress.hours.toString();
-    this?.last.controller.text = progress.minutes.toString();
-  }
-
-  void updateText(String string) {
-    this?.first.controller.text = string;
-  }
-}
-
-class _FocusableController {
-  final TextEditingController controller = TextEditingController();
-  final FocusNode focusNode = FocusNode();
-}
-
+/// Manages LengthInputController instances for each ProgressEventFormat mode.
+/// Uses shared LengthInputController for consistent behavior across the app.
 class _FieldControllers {
-  final ProgressEvent? tEventToUpdate;
-
-  late Map<ProgressEventFormat, List<_FocusableController>> ctrl = () {
-    final controllersPerFormat = {
-      ProgressEventFormat.minutes: [
-        _FocusableController(),
-        _FocusableController()
-      ],
-      ProgressEventFormat.pageNum: [_FocusableController()],
-      ProgressEventFormat.percent: [_FocusableController()],
-    };
-    if (tEventToUpdate == null) return controllersPerFormat;
-
-    // Update an existing event
-    final ProgressEvent eventToUpdate = tEventToUpdate!;
+  _FieldControllers(ProgressEvent? eventToUpdate) {
+    if (eventToUpdate == null) return;
     final progress = eventToUpdate.progress;
-    final format = eventToUpdate.format;
-    if (format == ProgressEventFormat.minutes) {
-      controllersPerFormat[format]?.updateWith(progress);
-    } else {
-      controllersPerFormat[format]?.updateText(progress.toString());
+    switch (eventToUpdate.format) {
+      case ProgressEventFormat.minutes:
+        _minutes.setMinutes(progress);
+      case ProgressEventFormat.pageNum:
+        _pages.setPages(progress);
+      case ProgressEventFormat.percent:
+        _percent.setPercent(progress);
     }
-    return controllersPerFormat;
-  }();
+  }
 
-  _FieldControllers(this.tEventToUpdate);
+  final _minutes = LengthInputController(mode: LengthInputMode.audiobook);
+  final _pages = LengthInputController(mode: LengthInputMode.pages);
+  final _percent = LengthInputController(mode: LengthInputMode.percent);
 
-  _FocusableController get hrs => ctrl[ProgressEventFormat.minutes]!.first;
+  LengthInputController forFormat(ProgressEventFormat format) =>
+      switch (format) {
+        ProgressEventFormat.minutes => _minutes,
+        ProgressEventFormat.pageNum => _pages,
+        ProgressEventFormat.percent => _percent,
+      };
 
-  _FocusableController get mins => ctrl[ProgressEventFormat.minutes]!.last;
+  FocusNode? firstEmptyFormField(ProgressEventFormat format) =>
+      forFormat(format).firstEmptyField;
 
-  _FocusableController get page => ctrl[ProgressEventFormat.pageNum]!.first;
+  int? value(ProgressEventFormat format) => forFormat(format).value;
 
-  _FocusableController get percent => ctrl[ProgressEventFormat.percent]!.first;
-
-  _FocusableController? firstEmptyFormField(ProgressEventFormat format) =>
-      ctrl[format]!.where((e) => e.controller.text.isEmpty).firstOrNull;
-
-  List<String> values(ProgressEventFormat selectedProgressEventFormat) =>
-      ctrl[selectedProgressEventFormat]!.mapL((e) => e.controller.text);
+  void dispose() {
+    _minutes.dispose();
+    _pages.dispose();
+    _percent.dispose();
+  }
 }

@@ -9,7 +9,7 @@ final SupabaseClient supabase = Supabase.instance.client;
 DateTime? parseDateCol(dynamic value) => (value as String?).map(DateTime.parse);
 
 /// Extension to add retry with stack trace capture in one call.
-extension SupabaseRetry<T> on Future<T> {
+extension SupabaseRetry<T> on RawPostgrestBuilder<T, T, T> {
   /// Captures stack trace and retries on network errors.
   Future<T> withRetry(SimpleLogger? log) =>
       captureStackTraceOnError().withNetworkRetry(logger: log);

@@ -6,8 +6,8 @@ import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ReadingStreakCard extends ConsumerWidget {
-  const ReadingStreakCard({
+class ActivityCalendarCard extends ConsumerWidget {
+  const ActivityCalendarCard({
     required this.books,
     required this.periodCutoff,
     super.key,
@@ -23,7 +23,7 @@ class ReadingStreakCard extends ConsumerWidget {
       cacheKey:
           '${books.length}-${periodCutoff?.millisecondsSinceEpoch ?? 0}-${countMode.name}',
       compute: () => _computeData(books, periodCutoff, countMode),
-      loadingHeight: 280,
+      loadingHeight: 200,
       builder: (data) => _buildCard(data, countMode),
     );
   }
@@ -41,7 +41,6 @@ class ReadingStreakCard extends ConsumerWidget {
         periodCutoff: periodCutoff,
       );
     } else {
-      // Progress mode: sum percentage progress per day
       return ReadingActivityData.fromProgress(
         books,
         periodCutoff: periodCutoff,
@@ -68,8 +67,6 @@ class ReadingStreakCard extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _title(),
-          _streakDisplay(data.currentStreak, data.longestStreak),
-          const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: CalendarHeatmap(
@@ -91,35 +88,6 @@ class ReadingStreakCard extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 18, bottom: 12),
       child: Text('Reading Activity', style: TextStyles.h3),
-    );
-  }
-
-  Widget _streakDisplay(int current, int longest) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _streakTile('🔥', 'Current', current),
-        _streakTile('🏆', 'Longest', longest),
-      ],
-    );
-  }
-
-  Widget _streakTile(String emoji, String label, int days) {
-    return Column(
-      children: [
-        Text(emoji, style: const TextStyle(fontSize: 24)),
-        Text(
-          '$days days',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          '$label Streak',
-          style: const TextStyle(
-            fontSize: 12,
-            color: CupertinoColors.systemGrey,
-          ),
-        ),
-      ],
     );
   }
 

@@ -1,7 +1,6 @@
 import 'dart:math' show max;
 
 import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
@@ -121,6 +120,22 @@ class RollingAverageChart extends StatelessWidget {
             bottom: BorderSide(color: CupertinoColors.black, width: 2),
           ),
         ),
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipItems: (spots) => spots.map((spot) {
+              final date = DateTime.fromMillisecondsSinceEpoch(spot.x.toInt());
+              final dateStr = DateFormat('MMM d, yyyy').format(date);
+              return LineTooltipItem(
+                '$dateStr\n${spot.y.round()}',
+                const TextStyle(
+                  color: CupertinoColors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              );
+            }).toList(),
+          ),
+        ),
       ),
     );
   }
@@ -237,4 +252,3 @@ class _RollingAverageData {
     }
   }
 }
-

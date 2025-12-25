@@ -1,8 +1,9 @@
 import 'package:book_track/data_model.dart';
+import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/async_stats_card.dart';
+import 'package:book_track/ui/pages/stats/summary_stats.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Divider;
 
 class SummaryStatsCard extends StatelessWidget {
   const SummaryStatsCard({
@@ -16,15 +17,15 @@ class SummaryStatsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AsyncStatsCard<_Stats>(
+    return AsyncStatsCard<SummaryStats>(
       cacheKey: '${books.length}-${periodCutoff?.millisecondsSinceEpoch ?? 0}',
-      compute: () => _calculateStats(books, periodCutoff),
+      compute: () => SummaryStats.calculate(books, periodCutoff),
       loadingHeight: 180,
       builder: (stats) => _buildCard(stats),
     );
   }
 
-  Widget _buildCard(_Stats stats) {
+  Widget _buildCard(SummaryStats stats) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -44,11 +45,8 @@ class SummaryStatsCard extends StatelessWidget {
         children: [
           _title(),
           _statusRow(stats),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Divider(height: 1),
-          ),
           _totalsRow(stats),
+          _streakRow(stats),
           const SizedBox(height: 16),
         ],
       ),
@@ -62,22 +60,23 @@ class SummaryStatsCard extends StatelessWidget {
     );
   }
 
-  Widget _statusRow(_Stats stats) {
+  Widget _statusRow(SummaryStats stats) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _statTile(stats.finished.toString(), 'Finished'),
-          _statTile(stats.reading.toString(), 'Reading'),
-          _statTile(stats.abandoned.toString(), 'Abandoned'),
-          _statTile(stats.completionRateDisplay, 'Complete'),
+          for (final status in ReadingStatus.values)
+            _statTile(
+              stats.statusCounts[status].toString(),
+              status.nameAsCapitalizedWords,
+            ),
         ],
       ),
     );
   }
 
-  Widget _totalsRow(_Stats stats) {
+  Widget _totalsRow(SummaryStats stats) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -87,6 +86,46 @@ class SummaryStatsCard extends StatelessWidget {
           _statTile('${stats.totalHours}h', 'listened'),
         ],
       ),
+    );
+  }
+
+  Widget _streakRow(SummaryStats stats) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _streakTile('Current Streak', stats.currentStreak, null),
+          _streakTile('Longest Streak', stats.longestStreak,
+              stats.longestStreakDateRange),
+        ],
+      ),
+    );
+  }
+
+  Widget _streakTile(String label, int days, String? dateRange) {
+    return Column(
+      children: [
+        Text(
+          '$days days',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: CupertinoColors.systemGrey,
+          ),
+        ),
+        if (dateRange != null && dateRange.isNotEmpty)
+          Text(
+            dateRange,
+            style: const TextStyle(
+              fontSize: 10,
+              color: CupertinoColors.systemGrey,
+            ),
+          ),
+      ],
     );
   }
 
@@ -113,128 +152,4 @@ class SummaryStatsCard extends StatelessWidget {
     }
     return n.toString();
   }
-
-  static _Stats _calculateStats(
-      List<LibraryBook> books, DateTime? periodCutoff) {
-    // Filter to books with activity in the period
-    final booksInPeriod = books
-        .where((b) =>
-            periodCutoff == null ||
-            b.progressHistory.any((e) => e.end.isAfter(periodCutoff)))
-        .toList();
-
-    final finished = booksInPeriod
-        .where((b) => b.readingStatus == ReadingStatus.finished)
-        .length;
-    final reading = booksInPeriod
-        .where((b) => b.readingStatus == ReadingStatus.reading)
-        .length;
-    final abandoned = booksInPeriod
-        .where((b) => b.readingStatus == ReadingStatus.abandoned)
-        .length;
-
-    final completionRate = finished + abandoned > 0
-        ? (finished / (finished + abandoned) * 100).round()
-        : null;
-
-    // Calculate pages/minutes read in the period based on event format
-    int totalPages = 0;
-    int totalMinutes = 0;
-
-    for (final book in booksInPeriod) {
-      if (book.progressHistory.isEmpty || book.formats.isEmpty) continue;
-
-      final eventsInPeriod = periodCutoff == null
-          ? book.progressHistory
-          : book.progressHistory
-              .where((e) => e.end.isAfter(periodCutoff))
-              .toList();
-      if (eventsInPeriod.isEmpty) continue;
-
-      // Sort events chronologically
-      final sorted = book.progressHistory.toList()
-        ..sort((a, b) => a.end.compareTo(b.end));
-
-      // Calculate deltas for each event in the period
-      for (int i = 0; i < sorted.length; i++) {
-        final event = sorted[i];
-        if (periodCutoff != null && event.end.isBefore(periodCutoff)) continue;
-
-        final format = book.formatById(event.formatId);
-        if (format == null || !format.hasLength) continue;
-
-        // Get previous event's progress
-        final prevEvent = i > 0 ? sorted[i - 1] : null;
-        int prevProgress = 0;
-        if (prevEvent != null) {
-          final prevFormat = book.formatById(prevEvent.formatId);
-          if (prevFormat != null && prevFormat.hasLength) {
-            // Convert to same units if formats differ
-            if (prevFormat.supaId == format.supaId) {
-              prevProgress = prevEvent.progress;
-            } else {
-              // Convert via percentage
-              final prevPercent =
-                  prevFormat.progressToPercent(prevEvent.progress);
-              if (prevPercent != null) {
-                prevProgress = format.percentToProgress(prevPercent);
-              }
-            }
-          }
-        }
-
-        // Handle case where previous event was before period cutoff
-        if (periodCutoff != null &&
-            prevEvent != null &&
-            prevEvent.end.isBefore(periodCutoff)) {
-          // Only count progress from cutoff point onwards
-          final cutoffPercent = book.progressPercentAt(prevEvent);
-          if (cutoffPercent != null) {
-            prevProgress = format.percentToProgress(cutoffPercent);
-          }
-        }
-
-        final delta = event.progress - prevProgress;
-        if (delta > 0) {
-          if (format.isAudiobook) {
-            totalMinutes += delta;
-          } else {
-            totalPages += delta;
-          }
-        }
-      }
-    }
-
-    return _Stats(
-      finished: finished,
-      reading: reading,
-      abandoned: abandoned,
-      completionRate: completionRate,
-      totalPages: totalPages,
-      totalMinutes: totalMinutes,
-    );
-  }
-}
-
-class _Stats {
-  const _Stats({
-    required this.finished,
-    required this.reading,
-    required this.abandoned,
-    required this.completionRate,
-    required this.totalPages,
-    required this.totalMinutes,
-  });
-
-  final int finished;
-  final int reading;
-  final int abandoned;
-  final int? completionRate;
-  final int totalPages;
-  final int totalMinutes;
-
-  String get completionRateDisplay =>
-      completionRate != null ? '$completionRate%' : '--';
-
-  int get totalHours => totalMinutes ~/ 60;
 }

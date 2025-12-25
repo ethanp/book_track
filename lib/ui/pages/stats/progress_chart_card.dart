@@ -4,9 +4,7 @@ import 'package:book_track/ui/pages/stats/progress_per_month_chart.dart';
 import 'package:book_track/ui/pages/stats/rolling_average_chart.dart';
 import 'package:flutter/cupertino.dart';
 
-enum ProgressViewMode { monthly, rolling }
-
-class ProgressChartCard extends StatefulWidget {
+class ProgressChartCard extends StatelessWidget {
   const ProgressChartCard({
     required this.books,
     required this.periodCutoff,
@@ -15,13 +13,6 @@ class ProgressChartCard extends StatefulWidget {
 
   final List<LibraryBook> books;
   final DateTime? periodCutoff;
-
-  @override
-  State<ProgressChartCard> createState() => _ProgressChartCardState();
-}
-
-class _ProgressChartCardState extends State<ProgressChartCard> {
-  ProgressViewMode mode = ProgressViewMode.rolling;
 
   @override
   Widget build(BuildContext context) {
@@ -46,26 +37,43 @@ class _ProgressChartCardState extends State<ProgressChartCard> {
             padding: const EdgeInsets.only(top: 18, bottom: 12),
             child: Text('Reading Progress', style: TextStyles.h3),
           ),
-          _modeToggle(),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 200,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 18, right: 35, bottom: 14),
-              child: mode == ProgressViewMode.monthly
-                  ? ProgressPerMonthChart(
-                      books: widget.books,
-                      periodCutoff: widget.periodCutoff,
-                    )
-                  : RollingAverageChart(
-                      books: widget.books,
-                      periodCutoff: widget.periodCutoff,
-                    ),
-            ),
-          ),
+          _chartSection(
+              'Momentum',
+              RollingAverageChart(
+                books: books,
+                periodCutoff: periodCutoff,
+              )),
+          _chartSection(
+              'Monthly',
+              ProgressPerMonthChart(
+                books: books,
+                periodCutoff: periodCutoff,
+              )),
           _trendRow(),
         ],
       ),
+    );
+  }
+
+  Widget _chartSection(String label, Widget chart) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: CupertinoColors.systemGrey,
+          ),
+        ),
+        const SizedBox(height: 4),
+        SizedBox(
+          height: 180,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 18, right: 35, bottom: 14),
+            child: chart,
+          ),
+        ),
+      ],
     );
   }
 
@@ -78,17 +86,13 @@ class _ProgressChartCardState extends State<ProgressChartCard> {
         children: [
           Text(trend.emoji, style: const TextStyle(fontSize: 20)),
           const SizedBox(width: 8),
-          Text(
-            trend.description,
-            style: const TextStyle(fontSize: 14),
-          ),
+          Text(trend.description, style: const TextStyle(fontSize: 14)),
         ],
       ),
     );
   }
 
   _TrendData _calculateTrend() {
-    // Compare reading volume: current calendar month vs previous calendar month
     final now = DateTime.now();
     final currentMonthStart = DateTime(now.year, now.month, 1);
     final previousMonthStart = DateTime(now.year, now.month - 1, 1);
@@ -98,10 +102,9 @@ class _ProgressChartCardState extends State<ProgressChartCard> {
     double currentMonthVolume = 0;
     double previousMonthVolume = 0;
 
-    for (final book in widget.books) {
+    for (final book in books) {
       if (book.formats.isEmpty) continue;
       final diffs = book.pagesDiffs();
-      // Convert audiobook minutes to equivalent pages (5 mins = 1 page)
       final conversionFactor = book.isAudiobook ? 1.0 / 5.0 : 1.0;
 
       for (final diff in diffs) {
@@ -115,22 +118,17 @@ class _ProgressChartCardState extends State<ProgressChartCard> {
       }
     }
 
-    // Estimate full month based on days elapsed
     final estimatedCurrentMonth = daysElapsed > 0
         ? currentMonthVolume / daysElapsed * daysInCurrentMonth
         : 0.0;
 
     if (previousMonthVolume == 0 && currentMonthVolume > 0) {
       return const _TrendData(
-        emoji: '📈',
-        description: 'Started reading this month!',
-      );
+          emoji: '📈', description: 'Started reading this month!');
     }
     if (previousMonthVolume == 0 && currentMonthVolume == 0) {
       return const _TrendData(
-        emoji: '➡️',
-        description: 'No recent reading activity',
-      );
+          emoji: '➡️', description: 'No recent reading activity');
     }
 
     final trend = previousMonthVolume > 0
@@ -139,50 +137,22 @@ class _ProgressChartCardState extends State<ProgressChartCard> {
 
     if ((trend - 1.0).abs() < 0.05) {
       return const _TrendData(
-        emoji: '➡️',
-        description: 'On pace with last month',
-      );
+          emoji: '➡️', description: 'On pace with last month');
     }
 
     final percent = ((trend - 1) * 100).abs().round();
-    if (trend > 1) {
-      return _TrendData(
-        emoji: '📈',
-        description: 'On pace for $percent% more than last month',
-      );
-    } else {
-      return _TrendData(
-        emoji: '📉',
-        description: 'On pace for $percent% less than last month',
-      );
-    }
-  }
-
-  Widget _modeToggle() {
-    return CupertinoSlidingSegmentedControl<ProgressViewMode>(
-      groupValue: mode,
-      children: const {
-        ProgressViewMode.monthly: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Text('Monthly', style: TextStyle(fontSize: 13)),
-        ),
-        ProgressViewMode.rolling: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Text('Momentum', style: TextStyle(fontSize: 13)),
-        ),
-      },
-      onValueChanged: (value) {
-        if (value != null) setState(() => mode = value);
-      },
-    );
+    return trend > 1
+        ? _TrendData(
+            emoji: '📈',
+            description: 'On pace for $percent% more than last month')
+        : _TrendData(
+            emoji: '📉',
+            description: 'On pace for $percent% less than last month');
   }
 }
 
 class _TrendData {
-  const _TrendData({
-    required this.emoji,
-    required this.description,
-  });
+  const _TrendData({required this.emoji, required this.description});
 
   final String emoji;
   final String description;

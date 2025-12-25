@@ -4,6 +4,7 @@ import 'package:book_track/extensions.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_format_service.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:book_track/ui/common/length_input.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -232,28 +233,21 @@ class _AddFormatSheet extends StatefulWidget {
 
 class _AddFormatSheetState extends State<_AddFormatSheet> {
   BookFormat? _selectedFormat;
-  final _lengthController = TextEditingController();
-  final _hoursController = TextEditingController();
-  final _minutesController = TextEditingController();
+  LengthInputController? _lengthController;
 
   bool get _isAudiobook => _selectedFormat == BookFormat.audiobook;
 
-  int? _parseLength() {
-    if (_isAudiobook) {
-      final hours = int.tryParse(_hoursController.text) ?? 0;
-      final minutes = int.tryParse(_minutesController.text) ?? 0;
-      final total = hours * 60 + minutes;
-      return total > 0 ? total : null;
-    } else {
-      return int.tryParse(_lengthController.text);
-    }
+  void _onFormatSelected(BookFormat format) {
+    _lengthController?.dispose();
+    _lengthController = LengthInputController.fromAudiobook(
+      isAudiobook: format == BookFormat.audiobook,
+    );
+    setState(() => _selectedFormat = format);
   }
 
   @override
   void dispose() {
-    _lengthController.dispose();
-    _hoursController.dispose();
-    _minutesController.dispose();
+    _lengthController?.dispose();
     super.dispose();
   }
 
@@ -277,9 +271,7 @@ class _AddFormatSheetState extends State<_AddFormatSheet> {
                     : (isDisabled
                         ? CupertinoColors.systemGrey4
                         : CupertinoColors.systemGrey5),
-                onPressed: isDisabled
-                    ? null
-                    : () => setState(() => _selectedFormat = format),
+                onPressed: isDisabled ? null : () => _onFormatSelected(format),
                 child: Text(
                   format.name,
                   style: TextStyle(
@@ -294,76 +286,36 @@ class _AddFormatSheetState extends State<_AddFormatSheet> {
               );
             }),
           ),
-          if (_selectedFormat != null) ...[
+          if (_lengthController != null) ...[
             const SizedBox(height: 16),
-            _isAudiobook ? _audiobookLengthInput() : _pageLengthInput(),
+            LengthInput(
+              controller: _lengthController!,
+              onChanged: () => setState(() {}),
+            ),
           ],
         ],
       ),
       actions: [
-        CupertinoActionSheetAction(
-          onPressed: () {
-            if (_selectedFormat == null) return;
-            final length = _parseLength();
-            if (length == null || length <= 0) return;
-            Navigator.pop(context, (_selectedFormat!, length));
-          },
-          child: const Text('Add'),
-        ),
+        if (_isAudiobook && (_lengthController?.hasEmptyField ?? false))
+          CupertinoActionSheetAction(
+            onPressed: () => _lengthController?.firstEmptyField?.requestFocus(),
+            child: const Text('Fill'),
+          )
+        else
+          CupertinoActionSheetAction(
+            onPressed: () {
+              if (_selectedFormat == null) return;
+              final length = _lengthController?.value;
+              if (length == null || length <= 0) return;
+              Navigator.pop(context, (_selectedFormat!, length));
+            },
+            child: const Text('Add'),
+          ),
       ],
       cancelButton: CupertinoActionSheetAction(
         onPressed: () => Navigator.pop(context),
         child: const Text('Cancel'),
       ),
-    );
-  }
-
-  Widget _pageLengthInput() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 80,
-          child: CupertinoTextField(
-            controller: _lengthController,
-            placeholder: 'Pages',
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-          ),
-        ),
-        const SizedBox(width: 8),
-        const Text('pages'),
-      ],
-    );
-  }
-
-  Widget _audiobookLengthInput() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 50,
-          child: CupertinoTextField(
-            controller: _hoursController,
-            placeholder: 'hrs',
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-          ),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8),
-          child: Text(':'),
-        ),
-        SizedBox(
-          width: 50,
-          child: CupertinoTextField(
-            controller: _minutesController,
-            placeholder: 'min',
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ],
     );
   }
 }
@@ -378,43 +330,20 @@ class _EditLengthSheet extends StatefulWidget {
 }
 
 class _EditLengthSheetState extends State<_EditLengthSheet> {
-  late final TextEditingController _lengthController;
-  late final TextEditingController _hoursController;
-  late final TextEditingController _minutesController;
-
-  bool get _isAudiobook => widget.format.isAudiobook;
+  late final LengthInputController _controller;
 
   @override
   void initState() {
     super.initState();
-    final length = widget.format.length ?? 0;
-    _lengthController = TextEditingController(
-      text: _isAudiobook ? '' : (length > 0 ? length.toString() : ''),
+    _controller = LengthInputController.fromAudiobook(
+      isAudiobook: widget.format.isAudiobook,
+      initialValue: widget.format.length,
     );
-    _hoursController = TextEditingController(
-      text: _isAudiobook && length > 0 ? length.hours.toString() : '',
-    );
-    _minutesController = TextEditingController(
-      text: _isAudiobook && length > 0 ? length.minutes.toString() : '',
-    );
-  }
-
-  int? _parseLength() {
-    if (_isAudiobook) {
-      final hours = int.tryParse(_hoursController.text) ?? 0;
-      final minutes = int.tryParse(_minutesController.text) ?? 0;
-      final total = hours * 60 + minutes;
-      return total > 0 ? total : null;
-    } else {
-      return int.tryParse(_lengthController.text);
-    }
   }
 
   @override
   void dispose() {
-    _lengthController.dispose();
-    _hoursController.dispose();
-    _minutesController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -424,12 +353,12 @@ class _EditLengthSheetState extends State<_EditLengthSheet> {
       title: Text('Edit ${widget.format.format.name} Length'),
       message: Padding(
         padding: const EdgeInsets.only(top: 16),
-        child: _isAudiobook ? _audiobookInput() : _pageInput(),
+        child: LengthInput(controller: _controller),
       ),
       actions: [
         CupertinoActionSheetAction(
           onPressed: () {
-            final length = _parseLength();
+            final length = _controller.value;
             if (length != null && length > 0) {
               Navigator.pop(context, length);
             }
@@ -441,55 +370,6 @@ class _EditLengthSheetState extends State<_EditLengthSheet> {
         onPressed: () => Navigator.pop(context),
         child: const Text('Cancel'),
       ),
-    );
-  }
-
-  Widget _pageInput() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 80,
-          child: CupertinoTextField(
-            controller: _lengthController,
-            placeholder: 'Pages',
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-          ),
-        ),
-        const SizedBox(width: 8),
-        const Text('pages'),
-      ],
-    );
-  }
-
-  Widget _audiobookInput() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: 50,
-          child: CupertinoTextField(
-            controller: _hoursController,
-            placeholder: 'hrs',
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-          ),
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8),
-          child: Text(':'),
-        ),
-        SizedBox(
-          width: 50,
-          child: CupertinoTextField(
-            controller: _minutesController,
-            placeholder: 'min',
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ],
     );
   }
 }
@@ -565,4 +445,3 @@ class _ReassignEventsSheetState extends State<_ReassignEventsSheet> {
     );
   }
 }
-
