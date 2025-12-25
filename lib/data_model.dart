@@ -9,16 +9,15 @@ class LibraryBook {
     this.supaId,
     this.book,
     List<ProgressEvent> progressHistory,
-    List<StatusEvent> statusHistory,
     this.formats,
     this.archived,
-  )   : progressHistory = List.unmodifiable(progressHistory),
-        statusHistory = List.unmodifiable(statusHistory);
+    this.abandonedAt,
+  ) : progressHistory = List.unmodifiable(progressHistory);
 
   final int supaId;
   final Book book;
   final List<ProgressEvent> progressHistory;
-  final List<StatusEvent> statusHistory;
+  final DateTime? abandonedAt;
 
   /// All formats (editions) of this book the user owns.
   /// Sorted alphabetically by format name.
@@ -71,7 +70,6 @@ class LibraryBook {
 
   /// Overall book progress (max % across all events with known lengths).
   double? get overallProgressPercent {
-    if (readingStatus == ReadingStatus.finished) return 100;
     double? maxPercent;
     for (final event in progressHistory) {
       final percent = progressPercentAt(event);
@@ -82,10 +80,7 @@ class LibraryBook {
     return maxPercent;
   }
 
-  int get progressPercentage {
-    if (readingStatus == ReadingStatus.finished) return 100;
-    return (overallProgressPercent ?? 0).floor();
-  }
+  int get progressPercentage => (overallProgressPercent ?? 0).floor();
 
   /// Get last event's percentage (for "continue from" calculation).
   double? get lastProgressPercent {
@@ -101,8 +96,13 @@ class LibraryBook {
     return targetFormat.percentToProgress(percent);
   }
 
-  ReadingStatus get readingStatus =>
-      statusHistory.lastOrNull?.status ?? ReadingStatus.reading;
+  /// Derives reading status from progress and abandonedAt field.
+  ReadingStatus get readingStatus {
+    if (abandonedAt != null) return ReadingStatus.abandoned;
+    final percent = overallProgressPercent;
+    if (percent != null && percent >= 100) return ReadingStatus.finished;
+    return ReadingStatus.reading;
+  }
 
   /// Get progress events for a specific format.
   List<ProgressEvent> progressForFormat(LibraryBookFormat format) =>
@@ -230,36 +230,7 @@ class LibraryBook {
   }
 }
 
-abstract class ReadingEvent {
-  const ReadingEvent();
-
-  DateTime get dateTime;
-
-  int get dateTimeMillis => dateTime.millisecondsSinceEpoch;
-
-  int get supaId;
-}
-
-class StatusEvent extends ReadingEvent {
-  const StatusEvent({
-    required this.supaId,
-    required this.time,
-    required this.status,
-  });
-
-  @override
-  final int supaId;
-  final DateTime time;
-  final ReadingStatus status;
-
-  @override
-  DateTime get dateTime => time;
-
-  @override
-  String toString() => '{time: $time, status: $status}';
-}
-
-class ProgressEvent extends ReadingEvent {
+class ProgressEvent {
   const ProgressEvent({
     required this.supaId,
     required this.formatId,
@@ -269,7 +240,6 @@ class ProgressEvent extends ReadingEvent {
     this.start,
   });
 
-  @override
   final int supaId;
 
   /// FK to LibraryBookFormat - identifies which format this progress was logged in.
@@ -282,8 +252,9 @@ class ProgressEvent extends ReadingEvent {
   /// How the progress value should be interpreted (pages, minutes, or percent).
   final ProgressEventFormat format;
 
-  @override
   DateTime get dateTime => end;
+
+  int get dateTimeMillis => dateTime.millisecondsSinceEpoch;
 
   @override
   String toString() =>

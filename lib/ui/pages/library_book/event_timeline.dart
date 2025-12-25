@@ -3,7 +3,6 @@ import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_progress_service.dart';
-import 'package:book_track/services/supabase_status_service.dart';
 import 'package:book_track/ui/common/confirmation_dialog.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:flutter/material.dart';
@@ -19,31 +18,18 @@ class EventTimeline extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(18),
       child: Column(
-        children: eventsByTimeAscending()
+        children: libraryBook.progressHistory
             .mapL((e) => _EventTimelineItem(libraryBook, e)),
       ),
     );
   }
-
-  List<ReadingEvent> eventsByTimeAscending() {
-    final List<ReadingEvent> progresses =
-        // not sure why List.from is needed here but not for the status history.
-        List.from(libraryBook.progressHistory);
-    final List<ReadingEvent> statuses = libraryBook.statusHistory;
-    return (progresses + statuses)..sort(byTimeAscending);
-  }
-
-  int byTimeAscending(ReadingEvent a, ReadingEvent b) =>
-      a.dateTimeMillis - b.dateTimeMillis;
 }
 
 class _EventTimelineItem extends ConsumerWidget {
-  const _EventTimelineItem(this.libraryBook, this.readingEvent);
+  const _EventTimelineItem(this.libraryBook, this.progressEvent);
 
   final LibraryBook libraryBook;
-  final ReadingEvent readingEvent;
-
-  static final SimpleLogger log = SimpleLogger(prefix: 'EventTimelineItem');
+  final ProgressEvent progressEvent;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -68,21 +54,13 @@ class _EventTimelineItem extends ConsumerWidget {
   }
 
   Widget eventInfo() {
+    final progressString = progressEvent.stringWSuffix;
+    final percentString = libraryBook.intPercentProgressAt(progressEvent);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         dateTimeString(),
-        switch (readingEvent) {
-          StatusEvent statusEvent => Text('Status: ${statusEvent.status.name}'),
-          ProgressEvent progressEvent => () {
-              final progressString = progressEvent.stringWSuffix;
-              final percentString =
-                  libraryBook.intPercentProgressAt(progressEvent);
-              return Text('Progress: $progressString ($percentString%)');
-            }(),
-          _ => throw UnsupportedError(
-              'Unknown reading event type: ${readingEvent.runtimeType}')
-        },
+        Text('Progress: $progressString ($percentString%)'),
       ],
     );
   }
@@ -93,17 +71,8 @@ class _EventTimelineItem extends ConsumerWidget {
   Widget updateButton(WidgetRef ref) {
     return IconButton(
       icon: Icon(Icons.edit_note, size: 28),
-      onPressed: () async => switch (readingEvent) {
-        ProgressEvent progressEvent => await UpdateProgressDialogPage.update(
-            ref, libraryBook, progressEvent),
-        StatusEvent _ =>
-          // TODO(feature) Show a modal that allows updating [StatusEvent]s.
-          //  Probably want to allow updating both the `status` and `time`.
-          //  Requires implementing something like [UpdateProgressDialogPage],
-          //  but it would be called `UpdateStatusDialogPage` instead.
-          'a',
-        _ => log('unknown event ${readingEvent.runtimeType} $readingEvent'),
-      },
+      onPressed: () =>
+          UpdateProgressDialogPage.update(ref, libraryBook, progressEvent),
     );
   }
 
@@ -116,11 +85,7 @@ class _EventTimelineItem extends ConsumerWidget {
         title: 'delete event',
         actionName: 'delete',
         onConfirm: () async {
-          void _ = switch (readingEvent) {
-            ProgressEvent ev => await SupabaseProgressService.delete(ev),
-            StatusEvent ev => await SupabaseStatusService.delete(ev),
-            _ => log('unknown event ${readingEvent.runtimeType} $readingEvent'),
-          };
+          await SupabaseProgressService.delete(progressEvent);
           ref.invalidate(userLibraryProvider);
         },
       ),
@@ -128,7 +93,7 @@ class _EventTimelineItem extends ConsumerWidget {
   }
 
   Widget dateTimeString() =>
-      Text(TimeHelpers.dateAndTime(readingEvent.dateTime));
+      Text(TimeHelpers.dateAndTime(progressEvent.dateTime));
 
   Widget pipe({required bool onTop}) {
     return Container(

@@ -12,31 +12,34 @@ class ReadingProgressIndicator extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(userLibraryProvider);
     return SizedBox(
-      width: 64,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            '${book.progressPercentage}%',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey[900],
+      width: 80,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${book.progressPercentage}%',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+                color: Colors.grey[900],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2),
-            child: progressBarColors(),
-          ),
-          Text(
-            book.currentBookProgressString ?? '',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey[900],
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: SizedBox(width: 80, child: progressBarColors()),
             ),
-          ),
-        ],
+            Text(
+              book.currentBookProgressString ?? '',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w400,
+                color: Colors.grey[900],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

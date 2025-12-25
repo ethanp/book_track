@@ -54,8 +54,7 @@ class _LibraryBookPageState extends ConsumerState<LibraryBookPage> {
   }
 
   CupertinoNavigationBar navBar() {
-    final currentStatus =
-        _libraryBook.statusHistory.lastOrNull?.status.name ?? 'no status';
+    final currentStatus = _libraryBook.readingStatus.name;
     return CupertinoNavigationBar(
       middle: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

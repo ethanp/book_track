@@ -10,7 +10,6 @@ import 'supabase_book_service.dart';
 import 'supabase_format_service.dart';
 import 'supabase_progress_service.dart';
 import 'supabase_service.dart';
-import 'supabase_status_service.dart';
 
 class SupabaseLibraryService {
   static final _libraryClient = supabase.from('library');
@@ -22,15 +21,12 @@ class SupabaseLibraryService {
 
     final allProgressEvents =
         await SupabaseProgressService.historyForLibraryBooks(libraryBookIds);
-    final allStatusEvents =
-        await SupabaseStatusService.historyForLibraryBooks(libraryBookIds);
     final allFormats =
         await SupabaseFormatService.formatsForLibraryBooks(libraryBookIds);
 
     final libraryBooks = library.map(
       (supaBook) => supaBook.toLibraryBook(
         allProgressEvents[supaBook.supaId] ?? [],
-        allStatusEvents[supaBook.supaId] ?? [],
         allFormats[supaBook.supaId] ?? [],
       ),
     );
@@ -54,10 +50,7 @@ class SupabaseLibraryService {
       length: length,
     );
 
-    // Add initial status
-    await SupabaseStatusService.add(libraryBookId, ReadingStatus.reading);
-
-    // Add initial progress event (0%)
+    // Add initial progress event (0%) - this marks the book as "reading"
     await SupabaseProgressService.addProgressEvent(
       libraryBookId: libraryBookId,
       formatId: format.supaId,
@@ -78,6 +71,16 @@ class SupabaseLibraryService {
       .update({_SupaLibrary.archivedCol: !book.archived})
       .eq(_SupaLibrary.supaIdCol, book.supaId)
       .withRetry(log);
+
+  /// Set or clear the abandoned status for a book.
+  static Future<void> setAbandoned(LibraryBook book,
+      {required bool abandoned}) {
+    final value = abandoned ? DateTime.now().toIso8601String() : null;
+    return _libraryClient
+        .update({_SupaLibrary.abandonedAtCol: value})
+        .eq(_SupaLibrary.supaIdCol, book.supaId)
+        .withRetry(log);
+  }
 
   static Future<List<_SupaLibrary>> _forLoggedInUser() async {
     final PostgrestList rawData = await _libraryClient
@@ -118,16 +121,15 @@ class SupabaseLibraryService {
 class _SupaLibrary {
   Future<LibraryBook> toLibraryBook(
     List<ProgressEvent> progressHistory,
-    List<StatusEvent> statusHistory,
     List<LibraryBookFormat> formats,
   ) async =>
       LibraryBook(
         supaId,
         await SupabaseBookService.getBookById(bookId),
         progressHistory,
-        statusHistory,
         formats,
         archived,
+        abandonedAt,
       );
 
   int get supaId => rawData[supaIdCol];
@@ -144,6 +146,10 @@ class _SupaLibrary {
 
   bool get archived => rawData[archivedCol] ?? false;
   static final String archivedCol = 'archived';
+
+  DateTime? get abandonedAt =>
+      (rawData[abandonedAtCol] as String?).map(DateTime.parse);
+  static final String abandonedAtCol = 'abandoned_at';
 
   const _SupaLibrary(this.rawData);
 

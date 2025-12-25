@@ -4,7 +4,6 @@ import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_library_service.dart';
 import 'package:book_track/services/supabase_progress_service.dart';
-import 'package:book_track/services/supabase_status_service.dart';
 import 'package:book_track/ui/common/confirmation_dialog.dart';
 import 'package:book_track/ui/pages/session_timer/session_timer_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
@@ -75,8 +74,7 @@ class BookDetailButtons extends ConsumerWidget {
       subtitle: 'Mark book as finished',
       icon: Icons.check_box_outlined,
       onPressed: () async {
-        await SupabaseStatusService.add(book.supaId, ReadingStatus.finished);
-        // Use the last used format or primary format for completion
+        // Add 100% progress event - this marks the book as "finished"
         final format = book.lastUsedFormat ?? book.primaryFormat;
         if (format != null) {
           await SupabaseProgressService.addProgressEvent(
@@ -143,10 +141,8 @@ class BookDetailButtons extends ConsumerWidget {
           ? Icons.play_circle_outline
           : Icons.remove_circle_outline_outlined,
       onPressed: () async {
-        await SupabaseStatusService.add(
-          book.supaId,
-          abandoned ? ReadingStatus.reading : ReadingStatus.abandoned,
-        );
+        // Set or clear abandoned_at timestamp
+        await SupabaseLibraryService.setAbandoned(book, abandoned: !abandoned);
         ref.invalidate(userLibraryProvider);
       },
       backgroundColor: abandoned
