@@ -6,96 +6,78 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
-class ProgressPerMonthChart extends ConsumerWidget {
+class ProgressPerMonthChart extends StatelessWidget {
   ProgressPerMonthChart({
     required this.books,
     this.periodCutoff,
     super.key,
-  })  : deltaByMonth = diffPerMonth(
+  })  : totalByMonth = _progressByMonth(
           books,
+          periodCutoff,
+          'Total',
           CupertinoColors.systemGreen,
-          (book) => book.pagesDiffs(percentage: true),
-          'Percent',
-          periodCutoff,
         ),
-        pagesByMonth = diffPerMonth(
-          books.where((b) => !b.isAudiobook).toList(),
-          CupertinoColors.systemBlue,
-          (book) => book.pagesDiffs(),
-          'Pages',
-          periodCutoff,
-        ),
-        // Convert audiobook minutes to equivalent pages (5 mins = 1 page)
-        minutesByMonth = diffPerMonth(
+        audiobookByMonth = _progressByMonth(
           books.where((b) => b.isAudiobook).toList(),
-          CupertinoColors.systemRed,
-          (book) => book.pagesDiffs().map(
-                (e) => MapEntry(e.key, e.value / 5.0),
-              ),
-          'Audio (pgs)',
           periodCutoff,
+          'Audio',
+          CupertinoColors.systemOrange,
+        ),
+        visualByMonth = _progressByMonth(
+          books.where((b) => !b.isAudiobook).toList(),
+          periodCutoff,
+          'Visual',
+          CupertinoColors.systemBlue,
         );
 
   final List<LibraryBook> books;
-
-  /// If provided, only show data after this date.
   final DateTime? periodCutoff;
 
-  final DiffPerMonth deltaByMonth;
-  final DiffPerMonth pagesByMonth;
-  final DiffPerMonth minutesByMonth;
+  final ProgressLine totalByMonth;
+  final ProgressLine audiobookByMonth;
+  final ProgressLine visualByMonth;
 
-  List<DiffPerMonth> get lineDatas =>
-      [deltaByMonth, pagesByMonth, minutesByMonth];
+  List<ProgressLine> get lines =>
+      [totalByMonth, audiobookByMonth, visualByMonth];
 
   static final yyyyMM = DateFormat('yyyy-MM');
 
-  static DiffPerMonth diffPerMonth(
+  static ProgressLine _progressByMonth(
     List<LibraryBook> books,
-    CupertinoDynamicColor color,
-    Iterable<MapEntry<DateTime, double>> Function(LibraryBook) getDiffs,
-    String name,
     DateTime? periodCutoff,
+    String name,
+    Color color,
   ) {
-    var diffs = books.expand(getDiffs);
-    if (periodCutoff != null) {
-      diffs = diffs.where((entry) => entry.key.isAfter(periodCutoff));
-    }
-    return DiffPerMonth(
-      color: color,
-      valuePerMonth:
-          diffs.fold(<String, double>{}, _sumByMonth).entries.toList()
-            ..sort((a, b) => a.key.compareTo(b.key)),
-      name: name,
-    );
-  }
+    final byMonth = <String, double>{};
 
-  static Map<String, double> _sumByMonth(
-    Map<String, double> acc,
-    MapEntry<DateTime, double> curr,
-  ) {
-    final key = yyyyMM.format(curr.key);
-    acc[key] = (acc[key] ?? 0.0) + curr.value;
-    return acc;
+    for (final book in books) {
+      for (final diff in book.progressDiffs) {
+        if (periodCutoff != null && diff.key.isBefore(periodCutoff)) continue;
+        final key = yyyyMM.format(diff.key);
+        if (diff.value > 0) {
+          byMonth[key] = (byMonth[key] ?? 0) + diff.value;
+        }
+      }
+    }
+
+    return ProgressLine(
+      data: byMonth.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
+      name: name,
+      color: color,
+    );
   }
 
   static const noAxisTitles =
       AxisTitles(sideTitles: SideTitles(showTitles: false));
-  static final double horizontalInterval = 100;
+  static const double horizontalInterval = 100;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Check if there's any data to show
-    final hasData = lineDatas.any((d) => d.valuePerMonth.isNotEmpty);
-    if (!hasData) {
-      return const Center(
-        child: Text('No reading data in this period'),
-      );
+  Widget build(BuildContext context) {
+    if (totalByMonth.data.isEmpty) {
+      return const Center(child: Text('No reading data in this period'));
     }
-
     return Stack(children: [
       lineChart(),
       chartLegend(),
@@ -103,70 +85,94 @@ class ProgressPerMonthChart extends ConsumerWidget {
   }
 
   Widget lineChart() {
-    final List<DateTime> eventTimes = lineDatas
-        .map((e) => e.valuePerMonth)
-        .flatten
-        .mapL((e) => yyyyMM.parse(e.key));
+    final eventTimes =
+        lines.expand((l) => l.data).mapL((e) => yyyyMM.parse(e.key));
     final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
+    final maxY = lines.expand((l) => l.data).map((e) => e.value).max;
     const borderSide = BorderSide(color: CupertinoColors.black, width: 2);
+
     return LineChart(
       LineChartData(
         minY: 0,
-        maxY: lineDatas
-            .map((e) => e.valuePerMonth)
-            .flatten
-            .map((e) => e.value)
-            .max,
+        maxY: maxY,
         minX: timespan.beginning.millisSinceEpoch,
         maxX: timespan.end.millisSinceEpoch,
         gridData: FlGridData(
-          horizontalInterval: ProgressPerMonthChart.horizontalInterval,
+          horizontalInterval: horizontalInterval,
           drawVerticalLine: false,
         ),
         titlesData: labelAxes(timespan),
-        lineTouchData: LineTouchData(
-          touchTooltipData: LineTouchTooltipData(
-            getTooltipItems: (spots) {
-              if (spots.isEmpty) return [];
-              final date =
-                  DateTime.fromMillisecondsSinceEpoch(spots.first.x.toInt());
-              final monthStr = DateFormat('MMM yyyy').format(date);
-              return spots.asMap().entries.map((entry) {
-                final isFirst = entry.key == 0;
-                final spot = entry.value;
-                final lineData = lineDatas[spot.barIndex];
-                final lineColor =
-                    Color.lerp(lineData.color, CupertinoColors.white, 0.5)!;
-                final prefix = isFirst ? '$monthStr\n' : '';
-                return LineTooltipItem(
-                  prefix,
-                  const TextStyle(
-                    color: CupertinoColors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: '${lineData.name}: ${spot.y.round()}',
-                      style: TextStyle(color: lineColor),
-                    ),
-                  ],
-                );
-              }).toList();
-            },
-          ),
-        ),
-        lineBarsData: lineDatas.mapL(_dataByMonthLine),
+        lineTouchData: touchData,
+        lineBarsData: lines.mapL(_buildLine),
         borderData: FlBorderData(
           show: true,
-          border: Border(
-            left: borderSide,
-            bottom: borderSide,
-          ),
+          border: const Border(left: borderSide, bottom: borderSide),
         ),
       ),
     );
   }
+
+  LineChartBarData _buildLine(ProgressLine line) {
+    final now = DateTime.now();
+    final currMonth = yyyyMM.format(now);
+
+    return LineChartBarData(
+      spots: line.data.mapL((monthVal) {
+        final dateAsMillis = yyyyMM.parse(monthVal.key).millisecondsSinceEpoch;
+        final isCurrMonth = monthVal.key == currMonth;
+        return FlSpot(
+          dateAsMillis.toDouble(),
+          isCurrMonth ? _scaleEstimate(monthVal.value, now) : monthVal.value,
+        );
+      }),
+      isCurved: true,
+      curveSmoothness: .05,
+      belowBarData:
+          line == totalByMonth ? gradientFill() : BarAreaData(show: false),
+      color: line.color.withOpacity(0.7),
+      dotData: FlDotData(
+        show: true,
+        getDotPainter: (spot, xPercentage, bar, index) => FlDotCirclePainter(
+          radius: 2,
+          color: line.color.withOpacity(0.8),
+          strokeColor: CupertinoColors.black,
+        ),
+      ),
+    );
+  }
+
+  LineTouchData get touchData => LineTouchData(
+        touchTooltipData: LineTouchTooltipData(
+          getTooltipItems: (spots) {
+            if (spots.isEmpty) return [];
+            final date =
+                DateTime.fromMillisecondsSinceEpoch(spots.first.x.toInt());
+            final monthStr = DateFormat('MMM yyyy').format(date);
+            return spots.asMap().entries.map((entry) {
+              final isFirst = entry.key == 0;
+              final spot = entry.value;
+              final line = lines[spot.barIndex];
+              final lineColor =
+                  Color.lerp(line.color, CupertinoColors.white, 0.5)!;
+              final prefix = isFirst ? '$monthStr\n' : '';
+              return LineTooltipItem(
+                prefix,
+                const TextStyle(
+                  color: CupertinoColors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+                children: [
+                  TextSpan(
+                    text: '${line.name}: ${spot.y.round()}%',
+                    style: TextStyle(color: lineColor),
+                  ),
+                ],
+              );
+            }).toList();
+          },
+        ),
+      );
 
   Widget chartLegend() {
     return Positioned(
@@ -180,34 +186,32 @@ class ProgressPerMonthChart extends ConsumerWidget {
         child: Padding(
           padding: const EdgeInsets.all(3),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
-            children:
-                lineDatas.mapL((l) => lineKey(color: l.color, label: l.name)),
+            children: lines.mapL((l) => _legendItem(l.color, l.name)),
           ),
         ),
       ),
     );
   }
 
-  Widget lineKey({required Color color, required String label}) {
+  Widget _legendItem(Color color, String label) {
     return Padding(
       padding: const EdgeInsets.only(top: 1),
       child: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.only(right: 6),
-            child: Container(
+          Container(
               width: 8,
               height: 8,
               color: color,
-            ),
-          ),
-          Text(label, style: TextStyle(fontSize: 9)),
+              margin: const EdgeInsets.only(right: 6)),
+          Text(label, style: const TextStyle(fontSize: 9)),
         ],
       ),
     );
   }
+
+  double _scaleEstimate(double x, DateTime now) =>
+      x / now.day * monthLength(now.month, now.year);
 
   static FlTitlesData labelAxes(TimeSpan timespan) {
     return FlTitlesData(
@@ -218,53 +222,13 @@ class ProgressPerMonthChart extends ConsumerWidget {
     );
   }
 
-  LineChartBarData _dataByMonthLine(DiffPerMonth dataByMonth) {
-    final DateTime now = DateTime.now();
-    final String currMonth = yyyyMM.format(now);
-    return LineChartBarData(
-      spots: dataByMonth.valuePerMonth.mapL((monthVal) {
-        final dateAsMillis = yyyyMM.parse(monthVal.key).millisSinceEpoch;
-        final isCurrMonth = monthVal.key == currMonth;
-        return FlSpot(
-          dateAsMillis,
-          isCurrMonth ? _scaleEstimate(monthVal.value, now) : monthVal.value,
-        );
-      }),
-      isCurved: true,
-      curveSmoothness: .05,
-      belowBarData: gradientFill(),
-      color: dataByMonth.color.withOpacity(0.7),
-      dotData: FlDotData(
-        show: true,
-        getDotPainter: (spot, xPercentage, bar, index) {
-          // NB: Before using `xPercentage`, search for it elsewhere
-          // in this repo for correction details.
-          return FlDotCirclePainter(
-            radius: 2,
-            color: Color.lerp(
-              CupertinoColors.systemBlue.withOpacity(0.7),
-              CupertinoColors.systemGrey.withOpacity(0.8),
-              .4,
-            )!,
-            strokeColor: CupertinoColors.black,
-          );
-        },
-      ),
-    );
-  }
-
-  /// Scale the last point based on how much of the month has
-  /// elapsed, to make it an "estimate" of the "full" month's data.
-  double _scaleEstimate(double x, DateTime now) =>
-      x / now.day * monthLength(now.month, now.year);
-
   static BarAreaData gradientFill() {
     return BarAreaData(
       show: true,
       gradient: LinearGradient(
         colors: [
-          CupertinoColors.systemTeal.withOpacity(0.15),
-          CupertinoColors.systemBlue.withOpacity(0.04),
+          CupertinoColors.systemGreen.withOpacity(0.15),
+          CupertinoColors.systemGreen.withOpacity(0.04),
         ],
         stops: const [.4, 1],
         begin: Alignment.topCenter,
@@ -278,7 +242,7 @@ class ProgressPerMonthChart extends ConsumerWidget {
       axisNameSize: 20,
       axisNameWidget: Transform.translate(
         offset: shiftTitle,
-        child: Text('Progress', style: TextStyles.sideAxisLabel),
+        child: Text('Progress %', style: TextStyles.sideAxisLabel),
       ),
       sideTitles: SideTitles(
         interval: horizontalInterval,
@@ -288,8 +252,8 @@ class ProgressPerMonthChart extends ConsumerWidget {
         getTitlesWidget: (double value, TitleMeta meta) => Padding(
           padding: const EdgeInsets.only(right: 3),
           child: Text(
-            value.floor().toString(),
-            style: TextStyle(fontSize: 10),
+            '${value.floor()}',
+            style: const TextStyle(fontSize: 10),
             textAlign: TextAlign.right,
           ),
         ),
@@ -297,26 +261,25 @@ class ProgressPerMonthChart extends ConsumerWidget {
     );
   }
 
-  static num monthLength(int month, int year) => //newline
-      month == 2
-          ? year % 4 == 0
-              ? 29
-              : 28
-          : {9, 4, 6, 11}.contains(month)
-              ? 30
-              : 31;
+  static num monthLength(int month, int year) => month == 2
+      ? year % 4 == 0
+          ? 29
+          : 28
+      : {9, 4, 6, 11}.contains(month)
+          ? 30
+          : 31;
 }
 
-class DiffPerMonth {
-  const DiffPerMonth({
-    required this.valuePerMonth,
-    required this.color,
+class ProgressLine {
+  const ProgressLine({
+    required this.data,
     required this.name,
+    required this.color,
   });
 
-  final List<MapEntry<String, double>> valuePerMonth;
-  final CupertinoDynamicColor color;
+  final List<MapEntry<String, double>> data;
   final String name;
+  final Color color;
 }
 
 class _MonthAxis {
@@ -334,7 +297,7 @@ class _MonthAxis {
 
   Widget monthAxisName() {
     return FlutterHelpers.transform(
-      shift: Offset(20, 0),
+      shift: const Offset(20, 0),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -357,16 +320,16 @@ class _MonthAxis {
       minIncluded: false,
       maxIncluded: true,
       reservedSize: 26,
-      interval: Duration(days: 1).inMilliseconds.toDouble(),
+      interval: const Duration(days: 1).inMilliseconds.toDouble(),
       getTitlesWidget: (double value, TitleMeta c) {
         if (DateTime.fromMillisecondsSinceEpoch(value.toInt()).day == 1) {
           return FlutterHelpers.transform(
-            shift: Offset(2, 2),
+            shift: const Offset(2, 2),
             angleDegrees: 40,
             child: dateText(value),
           );
         } else {
-          return SizedBox.shrink();
+          return const SizedBox.shrink();
         }
       },
     );
@@ -377,12 +340,12 @@ class _MonthAxis {
     if (dateTime.month == 1) {
       return Text(
         DateFormat('MMM yy').format(dateTime),
-        style: TextStyle(letterSpacing: -.4, fontSize: 10),
+        style: const TextStyle(letterSpacing: -.4, fontSize: 10),
       );
     } else {
       return Text(
         DateFormat('MMM').format(dateTime),
-        style: TextStyle(letterSpacing: -.4, fontSize: 10),
+        style: const TextStyle(letterSpacing: -.4, fontSize: 10),
       );
     }
   }

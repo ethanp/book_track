@@ -4,22 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// When true (default), archived books are included in stats.
 final showArchivedProvider = StateProvider<bool>((ref) => true);
 
-/// Provider for the stats counting mode.
-final statsCountModeProvider =
-    StateProvider<StatsCountMode>((ref) => StatsCountMode.sessions);
-
-/// How to count reading activity in stats.
-enum StatsCountMode {
-  /// Count individual progress events/sessions
-  sessions('Sessions'),
-
-  /// Count aggregate percentage progress
-  progress('Progress');
-
-  const StatsCountMode(this.label);
-  final String label;
-}
-
 /// Provider for the time period filter in stats.
 final statsPeriodProvider =
     StateProvider<StatsPeriod>((ref) => StatsPeriod.allTime);

@@ -2,11 +2,9 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/async_stats_card.dart';
 import 'package:book_track/ui/pages/stats/calendar_heatmap.dart';
-import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ActivityCalendarCard extends ConsumerWidget {
+class ActivityCalendarCard extends StatelessWidget {
   const ActivityCalendarCard({
     required this.books,
     required this.periodCutoff,
@@ -17,38 +15,19 @@ class ActivityCalendarCard extends ConsumerWidget {
   final DateTime? periodCutoff;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final countMode = ref.watch(statsCountModeProvider);
+  Widget build(BuildContext context) {
     return AsyncStatsCard<ReadingActivityData>(
-      cacheKey:
-          '${books.length}-${periodCutoff?.millisecondsSinceEpoch ?? 0}-${countMode.name}',
-      compute: () => _computeData(books, periodCutoff, countMode),
+      cacheKey: '${books.length}-${periodCutoff?.millisecondsSinceEpoch ?? 0}',
+      compute: () => ReadingActivityData.fromProgress(
+        books,
+        periodCutoff: periodCutoff,
+      ),
       loadingHeight: 200,
-      builder: (data) => _buildCard(data, countMode),
+      builder: _buildCard,
     );
   }
 
-  static ReadingActivityData _computeData(
-    List<LibraryBook> books,
-    DateTime? periodCutoff,
-    StatsCountMode countMode,
-  ) {
-    if (countMode == StatsCountMode.sessions) {
-      final eventDates =
-          books.expand((b) => b.progressHistory).map((e) => e.end).toList();
-      return ReadingActivityData.fromEvents(
-        eventDates,
-        periodCutoff: periodCutoff,
-      );
-    } else {
-      return ReadingActivityData.fromProgress(
-        books,
-        periodCutoff: periodCutoff,
-      );
-    }
-  }
-
-  Widget _buildCard(ReadingActivityData data, StatsCountMode countMode) {
+  Widget _buildCard(ReadingActivityData data) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -73,7 +52,6 @@ class ActivityCalendarCard extends ConsumerWidget {
               activityByDay: data.activityByDay,
               books: books,
               periodCutoff: periodCutoff,
-              isProgressMode: countMode == StatsCountMode.progress,
             ),
           ),
           const SizedBox(height: 12),

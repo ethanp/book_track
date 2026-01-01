@@ -65,10 +65,11 @@ class RollingAverageChart extends StatelessWidget {
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 30,
+              maxIncluded: false,
+              reservedSize: 36,
               interval: max(data.maxScore / 4, 1),
               getTitlesWidget: (value, meta) => Text(
-                value.round().toString(),
+                '${value.round()}%',
                 style: const TextStyle(fontSize: 10),
               ),
             ),
@@ -80,6 +81,7 @@ class RollingAverageChart extends StatelessWidget {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
+              minIncluded: false,
               reservedSize: 22,
               interval: const Duration(days: 30).inMilliseconds.toDouble(),
               getTitlesWidget: (value, meta) {
@@ -126,7 +128,7 @@ class RollingAverageChart extends StatelessWidget {
               final date = DateTime.fromMillisecondsSinceEpoch(spot.x.toInt());
               final dateStr = DateFormat('MMM d, yyyy').format(date);
               return LineTooltipItem(
-                '$dateStr\n${spot.y.round()}',
+                '$dateStr\n${spot.y.round()}%',
                 const TextStyle(
                   color: CupertinoColors.white,
                   fontWeight: FontWeight.bold,
@@ -144,7 +146,7 @@ class RollingAverageChart extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Text(
-        'Current Momentum: ${data.currentScore.round()}',
+        'Current Momentum: ${data.currentScore.round()}%',
         style: const TextStyle(fontWeight: FontWeight.w600),
       ),
     );
@@ -166,27 +168,27 @@ class _RollingAverageData {
     List<LibraryBook> books, {
     DateTime? periodCutoff,
   }) {
-    // Collect all reading volume deltas with their dates
-    final volumeDeltas = <MapEntry<DateTime, double>>[];
+    // Collect all progress percentage deltas with their dates
+    final progressDeltas = <MapEntry<DateTime, double>>[];
     for (final book in books) {
       if (book.formats.isEmpty) continue;
-      // Get page diffs (which handles format conversion correctly)
-      final diffs = book.pagesDiffs();
+      final diffs = book.progressDiffs;
       for (final diff in diffs) {
         if (periodCutoff == null || diff.key.isAfter(periodCutoff)) {
-          volumeDeltas.add(diff);
+          if (diff.value > 0) progressDeltas.add(diff);
         }
       }
     }
 
-    if (volumeDeltas.isEmpty) {
+    if (progressDeltas.isEmpty) {
       return const _RollingAverageData(
           scores: [], currentScore: 0, maxScore: 0);
     }
 
     // Find the earliest reading date
-    final earliestDate =
-        volumeDeltas.map((e) => e.key).reduce((a, b) => a.isBefore(b) ? a : b);
+    final earliestDate = progressDeltas
+        .map((e) => e.key)
+        .reduce((a, b) => a.isBefore(b) ? a : b);
 
     final today = DateTime.now();
 
@@ -208,7 +210,7 @@ class _RollingAverageData {
     // Calculate rolling average for each day from start to today
     for (int i = 0; i <= daysToShow; i++) {
       final date = effectiveStart.add(Duration(days: i));
-      final score = _calculateScore(date, volumeDeltas);
+      final score = _calculateScore(date, progressDeltas);
       scores.add(FlSpot(date.millisecondsSinceEpoch.toDouble(), score));
       if (score > maxScore) maxScore = score;
     }
@@ -222,20 +224,20 @@ class _RollingAverageData {
 
   /// Calculate rolling score using step function weight decay.
   /// Full weight for last 7 days, then gradual decay to 0.1 at 30 days.
-  /// Score is based on actual reading volume (pages/minutes), not just event count.
+  /// Score is based on progress percentage, not page count.
   static double _calculateScore(
-      DateTime date, List<MapEntry<DateTime, double>> volumeDeltas) {
+      DateTime date, List<MapEntry<DateTime, double>> progressDeltas) {
     final windowStart = date.subtract(const Duration(days: 30));
     double score = 0;
 
-    for (final delta in volumeDeltas) {
+    for (final delta in progressDeltas) {
       if (delta.key.isBefore(windowStart)) continue;
       if (delta.key.isAfter(date)) continue;
 
       final daysAgo = date.difference(delta.key).inDays;
       final weight = _calculateWeight(daysAgo);
 
-      // Add volume * weight to score
+      // Add progress * weight to score
       score += delta.value * weight;
     }
 

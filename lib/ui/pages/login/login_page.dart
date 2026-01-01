@@ -66,8 +66,6 @@ class _LoginPageState extends State<LoginPage> {
         child: Form(
           key: formKey,
           autovalidateMode: AutovalidateMode.always,
-          // TODO(simplify) remove this? Not sure if it's used or not.
-          onChanged: () => Form.maybeOf(primaryFocus!.context!)?.save(),
           child: ListView(
             padding: const EdgeInsets.symmetric(
               vertical: 18,

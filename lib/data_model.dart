@@ -158,50 +158,14 @@ class LibraryBook {
     return hrs * 60 + mins;
   }
 
-  /// At each progress event, how many pages/minutes were read; sorted by date.
-  /// Handles format switches by converting via percentage.
-  Iterable<MapEntry<DateTime, double>> pagesDiffs({bool percentage = false}) {
-    if (formats.isEmpty) return [];
-    return progressHistory.zipWithDiff(1, (prev, curr) {
-      double value;
-      if (percentage) {
-        final prevPercent = progressPercentAt(prev) ?? 0;
-        final currPercent = progressPercentAt(curr) ?? 0;
-        value = currPercent - prevPercent;
-      } else {
-        final currFormat = formatById(curr.formatId);
-        if (currFormat == null || !currFormat.hasLength) {
-          return MapEntry(curr.end, 0.0);
-        }
-
-        // Convert both events to percentages, then calculate delta in current format's units
-        final prevPercent = progressPercentAt(prev);
-        final currPercent = progressPercentAt(curr);
-
-        if (prevPercent == null || currPercent == null) {
-          return MapEntry(curr.end, 0.0);
-        }
-
-        // Calculate delta as percentage change
-        final percentDelta = currPercent - prevPercent;
-
-        // Clamp to non-negative (progress shouldn't go backwards)
-        if (percentDelta < 0) {
-          return MapEntry(curr.end, 0.0);
-        }
-
-        // Convert percentage delta to current format's units
-        if (currFormat.isAudiobook) {
-          // Convert percentage to minutes
-          value = (percentDelta / 100.0) * currFormat.length!;
-        } else {
-          // Convert percentage to pages
-          value = (percentDelta / 100.0) * currFormat.length!;
-        }
-      }
-      return MapEntry(curr.end, value);
-    });
-  }
+  /// Progress percentage delta at each event, sorted by date. Cached.
+  late final List<MapEntry<DateTime, double>> progressDiffs = formats.isEmpty
+      ? []
+      : progressHistory.zipWithDiff(1, (prev, curr) {
+          final prevPercent = progressPercentAt(prev) ?? 0;
+          final currPercent = progressPercentAt(curr) ?? 0;
+          return MapEntry(curr.end, currPercent - prevPercent);
+        }).toList();
 
   double pagesAt(ProgressEvent event) {
     final format = formatById(event.formatId);

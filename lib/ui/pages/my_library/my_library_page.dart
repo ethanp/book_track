@@ -60,7 +60,6 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // TODO(feature) add an indicator of pages read in the past week.
         sortSelector(),
         userLibraryByStatus(library),
         if (library.any((b) => b.archived)) archivedSection(library),

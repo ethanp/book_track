@@ -1,9 +1,11 @@
-import 'dart:math' show max;
-
 import 'package:book_track/data_model.dart';
+import 'package:book_track/ui/pages/stats/day_progress_entry.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show DateUtils;
 import 'package:intl/intl.dart';
+
+export 'day_progress_entry.dart';
+export 'reading_activity_data.dart';
 
 class CalendarHeatmap extends StatefulWidget {
   const CalendarHeatmap({
@@ -11,7 +13,6 @@ class CalendarHeatmap extends StatefulWidget {
     required this.books,
     this.weeksToShow = 26,
     this.periodCutoff,
-    this.isProgressMode = false,
     super.key,
   });
 
@@ -25,9 +26,6 @@ class CalendarHeatmap extends StatefulWidget {
 
   /// Only show dates after this cutoff (inclusive).
   final DateTime? periodCutoff;
-
-  /// If true, show percentage labels instead of update counts.
-  final bool isProgressMode;
 
   /// Color scale (5 levels like GitHub).
   static const colors = [
@@ -315,19 +313,7 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
 
   Widget _dayDetails(DateTime date) {
     final dateStr = DateFormat('MMM d, yyyy').format(date);
-    final normalizedDate = DateUtils.dateOnly(date);
-
-    // Find books with progress events on this day
-    final booksOnDay = <({LibraryBook book, int progressPercent})>[];
-    for (final book in widget.books) {
-      for (final event in book.progressHistory) {
-        if (DateUtils.isSameDay(event.end, normalizedDate)) {
-          final percent = book.progressPercentAt(event)?.round() ?? 0;
-          booksOnDay.add((book: book, progressPercent: percent));
-          break; // Only add each book once per day
-        }
-      }
-    }
+    final tiles = DayProgressEntry.tilesForDate(date, widget.books);
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -341,172 +327,15 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
         children: [
           Text(dateStr, style: const TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          if (booksOnDay.isEmpty)
+          if (tiles.isEmpty)
             const Text(
               'No reading activity',
               style: TextStyle(color: CupertinoColors.systemGrey),
             )
           else
-            ...booksOnDay.map((entry) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Row(
-                    children: [
-                      _bookCover(entry.book),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          entry.book.book.title,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13),
-                        ),
-                      ),
-                      Text(
-                        '${entry.progressPercent}%',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: CupertinoColors.systemGreen,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
+            ...tiles,
         ],
       ),
     );
-  }
-
-  Widget _bookCover(LibraryBook book) {
-    const double size = 30;
-    if (book.book.coverArtS != null && book.book.coverArtS!.length >= 4) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(3),
-        child: Image.memory(
-          book.book.coverArtS!,
-          width: size * 0.75,
-          height: size,
-          fit: BoxFit.cover,
-        ),
-      );
-    }
-    return SizedBox(
-      width: size * 0.75,
-      height: size,
-      child: const Icon(CupertinoIcons.book, size: 16),
-    );
-  }
-}
-
-/// Data class for reading activity statistics.
-class ReadingActivityData {
-  const ReadingActivityData({
-    required this.activityByDay,
-    required this.currentStreak,
-    required this.longestStreak,
-  });
-
-  final Map<DateTime, int> activityByDay;
-  final int currentStreak;
-  final int longestStreak;
-
-  /// Calculate reading activity from a list of books.
-  factory ReadingActivityData.fromEvents(
-    List<DateTime> eventDates, {
-    DateTime? periodCutoff,
-  }) {
-    // Group by date (normalize to midnight)
-    final activityByDay = <DateTime, int>{};
-    final cutoffDate =
-        periodCutoff != null ? DateUtils.dateOnly(periodCutoff) : null;
-
-    for (final eventDate in eventDates) {
-      final date = DateUtils.dateOnly(eventDate);
-
-      // Filter by period cutoff (compare normalized dates)
-      if (cutoffDate != null && date.isBefore(cutoffDate)) continue;
-
-      activityByDay[date] = (activityByDay[date] ?? 0) + 1;
-    }
-
-    // Calculate streaks
-    final (current, longest) = _calculateStreaks(activityByDay.keys.toList());
-
-    return ReadingActivityData(
-      activityByDay: activityByDay,
-      currentStreak: current,
-      longestStreak: longest,
-    );
-  }
-
-  /// Calculate reading activity based on progress percentage made per day.
-  factory ReadingActivityData.fromProgress(
-    List<LibraryBook> books, {
-    DateTime? periodCutoff,
-  }) {
-    final activityByDay = <DateTime, int>{};
-    final cutoffDate =
-        periodCutoff != null ? DateUtils.dateOnly(periodCutoff) : null;
-
-    for (final book in books) {
-      // Use percentage mode to get % deltas directly
-      final diffs = book.pagesDiffs(percentage: true);
-      for (final diff in diffs) {
-        final date = DateUtils.dateOnly(diff.key);
-
-        // Filter by period cutoff
-        if (cutoffDate != null && date.isBefore(cutoffDate)) continue;
-
-        final percentDelta = diff.value;
-        if (percentDelta > 0) {
-          activityByDay[date] =
-              (activityByDay[date] ?? 0) + percentDelta.round();
-        }
-      }
-    }
-
-    // Calculate streaks
-    final (current, longest) = _calculateStreaks(activityByDay.keys.toList());
-
-    return ReadingActivityData(
-      activityByDay: activityByDay,
-      currentStreak: current,
-      longestStreak: longest,
-    );
-  }
-
-  static (int current, int longest) _calculateStreaks(
-      List<DateTime> activeDays) {
-    if (activeDays.isEmpty) return (0, 0);
-
-    final sorted = activeDays.toList()..sort();
-    final today = DateUtils.dateOnly(DateTime.now());
-    final yesterday = today.subtract(const Duration(days: 1));
-
-    int currentStreak = 0;
-    int longestStreak = 0;
-    int runningStreak = 1;
-
-    // Check if streak is active (today or yesterday has activity)
-    final hasRecentActivity = DateUtils.isSameDay(sorted.last, today) ||
-        DateUtils.isSameDay(sorted.last, yesterday);
-
-    for (int i = 1; i < sorted.length; i++) {
-      final diff = sorted[i].difference(sorted[i - 1]).inDays;
-      if (diff == 1) {
-        runningStreak++;
-      } else if (diff > 1) {
-        longestStreak = max(longestStreak, runningStreak);
-        runningStreak = 1;
-      }
-      // diff == 0 means same day, keep runningStreak as is
-    }
-    longestStreak = max(longestStreak, runningStreak);
-
-    // Current streak only counts if it's ongoing
-    if (hasRecentActivity) {
-      currentStreak = runningStreak;
-    }
-
-    return (currentStreak, longestStreak);
   }
 }

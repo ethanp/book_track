@@ -1,12 +1,12 @@
+import 'dart:math' show max;
+
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class FormatBreakdownCard extends ConsumerWidget {
+class FormatBreakdownCard extends StatelessWidget {
   const FormatBreakdownCard({
     required this.books,
     required this.periodCutoff,
@@ -24,9 +24,7 @@ class FormatBreakdownCard extends ConsumerWidget {
   };
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final countMode = ref.watch(statsCountModeProvider);
-
+  Widget build(BuildContext context) {
     // Filter to books with activity in the period
     final cutoff = periodCutoff;
     final booksInPeriod = books
@@ -57,7 +55,7 @@ class FormatBreakdownCard extends ConsumerWidget {
           if (booksInPeriod.isEmpty)
             _emptyState()
           else
-            _chartContent(booksInPeriod, countMode),
+            _chartContent(booksInPeriod),
           const SizedBox(height: 16),
         ],
       ),
@@ -72,11 +70,11 @@ class FormatBreakdownCard extends ConsumerWidget {
   }
 
   Widget _emptyState() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
+    return const Padding(
+      padding: EdgeInsets.all(20),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           Icon(CupertinoIcons.book,
               size: 40, color: CupertinoColors.systemGrey3),
           SizedBox(height: 8),
@@ -87,9 +85,8 @@ class FormatBreakdownCard extends ConsumerWidget {
     );
   }
 
-  Widget _chartContent(
-      List<LibraryBook> booksInPeriod, StatsCountMode countMode) {
-    final data = _calculateData(booksInPeriod, countMode);
+  Widget _chartContent(List<LibraryBook> booksInPeriod) {
+    final data = _progressByFormat(booksInPeriod);
     if (data.isEmpty) return _emptyState();
 
     return Padding(
@@ -102,44 +99,22 @@ class FormatBreakdownCard extends ConsumerWidget {
               child: _pieChart(data),
             ),
           ),
-          _legend(data, countMode),
+          _legend(data),
         ],
       ),
     );
   }
 
-  Map<BookFormat, double> _calculateData(
-      List<LibraryBook> books, StatsCountMode countMode) {
-    if (countMode == StatsCountMode.sessions) {
-      return _countFormats(books);
-    } else {
-      return _volumeByFormat(books);
-    }
-  }
-
-  /// Count format entries across all books.
-  Map<BookFormat, double> _countFormats(List<LibraryBook> books) {
-    final counts = <BookFormat, double>{};
-    for (final book in books) {
-      for (final format in book.formats) {
-        counts[format.format] = (counts[format.format] ?? 0) + 1;
-      }
-    }
-    return counts;
-  }
-
-  /// Calculate volume (pages/hours) by format, based on event progress.
-  Map<BookFormat, double> _volumeByFormat(List<LibraryBook> books) {
-    final volume = <BookFormat, double>{};
+  /// Calculate aggregate progress percentage by format.
+  Map<BookFormat, double> _progressByFormat(List<LibraryBook> books) {
+    final progress = <BookFormat, double>{};
 
     for (final book in books) {
       if (book.progressHistory.isEmpty || book.formats.isEmpty) continue;
 
-      // Sort events chronologically
       final sorted = book.progressHistory.toList()
         ..sort((a, b) => a.end.compareTo(b.end));
 
-      // Calculate deltas for each event in the period
       final cutoff = periodCutoff;
       for (int i = 0; i < sorted.length; i++) {
         final event = sorted[i];
@@ -148,34 +123,18 @@ class FormatBreakdownCard extends ConsumerWidget {
         final format = book.formatById(event.formatId);
         if (format == null || !format.hasLength) continue;
 
-        // Get previous progress
-        int prevProgress = 0;
-        if (i > 0) {
-          final prevEvent = sorted[i - 1];
-          final prevFormat = book.formatById(prevEvent.formatId);
-          if (prevFormat != null && prevFormat.supaId == format.supaId) {
-            prevProgress = prevEvent.progress;
-          } else if (prevFormat != null && prevFormat.hasLength) {
-            // Convert via percentage
-            final prevPercent =
-                prevFormat.progressToPercent(prevEvent.progress);
-            if (prevPercent != null) {
-              prevProgress = format.percentToProgress(prevPercent);
-            }
-          }
-        }
+        final currPercent = book.progressPercentAt(event) ?? 0;
+        final prevPercent =
+            i > 0 ? (book.progressPercentAt(sorted[i - 1]) ?? 0) : 0.0;
+        final percentDelta = max(0.0, currPercent - prevPercent);
 
-        final delta = event.progress - prevProgress;
-        if (delta > 0) {
-          // Convert to equivalent pages (5 mins audiobook = 1 page)
-          final displayValue = format.isAudiobook
-              ? delta / 5.0 // Convert minutes to equivalent pages
-              : delta.toDouble();
-          volume[format.format] = (volume[format.format] ?? 0) + displayValue;
+        if (percentDelta > 0) {
+          progress[format.format] =
+              (progress[format.format] ?? 0) + percentDelta;
         }
       }
     }
-    return volume;
+    return progress;
   }
 
   Widget _pieChart(Map<BookFormat, double> data) {
@@ -203,23 +162,16 @@ class FormatBreakdownCard extends ConsumerWidget {
     );
   }
 
-  Widget _legend(Map<BookFormat, double> data, StatsCountMode countMode) {
+  Widget _legend(Map<BookFormat, double> data) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: data.keys
-          .map((format) => _legendItem(format, data, countMode))
-          .toList(),
+      children: data.keys.map((format) => _legendItem(format, data)).toList(),
     );
   }
 
-  Widget _legendItem(BookFormat format, Map<BookFormat, double> data,
-      StatsCountMode countMode) {
+  Widget _legendItem(BookFormat format, Map<BookFormat, double> data) {
     final value = data[format] ?? 0;
-    // In progress mode, all formats show equivalent pages (5 mins audio = 1 page)
-    final displayValue = countMode == StatsCountMode.sessions
-        ? '${value.round()}'
-        : '${value.round()} pgs';
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -236,7 +188,7 @@ class FormatBreakdownCard extends ConsumerWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            '${format.nameAsCapitalizedWords} ($displayValue)',
+            '${format.nameAsCapitalizedWords} (${value.round()}%)',
             style: const TextStyle(fontSize: 12),
           ),
         ],
