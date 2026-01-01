@@ -2,6 +2,7 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/common/books_progress_chart/books_progress_chart.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:book_track/ui/common/scroll_propagating_list_view.dart';
 import 'package:book_track/ui/pages/stats/filter_section.dart';
 import 'package:book_track/ui/pages/stats/format_breakdown_card.dart';
 import 'package:book_track/ui/pages/stats/progress_chart_card.dart';
@@ -162,7 +163,6 @@ class RecentBooksWidget extends StatelessWidget {
       );
     }
 
-    // Calculate progress made for each book and sort
     final booksWithProgress = recentBooks
         .where((book) => book.progressHistory.isNotEmpty)
         .map((book) {
@@ -176,17 +176,13 @@ class RecentBooksWidget extends StatelessWidget {
       final endPercent = book.intPercentProgressAt(sorted.last);
       final progressMade = endPercent - startPercent;
       return (book: book, progressMade: progressMade);
-    }).toList();
-
-    // Sort by progressMade (highest first), then alphabetically by title
-    booksWithProgress.sort((a, b) {
-      // First sort by progressMade (descending)
-      if (a.progressMade != b.progressMade) {
-        return b.progressMade.compareTo(a.progressMade);
-      }
-      // Then sort alphabetically by title
-      return a.book.book.title.compareTo(b.book.book.title);
-    });
+    }).toList()
+      ..sort((a, b) {
+        if (a.progressMade != b.progressMade) {
+          return b.progressMade.compareTo(a.progressMade);
+        }
+        return a.book.book.title.compareTo(b.book.book.title);
+      });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,7 +193,7 @@ class RecentBooksWidget extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Expanded(
-          child: ListView.separated(
+          child: ScrollPropagatingListView(
             itemCount: booksWithProgress.length,
             separatorBuilder: (_, __) => const SizedBox(height: 4),
             itemBuilder: (context, index) {
