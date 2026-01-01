@@ -48,3 +48,4 @@ app.*.map.json
 
 # Ignore generated dart files
 *.g.dart
+.deploy_hash
