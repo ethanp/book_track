@@ -40,6 +40,54 @@ class SupabaseBookService {
   static Future<int> getOrCreateBookId(OpenLibraryBook book) async =>
       await _existingBookId(book) ?? await _storeBookAndCover(book);
 
+  /// Create a book from manual user input (no cover art).
+  static Future<int> getOrCreateManualBookId({
+    required String title,
+    String? author,
+    int? yearPublished,
+  }) async =>
+      await _existingManualBookId(title: title, author: author) ??
+      await _storeManualBook(
+        title: title,
+        author: author,
+        yearPublished: yearPublished,
+      );
+
+  static Future<int?> _existingManualBookId({
+    required String title,
+    String? author,
+  }) async {
+    try {
+      var query = _booksClient.select(_SupaBook.idCol).eq(_SupaBook.titleCol, title);
+      if (author != null && author.isNotEmpty) {
+        query = query.eq(_SupaBook.authorCol, author);
+      }
+      final PostgrestMap? existingBookMatch =
+          await query.limit(1).maybeSingle().withRetry(log);
+      return existingBookMatch.map(_SupaBook.new).map((book) => book.supaId);
+    } on StorageException catch (e) {
+      log('pre-existing manual book query error $e');
+      return null;
+    }
+  }
+
+  static Future<int> _storeManualBook({
+    required String title,
+    String? author,
+    int? yearPublished,
+  }) async {
+    final PostgrestMap result = await _booksClient
+        .insert({
+          _SupaBook.titleCol: title,
+          _SupaBook.authorCol: author,
+          _SupaBook.yearPublishedCol: yearPublished,
+        })
+        .select()
+        .single()
+        .withRetry(log);
+    return _SupaBook(result).supaId;
+  }
+
   static Future<int> _storeBookAndCover(OpenLibraryBook book) async {
     final String? coverKey = await _storeCoverArtS(book);
     final _SupaBook result = await _storeBook(book, coverKey);

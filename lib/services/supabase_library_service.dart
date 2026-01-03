@@ -41,6 +41,30 @@ class SupabaseLibraryService {
     int length,
   ) async {
     final int bookId = await SupabaseBookService.getOrCreateBookId(book);
+    await _addBookToLibraryById(bookId, bookFormat, length);
+  }
+
+  /// Add a manually-entered book to the library.
+  static Future<void> addManualBook({
+    required String title,
+    String? author,
+    int? yearPublished,
+    required BookFormat format,
+    required int length,
+  }) async {
+    final int bookId = await SupabaseBookService.getOrCreateManualBookId(
+      title: title,
+      author: author,
+      yearPublished: yearPublished,
+    );
+    await _addBookToLibraryById(bookId, format, length);
+  }
+
+  static Future<void> _addBookToLibraryById(
+    int bookId,
+    BookFormat bookFormat,
+    int length,
+  ) async {
     final int libraryBookId = await _getOrCreateLibraryBookId(bookId);
 
     // Create the format entry

@@ -40,6 +40,7 @@ class StatsPage extends ConsumerWidget {
           const FilterSection(),
           Expanded(
             child: SingleChildScrollView(
+              key: const PageStorageKey('stats_scroll'),
               child: Column(
                 children: [
                   // Abandoned books toggle

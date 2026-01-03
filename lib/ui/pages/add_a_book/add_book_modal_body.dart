@@ -5,10 +5,11 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'manual_book_form.dart';
 import 'search_results.dart';
 
 class AddBookModalBody extends ConsumerStatefulWidget {
-  const AddBookModalBody({super.key});
+  const AddBookModalBody();
 
   static final SimpleLogger log = SimpleLogger(prefix: 'AddBookModalBody');
 
@@ -18,6 +19,7 @@ class AddBookModalBody extends ConsumerStatefulWidget {
 
 class _AddBookModalBodyState extends ConsumerState<AddBookModalBody> {
   late final TextEditingController _controller;
+  bool _showManualForm = false;
 
   @override
   void initState() {
@@ -35,37 +37,64 @@ class _AddBookModalBodyState extends ConsumerState<AddBookModalBody> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          _bookSearchTitle(),
-          _searchBar(),
-          SearchResults(),
-        ],
-      ),
+      child: _showManualForm ? manualFormView() : searchView(),
     );
   }
 
-  Widget _bookSearchTitle() {
+  Widget searchView() {
+    return Column(
+      children: [
+        bookSearchTitle(),
+        searchBar(),
+        manualAddButton(),
+        SearchResults(),
+      ],
+    );
+  }
+
+  Widget manualFormView() {
+    return ManualBookForm(
+        onBack: () => setState(() => _showManualForm = false));
+  }
+
+  Widget bookSearchTitle() {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Text('Book Search', style: TextStyles.h1),
     );
   }
 
-  Widget _searchBar() {
+  Widget searchBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 22),
       child: CupertinoSearchTextField(
         controller: _controller,
         placeholder: 'Book title...',
-        onSubmitted: _search,
+        onSubmitted: search,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         style: TextStyle(color: CupertinoColors.black),
       ),
     );
   }
 
-  void _search(String text) {
+  Widget manualAddButton() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: CupertinoButton(
+        padding: EdgeInsets.zero,
+        onPressed: () => setState(() => _showManualForm = true),
+        child: Text(
+          "Can't find your book? Add it manually",
+          style: TextStyles.value.copyWith(
+            color: CupertinoColors.activeBlue,
+            decoration: TextDecoration.underline,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void search(String text) {
     AddBookModalBody.log('searching for: $text');
     final BookSearchResultsNotifier results =
         ref.read(bookSearchResultsNotifierProvider.notifier);
