@@ -31,7 +31,7 @@ class StatsPage extends ConsumerWidget {
 
     final books = showArchived
         ? userLibrary
-        : userLibrary.where((b) => !b.archived).toList();
+        : userLibrary.whereL((b) => !b.archived);
 
     return SafeArea(
       child: Column(

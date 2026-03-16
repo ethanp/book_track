@@ -102,7 +102,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
                   getTooltipColor: (_) => Colors.transparent,
                   tooltipPadding: EdgeInsets.zero,
                   tooltipMargin: 0,
-                  getTooltipItems: (spots) => spots.map((_) => null).toList(),
+                  getTooltipItems: (spots) => spots.mapL((_) => null),
                 ),
                 touchCallback:
                     (FlTouchEvent event, LineTouchResponse? response) {
@@ -300,7 +300,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
         .map((f) => f.format)
         .toSet()
         .toList()
-      ..sort((a, b) => a.name.compareTo(b.name));
+      ..sortOn((e) => e.name);
 
     return Padding(
       padding: const EdgeInsets.only(top: 8),
@@ -416,11 +416,10 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
             // Use format-based color if enabled
             final Color dotColor = widget.colorByFormat
                 ? colorForFormat(format?.format)
-                : Color.lerp(
-                    Colors.blue.withValues(alpha: .7),
-                    Colors.blueGrey.withValues(alpha: .8),
-                    xPercentage / 100,
-                  )!;
+                : Colors.blue
+                    .withValues(alpha: .7)
+                    .lerpWith(
+                        Colors.blueGrey.withValues(alpha: .8), xPercentage / 100);
 
             return FlDotCirclePainter(
               radius: radius,
@@ -482,7 +481,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
     final eventsByDate = <DateTime, ProgressEvent>{};
 
     for (final event in events) {
-      final date = DateUtils.dateOnly(event.end);
+      final date = event.end.startOfDay;
       final existing = eventsByDate[date];
 
       // Keep the event with the highest progress for each day
@@ -507,7 +506,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
 
     // Return events sorted by date
     final sortedDates = eventsByDate.keys.toList()..sort();
-    return sortedDates.map((date) => eventsByDate[date]!).toList();
+    return sortedDates.mapL((date) => eventsByDate[date]!);
   }
 
   FlSpot eventToSpot(LibraryBook book, ProgressEvent ev) {

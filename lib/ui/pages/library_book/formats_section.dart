@@ -97,7 +97,7 @@ class FormatsSection extends ConsumerWidget {
     if (hasEvents) {
       // Need to reassign events first
       final otherFormats =
-          libraryBook.formats.where((f) => f.supaId != format.supaId).toList();
+          libraryBook.formats.whereL((f) => f.supaId != format.supaId);
       if (otherFormats.isEmpty) return; // Can't delete last format
 
       final targetFormat = await showCupertinoModalPopup<LibraryBookFormat?>(

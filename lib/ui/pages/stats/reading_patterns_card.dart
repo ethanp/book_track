@@ -1,6 +1,5 @@
-import 'dart:math' show max;
-
 import 'package:book_track/data_model.dart';
+import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/async_stats_card.dart';
 import 'package:flutter/cupertino.dart';
@@ -117,7 +116,7 @@ class _DayOfWeekChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final maxValue =
-        activityByDay.values.isEmpty ? 1.0 : activityByDay.values.reduce(max);
+        activityByDay.values.isEmpty ? 1.0 : activityByDay.values.max;
 
     return SizedBox(
       height: maxBarHeight + 40,

@@ -106,7 +106,7 @@ class LibraryBook {
 
   /// Get progress events for a specific format.
   List<ProgressEvent> progressForFormat(LibraryBookFormat format) =>
-      progressHistory.where((e) => e.formatId == format.supaId).toList();
+      progressHistory.whereL((e) => e.formatId == format.supaId);
 
   /// Format the current book progress as a string.
   String? get currentBookProgressString {

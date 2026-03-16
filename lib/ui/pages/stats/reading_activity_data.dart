@@ -1,7 +1,7 @@
 import 'dart:math' show max;
 
 import 'package:book_track/data_model.dart';
-import 'package:flutter/material.dart' show DateUtils;
+import 'package:book_track/extensions.dart';
 
 /// Data class for reading activity statistics.
 class ReadingActivityData {
@@ -22,13 +22,13 @@ class ReadingActivityData {
   }) {
     final activityByDay = <DateTime, int>{};
     final cutoffDate =
-        periodCutoff != null ? DateUtils.dateOnly(periodCutoff) : null;
+        periodCutoff.map((d) => d.startOfDay);
 
     for (final book in books) {
       // Use percentage mode to get % deltas directly
       final diffs = book.progressDiffs;
       for (final diff in diffs) {
-        final date = DateUtils.dateOnly(diff.key);
+        final date = diff.key.startOfDay;
 
         // Filter by period cutoff
         if (cutoffDate != null && date.isBefore(cutoffDate)) continue;
@@ -55,7 +55,7 @@ class ReadingActivityData {
     if (activeDays.isEmpty) return (0, 0);
 
     final sorted = activeDays.toList()..sort();
-    final today = DateUtils.dateOnly(DateTime.now());
+    final today = DateTime.now().startOfDay;
     final yesterday = today.subtract(const Duration(days: 1));
 
     int currentStreak = 0;
@@ -63,8 +63,8 @@ class ReadingActivityData {
     int runningStreak = 1;
 
     // Check if streak is active (today or yesterday has activity)
-    final hasRecentActivity = DateUtils.isSameDay(sorted.last, today) ||
-        DateUtils.isSameDay(sorted.last, yesterday);
+    final hasRecentActivity = sorted.last.sameDayAs(today) ||
+        sorted.last.sameDayAs(yesterday);
 
     for (int i = 1; i < sorted.length; i++) {
       final diff = sorted[i].difference(sorted[i - 1]).inDays;

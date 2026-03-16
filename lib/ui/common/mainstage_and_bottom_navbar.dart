@@ -42,7 +42,7 @@ class MainstageAndBottomNavbar extends ConsumerWidget {
         currentIndex: curIdx,
         onTap: (idx) => idxSelector.update(idx),
       ),
-      backgroundColor: Color.lerp(Colors.lightGreen, Colors.grey[100], .92),
+      backgroundColor: Colors.lightGreen.lerpWith(Colors.grey[100]!, .92),
       tabBuilder: (context, idx) => CupertinoTabView(
         builder: (context) => bottomNavbarElements[idx].page,
       ),

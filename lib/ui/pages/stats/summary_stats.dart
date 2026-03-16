@@ -1,6 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/data_model/library_book_format.dart';
-import 'package:flutter/material.dart' show DateUtils;
+import 'package:book_track/extensions.dart';
 import 'package:intl/intl.dart';
 
 /// Summary statistics for a user's reading activity.
@@ -164,7 +164,7 @@ class _BookProgressDeltas {
 
     // Different format: convert via percentage
     final prevPercent = prevFormat.progressToPercent(prevEvent.progress);
-    return prevPercent != null ? format.percentToProgress(prevPercent) : 0;
+    return prevPercent.map((p) => format.percentToProgress(p)) ?? 0;
   }
 }
 
@@ -196,7 +196,7 @@ class _StreakResult {
     final days = <DateTime>{};
     for (final book in books) {
       for (final event in book.progressHistory) {
-        final date = DateUtils.dateOnly(event.end);
+        final date = event.end.startOfDay;
         if (cutoff == null || !date.isBefore(cutoff)) {
           days.add(date);
         }
@@ -213,10 +213,10 @@ class _StreakCalculator {
   final List<DateTime> _sorted;
 
   _StreakResult compute() {
-    final today = DateUtils.dateOnly(DateTime.now());
+    final today = DateTime.now().startOfDay;
     final yesterday = today.subtract(const Duration(days: 1));
-    final isActive = DateUtils.isSameDay(_sorted.last, today) ||
-        DateUtils.isSameDay(_sorted.last, yesterday);
+    final isActive = _sorted.last.sameDayAs(today) ||
+        _sorted.last.sameDayAs(yesterday);
 
     int longest = 1, longestStart = 0, longestEnd = 0;
     int running = 1, runningStart = 0;

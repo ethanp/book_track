@@ -1,6 +1,7 @@
 import 'dart:math' show max;
 
 import 'package:book_track/data_model.dart';
+import 'package:book_track/extensions.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
@@ -188,7 +189,7 @@ class _RollingAverageData {
     // Find the earliest reading date
     final earliestDate = progressDeltas
         .map((e) => e.key)
-        .reduce((a, b) => a.isBefore(b) ? a : b);
+        .minBy<num>((d) => d.millisecondsSinceEpoch);
 
     final today = DateTime.now();
 

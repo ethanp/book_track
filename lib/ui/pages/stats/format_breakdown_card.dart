@@ -138,13 +138,13 @@ class FormatBreakdownCard extends StatelessWidget {
   }
 
   Widget _pieChart(Map<BookFormat, double> data) {
-    final total = data.values.fold(0.0, (a, b) => a + b);
+    final total = data.values.sum;
 
     return PieChart(
       PieChartData(
         sectionsSpace: 2,
         centerSpaceRadius: 30,
-        sections: data.entries.map((entry) {
+        sections: data.entries.mapL((entry) {
           final percentage = total > 0 ? (entry.value / total * 100) : 0.0;
           return PieChartSectionData(
             color: formatColors[entry.key] ?? CupertinoColors.systemGrey,
@@ -157,7 +157,7 @@ class FormatBreakdownCard extends StatelessWidget {
             ),
             radius: 45,
           );
-        }).toList(),
+        }),
       ),
     );
   }
@@ -166,7 +166,7 @@ class FormatBreakdownCard extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: data.keys.map((format) => _legendItem(format, data)).toList(),
+      children: data.keys.mapL((format) => _legendItem(format, data)),
     );
   }
 

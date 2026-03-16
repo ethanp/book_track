@@ -1,7 +1,7 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/pages/stats/day_progress_entry.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show DateUtils;
+import 'package:book_track/extensions.dart';
 import 'package:intl/intl.dart';
 
 export 'day_progress_entry.dart';
@@ -63,7 +63,7 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
   /// Max activity value for relative color scaling
   int get _maxActivity {
     if (widget.activityByDay.isEmpty) return 1;
-    final max = widget.activityByDay.values.reduce((a, b) => a > b ? a : b);
+    final max = widget.activityByDay.values.max;
     return max > 0 ? max : 1;
   }
 
@@ -79,7 +79,7 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
   }
 
   Widget _heatmapGrid() {
-    final today = DateUtils.dateOnly(DateTime.now());
+    final today = DateTime.now().startOfDay;
     final months = _buildMonths(today);
 
     return SingleChildScrollView(
@@ -99,13 +99,11 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
   Widget _dayLabels() {
     const days = ['', 'M', '', 'W', '', 'F', ''];
     return Column(
-      children: days
-          .map((d) => SizedBox(
-                height: 12,
-                width: 20,
-                child: Text(d, style: const TextStyle(fontSize: 9)),
-              ))
-          .toList(),
+      children: days.mapL((d) => SizedBox(
+            height: 12,
+            width: 20,
+            child: Text(d, style: const TextStyle(fontSize: 9)),
+          )),
     );
   }
 
@@ -114,16 +112,14 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
 
     // Find the earliest date with actual activity data
     final earliestDataDate = widget.activityByDay.keys.isNotEmpty
-        ? widget.activityByDay.keys.reduce((a, b) => a.isBefore(b) ? a : b)
+        ? widget.activityByDay.keys.minBy<num>((d) => d.millisecondsSinceEpoch)
         : null;
 
     // Determine the start date based on:
     // 1. periodCutoff (if set) - takes precedence
     // 2. earliest data date (if exists), but cap at 2 years back max
     // 3. weeksToShow back from today (fallback if no data)
-    final cutoffDate = widget.periodCutoff != null
-        ? DateUtils.dateOnly(widget.periodCutoff!)
-        : null;
+    final cutoffDate = widget.periodCutoff?.startOfDay;
 
     DateTime effectiveStartDate;
     if (cutoffDate != null) {
@@ -243,7 +239,7 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
     bool hasAnyVisibleDays = false;
 
     for (int i = 0; i < 7; i++) {
-      final date = DateUtils.dateOnly(weekStart.add(Duration(days: i)));
+      final date = weekStart.add(Duration(days: i)).startOfDay;
 
       // Check if this date is in the current month
       final isInMonth =
@@ -273,8 +269,7 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
 
   Widget _dayCell(int activity, DateTime date) {
     final colorIndex = _activityToColorIndex(activity);
-    final isSelected =
-        selectedDate != null && DateUtils.isSameDay(date, selectedDate);
+    final isSelected = selectedDate?.sameDayAs(date) == true;
 
     return GestureDetector(
       onTap: () {

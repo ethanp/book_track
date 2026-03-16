@@ -20,13 +20,13 @@ class ProgressPerMonthChart extends StatelessWidget {
           CupertinoColors.systemGreen,
         ),
         audiobookByMonth = _progressByMonth(
-          books.where((b) => b.isAudiobook).toList(),
+          books.whereL((b) => b.isAudiobook),
           periodCutoff,
           'Audio',
           CupertinoColors.systemOrange,
         ),
         visualByMonth = _progressByMonth(
-          books.where((b) => !b.isAudiobook).toList(),
+          books.whereL((b) => !b.isAudiobook),
           periodCutoff,
           'Visual',
           CupertinoColors.systemBlue,
@@ -160,7 +160,7 @@ class ProgressPerMonthChart extends StatelessWidget {
               final spot = entry.value;
               final line = lines[spot.barIndex];
               final lineColor =
-                  Color.lerp(line.color, CupertinoColors.white, 0.5)!;
+                  line.color.lerpWith(CupertinoColors.white, 0.5);
               final prefix = isFirst ? '$monthStr\n' : '';
               return LineTooltipItem(
                 prefix,

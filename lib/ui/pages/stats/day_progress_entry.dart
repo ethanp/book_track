@@ -3,7 +3,6 @@ import 'dart:math' show max;
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show DateUtils;
 
 /// Progress made on a single book for a specific day.
 class DayProgressEntry {
@@ -118,7 +117,7 @@ class DayProgressEntry {
   /// Calculate progress entry for a single book on a given date.
   /// Returns null if no activity on that day.
   static DayProgressEntry? forBook(LibraryBook book, DateTime date) {
-    final normalizedDate = DateUtils.dateOnly(date);
+    final normalizedDate = date.startOfDay;
     final sorted = book.progressHistory.toList()
       ..sort((a, b) => a.end.compareTo(b.end));
 
@@ -130,7 +129,7 @@ class DayProgressEntry {
 
     for (int i = 0; i < sorted.length; i++) {
       final event = sorted[i];
-      if (!DateUtils.isSameDay(event.end, normalizedDate)) continue;
+      if (!event.end.sameDayAs(normalizedDate)) continue;
 
       final format = book.formatById(event.formatId);
       if (format == null || !format.hasLength) continue;
@@ -148,8 +147,7 @@ class DayProgressEntry {
       if (currPercent >= 100) finished = true;
     }
 
-    final abandoned = book.abandonedAt != null &&
-        DateUtils.isSameDay(book.abandonedAt!, normalizedDate);
+    final abandoned = book.abandonedAt?.sameDayAs(normalizedDate) == true;
 
     // opened = first event but no progress; started = first event with progress
     final opened = isFirstEvent && totalPercentDelta <= 0;

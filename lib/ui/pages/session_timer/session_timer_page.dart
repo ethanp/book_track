@@ -134,7 +134,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
       backgroundColor: CupertinoColors.white.withAlpha(0),
       segmentStyle: HexSegmentStyle(
         segmentBaseSize: const Size(.85, 3.0),
-        disabledColor: Color.lerp(backgroundColor, CupertinoColors.systemGrey, .3),
+        disabledColor: backgroundColor.lerpWith(CupertinoColors.systemGrey, .3),
         enabledColor: CupertinoColors.black,
       ),
     );

@@ -89,7 +89,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
       children: [
         showArchivedToggleButton(),
         if (_showingArchived)
-          bookSection('Archived', library.where((b) => b.archived).toList()),
+          bookSection('Archived', library.whereL((b) => b.archived)),
       ],
     );
   }
@@ -133,7 +133,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
       mainAxisSize: MainAxisSize.min,
       children: ReadingStatus.values.mapL(
         (readingStatus) => bookSection(readingStatus.name,
-            liveBooks.where((b) => b.readingStatus == readingStatus).toList()),
+            liveBooks.whereL((b) => b.readingStatus == readingStatus)),
       ),
     );
   }

@@ -17,7 +17,7 @@ class SupabaseLibraryService {
 
   static Future<List<LibraryBook>> myBooks() async {
     final library = await _forLoggedInUser();
-    final libraryBookIds = library.map((e) => e.supaId).toList();
+    final libraryBookIds = library.mapL((e) => e.supaId);
 
     final allProgressEvents =
         await SupabaseProgressService.historyForLibraryBooks(libraryBookIds);

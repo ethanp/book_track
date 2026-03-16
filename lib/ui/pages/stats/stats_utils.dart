@@ -1,5 +1,5 @@
 import 'package:book_track/data_model.dart';
-import 'package:flutter/material.dart' show DateUtils;
+import 'package:book_track/extensions.dart';
 
 /// Shared stats utilities for filtering and grouping data.
 class StatsUtils {
@@ -10,7 +10,7 @@ class StatsUtils {
     List<ProgressEvent> events,
     DateTime cutoff,
   ) {
-    return events.where((e) => e.end.isAfter(cutoff)).toList();
+    return events.whereL((e) => e.end.isAfter(cutoff));
   }
 
   /// Filter books to those with activity after the cutoff date.
@@ -29,7 +29,7 @@ class StatsUtils {
   ) {
     final map = <DateTime, List<ProgressEvent>>{};
     for (final event in events) {
-      final date = DateUtils.dateOnly(event.end);
+      final date = event.end.startOfDay;
       map.putIfAbsent(date, () => []).add(event);
     }
     return map;
