@@ -11,7 +11,6 @@ import 'package:book_track/ui/pages/stats/activity_calendar_card.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:book_track/ui/pages/stats/summary_stats_card.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class StatsPage extends ConsumerWidget {
@@ -108,7 +107,7 @@ class ChartCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: CupertinoColors.systemGrey.withOpacity(0.2),
+            color: CupertinoColors.systemGrey.withValues(alpha: 0.2),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, 3),

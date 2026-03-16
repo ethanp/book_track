@@ -58,7 +58,8 @@ class SupabaseBookService {
     String? author,
   }) async {
     try {
-      var query = _booksClient.select(_SupaBook.idCol).eq(_SupaBook.titleCol, title);
+      var query =
+          _booksClient.select(_SupaBook.idCol).eq(_SupaBook.titleCol, title);
       if (author != null && author.isNotEmpty) {
         query = query.eq(_SupaBook.authorCol, author);
       }

@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 
 /// A reusable wrapper that loads stats card data asynchronously.
 ///
@@ -107,7 +106,7 @@ class _AsyncStatsCardState<T> extends State<AsyncStatsCard<T>> {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: CupertinoColors.systemGrey.withOpacity(0.2),
+            color: CupertinoColors.systemGrey.withValues(alpha: 0.2),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, 3),
@@ -127,7 +126,7 @@ class _AsyncStatsCardState<T> extends State<AsyncStatsCard<T>> {
       decoration: BoxDecoration(
         color: CupertinoColors.systemBackground,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: CupertinoColors.systemRed.withOpacity(0.3)),
+        border: Border.all(color: CupertinoColors.systemRed.withValues(alpha: 0.3)),
       ),
       child: Center(
         child: Column(
@@ -141,7 +140,7 @@ class _AsyncStatsCardState<T> extends State<AsyncStatsCard<T>> {
             Text(
               'Error loading data',
               style: TextStyle(
-                color: CupertinoColors.systemRed.withOpacity(0.8),
+                color: CupertinoColors.systemRed.withValues(alpha: 0.8),
                 fontSize: 12,
               ),
             ),

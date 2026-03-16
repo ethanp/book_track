@@ -106,8 +106,8 @@ class RollingAverageChart extends StatelessWidget {
               show: true,
               gradient: LinearGradient(
                 colors: [
-                  CupertinoColors.systemGreen.withOpacity(0.3),
-                  CupertinoColors.systemGreen.withOpacity(0.05),
+                  CupertinoColors.systemGreen.withValues(alpha: 0.3),
+                  CupertinoColors.systemGreen.withValues(alpha: 0.05),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,

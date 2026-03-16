@@ -73,7 +73,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
               height: 26,
               child: CupertinoTextField(
                 decoration: BoxDecoration(
-                  color: CupertinoColors.systemGrey.withOpacity(0.1),
+                  color: CupertinoColors.systemGrey.withValues(alpha: 0.1),
                   border:
                       Border.all(color: CupertinoColors.systemGrey, width: 1),
                   borderRadius: BorderRadius.circular(5),

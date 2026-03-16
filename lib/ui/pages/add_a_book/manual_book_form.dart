@@ -132,7 +132,7 @@ class _ManualBookFormState extends ConsumerState<ManualBookForm> {
           Text('Format', style: TextStyles.h4),
           const SizedBox(height: 8),
           Row(
-            children: BookFormat.values.map(formatButton).toList(),
+            children: BookFormat.values.mapL(formatButton),
           ),
         ],
       ),

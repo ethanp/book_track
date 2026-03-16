@@ -56,7 +56,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
   }
 
   Widget libraryScreen(List<LibraryBook> library) {
-    _libraryOrder.sortDescending(library);
+    library.sortOn(_libraryOrder.compareFn, descending: true);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -175,9 +175,6 @@ enum _LibraryOrder {
   final Comparable Function(LibraryBook) compareFn;
 
   const _LibraryOrder(this.compareFn);
-
-  void sortDescending(List<LibraryBook> library) =>
-      library.sort((a, b) => compareFn(b).compareTo(compareFn(a)));
 
   // Enum constructor can only take "constants" (probably means lvalue?)
   static Comparable bookProgress(LibraryBook book) => book.progressPercentage;

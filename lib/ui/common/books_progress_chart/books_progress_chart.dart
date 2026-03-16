@@ -278,7 +278,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
-            color: CupertinoColors.black.withOpacity(0.1),
+            color: CupertinoColors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

@@ -62,8 +62,10 @@ class ProgressPerMonthChart extends StatelessWidget {
       }
     }
 
+    final sortedData = byMonth.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
     return ProgressLine(
-      data: byMonth.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
+      data: sortedData.mapL((e) => MonthDataPoint(e.key, e.value)),
       name: name,
       color: color,
     );
@@ -85,16 +87,19 @@ class ProgressPerMonthChart extends StatelessWidget {
   }
 
   Widget lineChart() {
-    final eventTimes =
-        lines.expand((l) => l.data).mapL((e) => yyyyMM.parse(e.key));
-    final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
-    final maxY = lines.expand((l) => l.data).map((e) => e.value).max;
-    const borderSide = BorderSide(color: CupertinoColors.black, width: 2);
+    final timespan = () {
+      final monthTimes =
+          lines.expand((line) => line.data).mapL((point) => point.dateTime);
+      return TimeSpan(beginning: monthTimes.min, end: monthTimes.max);
+    }();
 
     return LineChart(
       LineChartData(
         minY: 0,
-        maxY: maxY,
+        maxY: lines
+            .expand((line) => line.data)
+            .mapL((point) => point.progress)
+            .max,
         minX: timespan.beginning.millisSinceEpoch,
         maxX: timespan.end.millisSinceEpoch,
         gridData: FlGridData(
@@ -105,9 +110,12 @@ class ProgressPerMonthChart extends StatelessWidget {
         lineTouchData: touchData,
         lineBarsData: lines.mapL(_buildLine),
         borderData: FlBorderData(
-          show: true,
-          border: const Border(left: borderSide, bottom: borderSide),
-        ),
+            show: true,
+            border: () {
+              const borderSide =
+                  BorderSide(color: CupertinoColors.black, width: 2);
+              return const Border(left: borderSide, bottom: borderSide);
+            }()),
       ),
     );
   }
@@ -117,24 +125,23 @@ class ProgressPerMonthChart extends StatelessWidget {
     final currMonth = yyyyMM.format(now);
 
     return LineChartBarData(
-      spots: line.data.mapL((monthVal) {
-        final dateAsMillis = yyyyMM.parse(monthVal.key).millisecondsSinceEpoch;
-        final isCurrMonth = monthVal.key == currMonth;
+      spots: line.data.mapL((point) {
+        final isCurrMonth = point.monthKey == currMonth;
         return FlSpot(
-          dateAsMillis.toDouble(),
-          isCurrMonth ? _scaleEstimate(monthVal.value, now) : monthVal.value,
+          point.dateAsMillis.toDouble(),
+          isCurrMonth ? _scaleEstimate(point.progress, now) : point.progress,
         );
       }),
       isCurved: true,
       curveSmoothness: .05,
       belowBarData:
           line == totalByMonth ? gradientFill() : BarAreaData(show: false),
-      color: line.color.withOpacity(0.7),
+      color: line.color.withValues(alpha: 0.7),
       dotData: FlDotData(
         show: true,
         getDotPainter: (spot, xPercentage, bar, index) => FlDotCirclePainter(
           radius: 2,
-          color: line.color.withOpacity(0.8),
+          color: line.color.withValues(alpha: 0.8),
           strokeColor: CupertinoColors.black,
         ),
       ),
@@ -227,8 +234,8 @@ class ProgressPerMonthChart extends StatelessWidget {
       show: true,
       gradient: LinearGradient(
         colors: [
-          CupertinoColors.systemGreen.withOpacity(0.15),
-          CupertinoColors.systemGreen.withOpacity(0.04),
+          CupertinoColors.systemGreen.withValues(alpha: 0.15),
+          CupertinoColors.systemGreen.withValues(alpha: 0.04),
         ],
         stops: const [.4, 1],
         begin: Alignment.topCenter,
@@ -277,9 +284,27 @@ class ProgressLine {
     required this.color,
   });
 
-  final List<MapEntry<String, double>> data;
+  final List<MonthDataPoint> data;
   final String name;
   final Color color;
+}
+
+class MonthDataPoint {
+  const MonthDataPoint(this.monthKey, this.progress);
+
+  static final _yyyyMM = DateFormat('yyyy-MM');
+
+  /// Month in "yyyy-MM" format.
+  final String monthKey;
+
+  /// Progress value for this month.
+  final double progress;
+
+  /// Parsed month as DateTime.
+  DateTime get dateTime => _yyyyMM.parse(monthKey);
+
+  /// Parsed month as milliseconds since epoch.
+  int get dateAsMillis => dateTime.millisecondsSinceEpoch;
 }
 
 class _MonthAxis {

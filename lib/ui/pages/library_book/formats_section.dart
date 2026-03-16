@@ -251,13 +251,13 @@ class _AddFormatSheetState extends State<_AddFormatSheet> {
 
   @override
   Widget build(BuildContext context) {
-    var onSubmit = () {
+    void onSubmit() {
       if (_selectedFormat == null) return;
       final length = _lengthController!.value;
       if (length != null && length > 0) {
         Navigator.pop(context, (_selectedFormat!, length));
       }
-    };
+    }
     return CupertinoAlertDialog(
       title: const Text('Add Format'),
       content: Column(
@@ -334,12 +334,12 @@ class _EditLengthSheetState extends State<_EditLengthSheet> {
 
   @override
   Widget build(BuildContext context) {
-    var onSubmit = () {
+    void onSubmit() {
       final length = _controller.value;
       if (length != null && length > 0) {
         Navigator.pop(context, length);
       }
-    };
+    }
     return CupertinoAlertDialog(
       title: Text('Edit ${widget.format.format.name} Length'),
       content: Padding(

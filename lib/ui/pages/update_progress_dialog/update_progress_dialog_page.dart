@@ -14,7 +14,7 @@ import 'update_format_selector.dart';
 final SimpleLogger log = SimpleLogger(prefix: 'UpdateProgressDialogPage');
 
 class UpdateProgressDialogPage extends ConsumerStatefulWidget {
-  UpdateProgressDialogPage({
+  const UpdateProgressDialogPage({
     required this.book,
     this.startTime,
     this.initialEndTime,

@@ -33,7 +33,7 @@ class ReadingPatternsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: CupertinoColors.systemGrey.withOpacity(0.2),
+            color: CupertinoColors.systemGrey.withValues(alpha: 0.2),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, 3),
@@ -148,8 +148,8 @@ class _DayOfWeekChart extends StatelessWidget {
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
               colors: [
-                CupertinoColors.systemGreen.withOpacity(0.5),
-                CupertinoColors.systemGreen.withOpacity(0.85),
+                CupertinoColors.systemGreen.withValues(alpha: 0.5),
+                CupertinoColors.systemGreen.withValues(alpha: 0.85),
               ],
             ),
             borderRadius: const BorderRadius.vertical(

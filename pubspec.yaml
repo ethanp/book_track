@@ -16,6 +16,8 @@ environment:
   sdk: ^3.5.4
 
 dependencies:
+  ethan_utils:
+    path: ../ethan_utils
   cupertino_icons: ^1.0.8
   email_validator: ^3.0.0
   fl_chart: ^1.0.0
