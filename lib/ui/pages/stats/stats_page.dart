@@ -71,7 +71,7 @@ class StatsPage extends ConsumerWidget {
                     chart: BooksProgressChart(
                         books: books, periodCutoff: periodCutoff),
                   ),
-                  ProgressChartCard(books: books, periodCutoff: periodCutoff),
+                  ProgressChartCard(books: books, period: selectedPeriod),
                   FormatBreakdownCard(books: books, periodCutoff: periodCutoff),
                   ReadingPatternsCard(books: books, periodCutoff: periodCutoff),
                   ChartCard(

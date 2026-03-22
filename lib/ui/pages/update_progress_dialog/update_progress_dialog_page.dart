@@ -34,10 +34,15 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
   }
 
   ProgressEventFormat get initialProgressFormat =>
-      eventToUpdate?.format ??
-      (_initialFormat?.isAudiobook == true
-          ? ProgressEventFormat.minutes
-          : ProgressEventFormat.pageNum);
+      eventToUpdate?.format ?? _lastUsedProgressFormat;
+
+  ProgressEventFormat get _lastUsedProgressFormat {
+    final lastEvent = book.progressHistory.lastOrNull;
+    if (lastEvent != null) return lastEvent.format;
+    return _initialFormat?.isAudiobook == true
+        ? ProgressEventFormat.minutes
+        : ProgressEventFormat.pageNum;
+  }
 
   DateTime get initialTimestamp =>
       eventToUpdate?.end ?? initialEndTime ?? DateTime.now();

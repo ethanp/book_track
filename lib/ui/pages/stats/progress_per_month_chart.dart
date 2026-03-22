@@ -3,73 +3,97 @@ import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/books_progress_chart/timespan.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+DateTime _bucketStart(DateTime date, ProgressAggregation agg) => switch (agg) {
+      ProgressAggregation.daily => DateTime(date.year, date.month, date.day),
+      ProgressAggregation.weekly => () {
+          final monday = date.subtract(Duration(days: date.weekday - 1));
+          return DateTime(monday.year, monday.month, monday.day);
+        }(),
+      ProgressAggregation.monthly => DateTime(date.year, date.month),
+    };
+
 class ProgressPerMonthChart extends StatelessWidget {
   ProgressPerMonthChart({
     required this.books,
-    this.periodCutoff,
+    required this.period,
     super.key,
-  })  : totalByMonth = _progressByMonth(
+  })  : totalByPeriod = _progressByPeriod(
           books,
-          periodCutoff,
+          period,
           'Total',
           CupertinoColors.systemGreen,
         ),
-        audiobookByMonth = _progressByMonth(
+        audiobookByPeriod = _progressByPeriod(
           books.whereL((b) => b.isAudiobook),
-          periodCutoff,
+          period,
           'Audio',
           CupertinoColors.systemOrange,
         ),
-        visualByMonth = _progressByMonth(
+        visualByPeriod = _progressByPeriod(
           books.whereL((b) => !b.isAudiobook),
-          periodCutoff,
+          period,
           'Visual',
           CupertinoColors.systemBlue,
         );
 
   final List<LibraryBook> books;
-  final DateTime? periodCutoff;
+  final StatsPeriod period;
 
-  final ProgressLine totalByMonth;
-  final ProgressLine audiobookByMonth;
-  final ProgressLine visualByMonth;
+  final ProgressLine totalByPeriod;
+  final ProgressLine audiobookByPeriod;
+  final ProgressLine visualByPeriod;
 
   List<ProgressLine> get lines =>
-      [totalByMonth, audiobookByMonth, visualByMonth];
+      [totalByPeriod, audiobookByPeriod, visualByPeriod];
 
-  static final yyyyMM = DateFormat('yyyy-MM');
-
-  static ProgressLine _progressByMonth(
+  static ProgressLine _progressByPeriod(
     List<LibraryBook> books,
-    DateTime? periodCutoff,
+    StatsPeriod period,
     String name,
     Color color,
   ) {
-    final byMonth = <String, double>{};
+    final agg = period.chartAggregation;
+    final periodCutoff = period.cutoffDate;
+    final byBucket = <DateTime, double>{};
 
     for (final book in books) {
       for (final diff in book.progressDiffs) {
         if (periodCutoff != null && diff.key.isBefore(periodCutoff)) continue;
-        final key = yyyyMM.format(diff.key);
-        if (diff.value > 0) {
-          byMonth[key] = (byMonth[key] ?? 0) + diff.value;
-        }
+        if (diff.value <= 0) continue;
+        final bucketDate = _bucketStart(diff.key, agg);
+        byBucket[bucketDate] = (byBucket[bucketDate] ?? 0) + diff.value;
       }
     }
 
-    final sortedData = byMonth.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
-    return ProgressLine(
-      data: sortedData.mapL((e) => MonthDataPoint(e.key, e.value)),
-      name: name,
-      color: color,
-    );
+    if (agg != ProgressAggregation.monthly && periodCutoff != null) {
+      var bucket = _bucketStart(periodCutoff, agg);
+      final todayBucket = _bucketStart(DateTime.now(), agg);
+      while (!bucket.isAfter(todayBucket)) {
+        byBucket.putIfAbsent(bucket, () => 0);
+        bucket = _advanceBucket(bucket, agg);
+      }
+    }
+
+    final sortedPoints = (byBucket.entries.toList()
+          ..sort((a, b) => a.key.compareTo(b.key)))
+        .map((entry) => ProgressDataPoint(entry.key, entry.value))
+        .toList();
+    return ProgressLine(data: sortedPoints, name: name, color: color);
   }
+
+  static DateTime _advanceBucket(DateTime date, ProgressAggregation agg) =>
+      switch (agg) {
+        ProgressAggregation.daily => date.add(const Duration(days: 1)),
+        ProgressAggregation.weekly => date.add(const Duration(days: 7)),
+        ProgressAggregation.monthly =>
+          DateTime(date.year, date.month + 1),
+      };
 
   static const noAxisTitles =
       AxisTitles(sideTitles: SideTitles(showTitles: false));
@@ -77,7 +101,7 @@ class ProgressPerMonthChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (totalByMonth.data.isEmpty) {
+    if (totalByPeriod.data.isEmpty) {
       return const Center(child: Text('No reading data in this period'));
     }
     return Stack(children: [
@@ -88,9 +112,9 @@ class ProgressPerMonthChart extends StatelessWidget {
 
   Widget lineChart() {
     final timespan = () {
-      final monthTimes =
-          lines.expand((line) => line.data).mapL((point) => point.dateTime);
-      return TimeSpan(beginning: monthTimes.min, end: monthTimes.max);
+      final pointTimes =
+          lines.expand((line) => line.data).mapL((point) => point.date);
+      return TimeSpan(beginning: pointTimes.min, end: pointTimes.max);
     }();
 
     return LineChart(
@@ -106,8 +130,8 @@ class ProgressPerMonthChart extends StatelessWidget {
           horizontalInterval: horizontalInterval,
           drawVerticalLine: false,
         ),
-        titlesData: labelAxes(timespan),
-        lineTouchData: touchData,
+        titlesData: _labelAxes(timespan),
+        lineTouchData: _touchData,
         lineBarsData: lines.mapL(_buildLine),
         borderData: FlBorderData(
             show: true,
@@ -121,47 +145,41 @@ class ProgressPerMonthChart extends StatelessWidget {
   }
 
   LineChartBarData _buildLine(ProgressLine line) {
+    final agg = period.chartAggregation;
     final now = DateTime.now();
-    final currMonth = yyyyMM.format(now);
+    final currentBucket = _bucketStart(now, agg);
 
     return LineChartBarData(
       spots: line.data.mapL((point) {
-        final isCurrMonth = point.monthKey == currMonth;
-        return FlSpot(
-          point.dateAsMillis.toDouble(),
-          isCurrMonth ? _scaleEstimate(point.progress, now) : point.progress,
-        );
+        final isCurrentBucket = point.date == currentBucket;
+        final progress = isCurrentBucket && agg == ProgressAggregation.monthly
+            ? _scaleMonthEstimate(point.progress, now)
+            : point.progress;
+        return FlSpot(point.dateAsMillis, progress);
       }),
-      isCurved: true,
+      isCurved: agg != ProgressAggregation.daily,
       curveSmoothness: .05,
       belowBarData:
-          line == totalByMonth ? gradientFill() : BarAreaData(show: false),
+          line == totalByPeriod ? _gradientFill() : BarAreaData(show: false),
       color: line.color.withValues(alpha: 0.7),
-      dotData: FlDotData(
-        show: true,
-        getDotPainter: (spot, xPercentage, bar, index) => FlDotCirclePainter(
-          radius: 2,
-          color: line.color.withValues(alpha: 0.8),
-          strokeColor: CupertinoColors.black,
-        ),
-      ),
+      dotData: const FlDotData(show: false),
     );
   }
 
-  LineTouchData get touchData => LineTouchData(
+  LineTouchData get _touchData => LineTouchData(
         touchTooltipData: LineTouchTooltipData(
           getTooltipItems: (spots) {
             if (spots.isEmpty) return [];
             final date =
                 DateTime.fromMillisecondsSinceEpoch(spots.first.x.toInt());
-            final monthStr = DateFormat('MMM yyyy').format(date);
+            final dateStr = _tooltipDateString(date);
             return spots.asMap().entries.map((entry) {
               final isFirst = entry.key == 0;
               final spot = entry.value;
               final line = lines[spot.barIndex];
               final lineColor =
                   line.color.lerpWith(CupertinoColors.white, 0.5);
-              final prefix = isFirst ? '$monthStr\n' : '';
+              final prefix = isFirst ? '$dateStr\n' : '';
               return LineTooltipItem(
                 prefix,
                 const TextStyle(
@@ -180,6 +198,15 @@ class ProgressPerMonthChart extends StatelessWidget {
           },
         ),
       );
+
+  String _tooltipDateString(DateTime date) {
+    return switch (period.chartAggregation) {
+      ProgressAggregation.monthly => DateFormat('MMM yyyy').format(date),
+      ProgressAggregation.weekly =>
+        'Week of ${DateFormat('MMM d').format(date)}',
+      ProgressAggregation.daily => DateFormat('MMM d, yyyy').format(date),
+    };
+  }
 
   Widget chartLegend() {
     return Positioned(
@@ -217,19 +244,20 @@ class ProgressPerMonthChart extends StatelessWidget {
     );
   }
 
-  double _scaleEstimate(double x, DateTime now) =>
-      x / now.day * monthLength(now.month, now.year);
+  double _scaleMonthEstimate(double progress, DateTime now) =>
+      progress / now.day * _monthLength(now.month, now.year);
 
-  static FlTitlesData labelAxes(TimeSpan timespan) {
+  FlTitlesData _labelAxes(TimeSpan timespan) {
     return FlTitlesData(
-      leftTitles: progressAxisTitles(shiftTitle: const Offset(20, -10)),
+      leftTitles: ProgressPerMonthChart.progressAxisTitles(
+          shiftTitle: const Offset(20, -10)),
       rightTitles: noAxisTitles,
-      bottomTitles: _MonthAxis(timespan).titles(),
+      bottomTitles: _PeriodAxis(timespan, period).titles(),
       topTitles: noAxisTitles,
     );
   }
 
-  static BarAreaData gradientFill() {
+  static BarAreaData _gradientFill() {
     return BarAreaData(
       show: true,
       gradient: LinearGradient(
@@ -268,7 +296,7 @@ class ProgressPerMonthChart extends StatelessWidget {
     );
   }
 
-  static num monthLength(int month, int year) => month == 2
+  static num _monthLength(int month, int year) => month == 2
       ? year % 4 == 0
           ? 29
           : 28
@@ -284,51 +312,44 @@ class ProgressLine {
     required this.color,
   });
 
-  final List<MonthDataPoint> data;
+  final List<ProgressDataPoint> data;
   final String name;
   final Color color;
 }
 
-class MonthDataPoint {
-  const MonthDataPoint(this.monthKey, this.progress);
+class ProgressDataPoint {
+  const ProgressDataPoint(this.date, this.progress);
 
-  static final _yyyyMM = DateFormat('yyyy-MM');
+  /// Start of the aggregation bucket (day, week, or month).
+  final DateTime date;
 
-  /// Month in "yyyy-MM" format.
-  final String monthKey;
-
-  /// Progress value for this month.
   final double progress;
 
-  /// Parsed month as DateTime.
-  DateTime get dateTime => _yyyyMM.parse(monthKey);
-
-  /// Parsed month as milliseconds since epoch.
-  int get dateAsMillis => dateTime.millisecondsSinceEpoch;
+  double get dateAsMillis => date.millisecondsSinceEpoch.toDouble();
 }
 
-class _MonthAxis {
-  const _MonthAxis(this.timespan);
+class _PeriodAxis {
+  const _PeriodAxis(this.timespan, this.period);
 
   final TimeSpan timespan;
+  final StatsPeriod period;
 
   AxisTitles titles() {
     return AxisTitles(
-      axisNameWidget: monthAxisName(),
-      sideTitles: monthTextLabels(),
+      axisNameWidget: _axisName(),
+      sideTitles: _textLabels(),
       axisNameSize: 24,
     );
   }
 
-  Widget monthAxisName() {
+  Widget _axisName() {
     return FlutterHelpers.transform(
       shift: const Offset(20, 0),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Month', style: TextStyles.sideAxisLabel),
           Padding(
-            padding: const EdgeInsets.only(top: 1, left: 10),
+            padding: const EdgeInsets.only(top: 1),
             child: Text(
               'Starting ${TimeHelpers.monthDayYear(timespan.beginning)}',
               style: TextStyles.sideAxisLabelThin,
@@ -339,39 +360,61 @@ class _MonthAxis {
     );
   }
 
-  SideTitles monthTextLabels() {
+  SideTitles _textLabels() {
     return SideTitles(
       showTitles: true,
       minIncluded: false,
       maxIncluded: true,
       reservedSize: 26,
-      interval: const Duration(days: 1).inMilliseconds.toDouble(),
-      getTitlesWidget: (double value, TitleMeta c) {
-        if (DateTime.fromMillisecondsSinceEpoch(value.toInt()).day == 1) {
-          return FlutterHelpers.transform(
-            shift: const Offset(2, 2),
-            angleDegrees: 40,
-            child: dateText(value),
-          );
-        } else {
-          return const SizedBox.shrink();
-        }
+      interval: _tickIntervalMillis,
+      getTitlesWidget: (double value, TitleMeta meta) {
+        final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+        if (!_shouldRenderLabel(date)) return const SizedBox.shrink();
+        return FlutterHelpers.transform(
+          shift: const Offset(2, 2),
+          angleDegrees: 40,
+          child: _labelText(date),
+        );
       },
     );
   }
 
-  Widget dateText(double value) {
-    final dateTime = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-    if (dateTime.month == 1) {
+  double get _tickIntervalMillis {
+    const oneDayMillis = 86400000.0;
+    return switch (period) {
+      StatsPeriod.week => oneDayMillis,
+      StatsPeriod.month => oneDayMillis * 7,
+      StatsPeriod.quarter => oneDayMillis * 14,
+      StatsPeriod.sixMonths => oneDayMillis * 28,
+      StatsPeriod.year || StatsPeriod.allTime => oneDayMillis,
+    };
+  }
+
+  bool _shouldRenderLabel(DateTime date) {
+    // Monthly mode: fire every day, only render on the 1st.
+    if (period == StatsPeriod.year || period == StatsPeriod.allTime) {
+      return date.day == 1;
+    }
+    return true;
+  }
+
+  Widget _labelText(DateTime date) {
+    final agg = period.chartAggregation;
+    if (agg == ProgressAggregation.monthly) {
+      if (date.month == 1) {
+        return Text(
+          DateFormat('MMM yy').format(date),
+          style: const TextStyle(letterSpacing: -.4, fontSize: 10),
+        );
+      }
       return Text(
-        DateFormat('MMM yy').format(dateTime),
-        style: const TextStyle(letterSpacing: -.4, fontSize: 10),
-      );
-    } else {
-      return Text(
-        DateFormat('MMM').format(dateTime),
+        DateFormat('MMM').format(date),
         style: const TextStyle(letterSpacing: -.4, fontSize: 10),
       );
     }
+    return Text(
+      DateFormat('MMM d').format(date),
+      style: const TextStyle(letterSpacing: -.4, fontSize: 10),
+    );
   }
 }

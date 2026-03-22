@@ -1,3 +1,4 @@
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Provider for the archive filter toggle in stats.
@@ -8,26 +9,34 @@ final showArchivedProvider = StateProvider<bool>((ref) => true);
 final statsPeriodProvider =
     StateProvider<StatsPeriod>((ref) => StatsPeriod.allTime);
 
+enum ProgressAggregation { daily, weekly, monthly }
+
 /// Time period options for filtering stats.
 enum StatsPeriod {
-  week('7D'),
-  month('30D'),
-  quarter('90D'),
-  year('YTD'),
-  allTime('All');
+  week(label: '7D', daysAgo: 7),
+  month(label: '30D', daysAgo: 30),
+  quarter(label: '90D', daysAgo: 90),
+  sixMonths(label: '6M', daysAgo: 182),
+  year(label: '1Y', daysAgo: 365),
+  allTime(label: 'All', daysAgo: null);
 
-  const StatsPeriod(this.label);
+  const StatsPeriod({required this.label, required this.daysAgo});
+
   final String label;
+  final int? daysAgo;
 
   /// Returns null for allTime (meaning no cutoff - show all data).
   DateTime? get cutoffDate {
-    final now = DateTime.now();
-    return switch (this) {
-      StatsPeriod.week => now.subtract(const Duration(days: 7)),
-      StatsPeriod.month => now.subtract(const Duration(days: 30)),
-      StatsPeriod.quarter => now.subtract(const Duration(days: 90)),
-      StatsPeriod.year => DateTime(now.year, 1, 1),
-      StatsPeriod.allTime => null, // No cutoff - use earliest data date
-    };
+    return daysAgo
+        .map((int days) => DateTime.now().subtract(Duration(days: days)));
   }
+
+  ProgressAggregation get chartAggregation => switch (this) {
+        StatsPeriod.week ||
+        StatsPeriod.month ||
+        StatsPeriod.quarter =>
+          ProgressAggregation.daily,
+        StatsPeriod.sixMonths => ProgressAggregation.weekly,
+        StatsPeriod.year || StatsPeriod.allTime => ProgressAggregation.monthly,
+      };
 }

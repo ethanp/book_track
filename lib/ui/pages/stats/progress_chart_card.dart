@@ -1,18 +1,20 @@
 import 'package:book_track/data_model.dart';
+import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/progress_per_month_chart.dart';
 import 'package:book_track/ui/pages/stats/rolling_average_chart.dart';
+import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:flutter/cupertino.dart';
 
 class ProgressChartCard extends StatelessWidget {
   const ProgressChartCard({
     required this.books,
-    required this.periodCutoff,
+    required this.period,
     super.key,
   });
 
   final List<LibraryBook> books;
-  final DateTime? periodCutoff;
+  final StatsPeriod period;
 
   @override
   Widget build(BuildContext context) {
@@ -41,14 +43,14 @@ class ProgressChartCard extends StatelessWidget {
             'Rolling Average',
             RollingAverageChart(
               books: books,
-              periodCutoff: periodCutoff,
+              periodCutoff: period.cutoffDate,
             ),
           ),
           _chartSection(
-            'Monthly',
+            period.chartAggregation.name.capitalize,
             ProgressPerMonthChart(
               books: books,
-              periodCutoff: periodCutoff,
+              period: period,
             ),
           ),
         ],

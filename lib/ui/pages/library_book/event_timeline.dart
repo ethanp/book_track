@@ -54,15 +54,27 @@ class _EventTimelineItem extends ConsumerWidget {
   }
 
   Widget eventInfo() {
-    final progressString = progressEvent.stringWSuffix;
     final percentString = libraryBook.intPercentProgressAt(progressEvent);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         dateTimeString(),
-        Text('Progress: $progressString ($percentString%)'),
+        Text('Progress: ${_progressDisplayString()} ($percentString%)'),
       ],
     );
+  }
+
+  String _progressDisplayString() {
+    if (progressEvent.format != ProgressEventFormat.percent) {
+      return progressEvent.stringWSuffix;
+    }
+    final nativeAmount = libraryBook.pagesAt(progressEvent);
+    if (nativeAmount <= 0) return progressEvent.stringWSuffix;
+    final bookFormat = libraryBook.formatById(progressEvent.formatId);
+    if (bookFormat?.isAudiobook == true) {
+      return '${nativeAmount.toInt().minsToHhMm} hh:mm';
+    }
+    return '${nativeAmount.round()} pgs';
   }
 
   Widget modifyButtons(WidgetRef ref) =>

@@ -51,6 +51,12 @@ class RollingAverageChart extends StatelessWidget {
   Widget _lineChart(_RollingAverageData data) {
     final minX = data.scores.first.x;
     final maxX = data.scores.last.x;
+    final spanDays = (maxX - minX) / const Duration(days: 1).inMilliseconds;
+    final axisInterval = spanDays <= 14
+        ? const Duration(days: 2).inMilliseconds.toDouble()
+        : spanDays <= 60
+            ? const Duration(days: 7).inMilliseconds.toDouble()
+            : const Duration(days: 30).inMilliseconds.toDouble();
 
     return LineChart(
       LineChartData(
@@ -84,7 +90,7 @@ class RollingAverageChart extends StatelessWidget {
               showTitles: true,
               minIncluded: false,
               reservedSize: 22,
-              interval: const Duration(days: 30).inMilliseconds.toDouble(),
+              interval: axisInterval,
               getTitlesWidget: (value, meta) {
                 final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
                 return Text(
@@ -169,15 +175,12 @@ class _RollingAverageData {
     List<LibraryBook> books, {
     DateTime? periodCutoff,
   }) {
-    // Collect all progress percentage deltas with their dates
+    // Collect all progress deltas across full history for accurate window computation
     final progressDeltas = <MapEntry<DateTime, double>>[];
     for (final book in books) {
       if (book.formats.isEmpty) continue;
-      final diffs = book.progressDiffs;
-      for (final diff in diffs) {
-        if (periodCutoff == null || diff.key.isAfter(periodCutoff)) {
-          if (diff.value > 0) progressDeltas.add(diff);
-        }
+      for (final diff in book.progressDiffs) {
+        if (diff.value > 0) progressDeltas.add(diff);
       }
     }
 
@@ -186,39 +189,40 @@ class _RollingAverageData {
           scores: [], currentScore: 0, maxScore: 0);
     }
 
-    // Find the earliest reading date
     final earliestDate = progressDeltas
         .map((e) => e.key)
         .minBy<num>((d) => d.millisecondsSinceEpoch);
 
     final today = DateTime.now();
-
-    // Start calculating from 30 days after the earliest date
-    // (since we need a 30-day window for the rolling average)
     final startDate = earliestDate.add(const Duration(days: 30));
+    final daysToShow = today.difference(startDate).inDays;
 
-    // Apply period cutoff if provided
-    final effectiveStart =
-        periodCutoff != null && periodCutoff.isAfter(startDate)
-            ? periodCutoff
-            : startDate;
-
-    final daysToShow = today.difference(effectiveStart).inDays;
-
-    final scores = <FlSpot>[];
-    double maxScore = 0;
-
-    // Calculate rolling average for each day from start to today
+    final allScores = <FlSpot>[];
     for (int i = 0; i <= daysToShow; i++) {
-      final date = effectiveStart.add(Duration(days: i));
+      final date = startDate.add(Duration(days: i));
       final score = _calculateScore(date, progressDeltas);
-      scores.add(FlSpot(date.millisecondsSinceEpoch.toDouble(), score));
-      if (score > maxScore) maxScore = score;
+      allScores.add(FlSpot(date.millisecondsSinceEpoch.toDouble(), score));
     }
 
+    // Clip to the visible window defined by periodCutoff
+    final displayedScores = periodCutoff == null
+        ? allScores
+        : allScores
+            .where((spot) =>
+                spot.x >= periodCutoff.millisecondsSinceEpoch.toDouble())
+            .toList();
+
+    if (displayedScores.isEmpty) {
+      return const _RollingAverageData(
+          scores: [], currentScore: 0, maxScore: 0);
+    }
+
+    final maxScore =
+        displayedScores.map((s) => s.y).reduce((a, b) => a > b ? a : b);
+
     return _RollingAverageData(
-      scores: scores,
-      currentScore: scores.isNotEmpty ? scores.last.y : 0,
+      scores: displayedScores,
+      currentScore: displayedScores.last.y,
       maxScore: maxScore > 0 ? maxScore : 1,
     );
   }
