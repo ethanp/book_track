@@ -7,6 +7,7 @@ import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/books_progress_chart/date_axis.dart';
 import 'package:book_track/ui/common/books_progress_chart/timespan.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -193,47 +194,50 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
     final (book, event, percent) = _selectedEvent!;
     final dateStr = DateFormat('MMM d, yyyy').format(event.end);
 
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        children: [
-          _bookCover(book, size: 40),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              book.book.title,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+    return GestureDetector(
+      onTap: () => context.push(LibraryBookPage(book.supaId)),
+      child: Container(
+        height: 50,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: [
+            _bookCover(book, size: 40),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                book.book.title,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
-          ),
-          const SizedBox(width: 10),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${percent.round()}%',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: CupertinoColors.systemGreen,
+            const SizedBox(width: 10),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${percent.round()}%',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: CupertinoColors.systemGreen,
+                  ),
                 ),
-              ),
-              Text(
-                dateStr,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: CupertinoColors.systemGrey,
+                Text(
+                  dateStr,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: CupertinoColors.systemGrey,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -416,10 +420,8 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
             // Use format-based color if enabled
             final Color dotColor = widget.colorByFormat
                 ? colorForFormat(format?.format)
-                : Colors.blue
-                    .withValues(alpha: .7)
-                    .lerpWith(
-                        Colors.blueGrey.withValues(alpha: .8), xPercentage / 100);
+                : Colors.blue.withValues(alpha: .7).lerpWith(
+                    Colors.blueGrey.withValues(alpha: .8), xPercentage / 100);
 
             return FlDotCirclePainter(
               radius: radius,

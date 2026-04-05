@@ -32,11 +32,11 @@ enum StatsPeriod {
   }
 
   ProgressAggregation get chartAggregation => switch (this) {
-        StatsPeriod.week ||
-        StatsPeriod.month ||
-        StatsPeriod.quarter =>
-          ProgressAggregation.daily,
-        StatsPeriod.sixMonths => ProgressAggregation.weekly,
-        StatsPeriod.year || StatsPeriod.allTime => ProgressAggregation.monthly,
+        StatsPeriod.week || StatsPeriod.month => ProgressAggregation.daily,
+        StatsPeriod.quarter => ProgressAggregation.weekly,
+        StatsPeriod.sixMonths ||
+        StatsPeriod.year ||
+        StatsPeriod.allTime =>
+          ProgressAggregation.monthly,
       };
 }

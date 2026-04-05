@@ -2,6 +2,7 @@ import 'dart:math' show max;
 
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:flutter/cupertino.dart';
 
 /// Progress made on a single book for a specific day.
@@ -46,46 +47,49 @@ class DayProgressEntry {
     return null;
   }
 
-  Widget buildTile() {
+  Widget buildTile(BuildContext context) {
     final status = statusLabel;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        children: [
-          _bookCover(),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  book.book.title,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 13),
-                ),
-                if (status != null)
+    return GestureDetector(
+      onTap: () => context.push(LibraryBookPage(book.supaId)),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Row(
+          children: [
+            _bookCover(),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    status,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: abandoned
-                          ? CupertinoColors.systemOrange
-                          : CupertinoColors.systemBlue,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    book.book.title,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 13),
                   ),
-              ],
+                  if (status != null)
+                    Text(
+                      status,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: abandoned
+                            ? CupertinoColors.systemOrange
+                            : CupertinoColors.systemBlue,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-          Text(
-            progressLabel,
-            style: const TextStyle(
-              fontSize: 12,
-              color: CupertinoColors.systemGreen,
-              fontWeight: FontWeight.w600,
+            Text(
+              progressLabel,
+              style: const TextStyle(
+                fontSize: 12,
+                color: CupertinoColors.systemGreen,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -108,9 +112,10 @@ class DayProgressEntry {
   }
 
   /// Build tiles for all books with progress on a given date.
-  static List<Widget> tilesForDate(DateTime date, List<LibraryBook> books) =>
+  static List<Widget> tilesForDate(
+          DateTime date, List<LibraryBook> books, BuildContext context) =>
       books
-          .map((book) => DayProgressEntry.forBook(book, date)?.buildTile())
+          .map((book) => DayProgressEntry.forBook(book, date)?.buildTile(context))
           .nonNulls
           .toList();
 

@@ -45,8 +45,7 @@ class SummaryStatsCard extends StatelessWidget {
         children: [
           _title(),
           _statusRow(stats),
-          _totalsRow(stats),
-          _streakRow(stats),
+          _totalsAndStreakRow(stats),
           const SizedBox(height: 16),
         ],
       ),
@@ -54,9 +53,12 @@ class SummaryStatsCard extends StatelessWidget {
   }
 
   Widget _title() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 18, bottom: 16),
-      child: Text('Your Reading Stats', style: TextStyles.h3),
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 18, bottom: 16, left: 16),
+        child: Text('Your Reading Stats', style: TextStyles.h3),
+      ),
     );
   }
 
@@ -76,7 +78,7 @@ class SummaryStatsCard extends StatelessWidget {
     );
   }
 
-  Widget _totalsRow(SummaryStats stats) {
+  Widget _totalsAndStreakRow(SummaryStats stats) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
@@ -84,17 +86,6 @@ class SummaryStatsCard extends StatelessWidget {
         children: [
           _statTile(_formatNumber(stats.totalPages), 'pages read'),
           _statTile('${stats.totalHours}h', 'listened'),
-        ],
-      ),
-    );
-  }
-
-  Widget _streakRow(SummaryStats stats) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
           _streakTile('Current Streak', stats.currentStreak, null),
           _streakTile('Longest Streak', stats.longestStreak,
               stats.longestStreakDateRange),
@@ -134,7 +125,7 @@ class SummaryStatsCard extends StatelessWidget {
       children: [
         Text(
           value,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Text(

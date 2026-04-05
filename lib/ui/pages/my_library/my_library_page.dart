@@ -5,9 +5,11 @@ import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/sign_out_button.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'book_tile.dart';
+import 'package:book_track/ui/pages/my_library/archived_books_section.dart';
+import 'package:book_track/ui/pages/my_library/book_tile.dart';
 import 'dismissible_cupertino_bottom_sheet.dart';
 
 class MyLibraryPage extends ConsumerStatefulWidget {
@@ -19,8 +21,6 @@ class MyLibraryPage extends ConsumerStatefulWidget {
 
 class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
   static final SimpleLogger log = SimpleLogger(prefix: 'MyLibraryPage');
-
-  bool _showingArchived = false;
 
   _LibraryOrder _libraryOrder = _LibraryOrder.progress;
 
@@ -62,7 +62,8 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
       children: [
         sortSelector(),
         userLibraryByStatus(library),
-        if (library.any((b) => b.archived)) archivedSection(library),
+        if (library.any((b) => b.archived))
+          ArchivedBooksSection(books: library.whereL((b) => b.archived)),
       ],
     );
   }
@@ -83,31 +84,10 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     );
   }
 
-  Widget archivedSection(List<LibraryBook> library) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        showArchivedToggleButton(),
-        if (_showingArchived)
-          bookSection('Archived', library.whereL((b) => b.archived)),
-      ],
-    );
-  }
-
-  Widget showArchivedToggleButton() {
-    return CupertinoButton(
-      child: Text(
-        '${_showingArchived ? 'Hide' : 'See'} archived books...',
-        style: TextStyles.h3.copyWith(color: CupertinoColors.activeBlue),
-      ),
-      onPressed: () => setState(() => _showingArchived = !_showingArchived),
-    );
-  }
-
   Widget errorScreen(Object err, StackTrace stack) {
     final String errorMessage = 'Error loading your library $err $stack';
     log(errorMessage, error: true);
-    return Text(errorMessage, style: TextStyles.h1);
+    return SelectableText(errorMessage, style: TextStyles.h1);
   }
 
   Widget loadingScreen() =>

@@ -308,7 +308,7 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
 
   Widget _dayDetails(DateTime date) {
     final dateStr = DateFormat('MMM d, yyyy').format(date);
-    final tiles = DayProgressEntry.tilesForDate(date, widget.books);
+    final tiles = DayProgressEntry.tilesForDate(date, widget.books, context);
 
     return Container(
       padding: const EdgeInsets.all(12),

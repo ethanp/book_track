@@ -35,9 +35,12 @@ class ProgressChartCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 18, bottom: 12),
-            child: Text('Reading Progress', style: TextStyles.h3),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 18, bottom: 12, left: 16),
+              child: Text('Reading Progress', style: TextStyles.h3),
+            ),
           ),
           _chartSection(
             'Rolling Average',

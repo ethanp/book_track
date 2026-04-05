@@ -41,20 +41,4 @@ class SupabaseAuthService {
 
   static Future<void> sentPasswordResetLink(String email) =>
       supabase.auth.resetPasswordForEmail(email);
-
-  static Future<void> resetPassword({
-    required String emailInput,
-    required String passwordInput,
-    required String tokenInput,
-  }) async {
-    final recovery = await supabase.auth.verifyOTP(
-      email: emailInput,
-      token: tokenInput,
-      type: OtpType.recovery,
-    );
-    log('recovery $recovery');
-    await supabase.auth.updateUser(UserAttributes(
-      password: passwordInput,
-    ));
-  }
 }

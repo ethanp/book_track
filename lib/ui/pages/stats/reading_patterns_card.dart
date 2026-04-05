@@ -45,7 +45,10 @@ class ReadingPatternsCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Text('Reading Patterns', style: TextStyles.h3)),
+            Padding(
+              padding: const EdgeInsets.only(top: 18, bottom: 8, left: 16),
+              child: Text('Reading Patterns', style: TextStyles.h3),
+            ),
             const SizedBox(height: 16),
             const Text(
               'Most Active Days (by progress)',

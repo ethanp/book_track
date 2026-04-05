@@ -5,6 +5,7 @@ import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 class BookTile extends ConsumerWidget {
   const BookTile(this.book, this.idx);
@@ -45,6 +46,7 @@ class BookTile extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [author(), pagesRead()],
                   ),
+                  startedDate(),
                   SizedBox(height: 8),
                   progressBar(),
                 ],
@@ -82,6 +84,14 @@ class BookTile extends ConsumerWidget {
         color: Colors.grey[600],
         fontSize: 14,
       ),
+    );
+  }
+
+  Widget startedDate() {
+    final String formatted = DateFormat('MMM d, y').format(book.startTime);
+    return Text(
+      'Started $formatted',
+      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
     );
   }
 

@@ -89,10 +89,12 @@ class ProgressPerMonthChart extends StatelessWidget {
 
   static DateTime _advanceBucket(DateTime date, ProgressAggregation agg) =>
       switch (agg) {
-        ProgressAggregation.daily => date.add(const Duration(days: 1)),
-        ProgressAggregation.weekly => date.add(const Duration(days: 7)),
-        ProgressAggregation.monthly =>
-          DateTime(date.year, date.month + 1),
+        // date.add(const Duration(days: 7)) leads to a DST bug on the chart.
+        ProgressAggregation.daily =>
+          DateTime(date.year, date.month, date.day + 1),
+        ProgressAggregation.weekly =>
+          DateTime(date.year, date.month, date.day + 7),
+        ProgressAggregation.monthly => DateTime(date.year, date.month + 1),
       };
 
   static const noAxisTitles =
@@ -152,9 +154,13 @@ class ProgressPerMonthChart extends StatelessWidget {
     return LineChartBarData(
       spots: line.data.mapL((point) {
         final isCurrentBucket = point.date == currentBucket;
-        final progress = isCurrentBucket && agg == ProgressAggregation.monthly
-            ? _scaleMonthEstimate(point.progress, now)
-            : point.progress;
+        final progress = switch (agg) {
+          ProgressAggregation.monthly when isCurrentBucket =>
+            _scaleMonthEstimate(point.progress, now),
+          ProgressAggregation.weekly when isCurrentBucket =>
+            _scaleWeekEstimate(point.progress, now),
+          _ => point.progress,
+        };
         return FlSpot(point.dateAsMillis, progress);
       }),
       isCurved: agg != ProgressAggregation.daily,
@@ -177,8 +183,7 @@ class ProgressPerMonthChart extends StatelessWidget {
               final isFirst = entry.key == 0;
               final spot = entry.value;
               final line = lines[spot.barIndex];
-              final lineColor =
-                  line.color.lerpWith(CupertinoColors.white, 0.5);
+              final lineColor = line.color.lerpWith(CupertinoColors.white, 0.5);
               final prefix = isFirst ? '$dateStr\n' : '';
               return LineTooltipItem(
                 prefix,
@@ -246,6 +251,9 @@ class ProgressPerMonthChart extends StatelessWidget {
 
   double _scaleMonthEstimate(double progress, DateTime now) =>
       progress / now.day * _monthLength(now.month, now.year);
+
+  double _scaleWeekEstimate(double progress, DateTime now) =>
+      progress / now.weekday * 7;
 
   FlTitlesData _labelAxes(TimeSpan timespan) {
     return FlTitlesData(

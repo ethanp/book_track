@@ -29,7 +29,6 @@ class LoginForm extends StatelessWidget {
         children: [
           emailField(),
           passwordField(),
-          tokenField(),
         ],
       ),
     );
@@ -57,16 +56,6 @@ class LoginForm extends StatelessWidget {
         autofillHints: const [AutofillHints.password],
         validator: (input) =>
             (input?.length ?? 0) < 6 ? 'Requires at least 6 characters' : null,
-      );
-
-  Widget tokenField() => submittableField(
-        controller: loginFormC.tokenC,
-        name: 'Token (deprecated)',
-        placeholder: 'leave it blank',
-        validator: (input) =>
-            input == null || input.isEmpty || input.length == 6
-                ? null
-                : 'Must have 6 numbers',
       );
 
   Widget submittableField({

@@ -10,6 +10,7 @@ import 'package:book_track/ui/pages/stats/reading_patterns_card.dart';
 import 'package:book_track/ui/pages/stats/activity_calendar_card.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:book_track/ui/pages/stats/summary_stats_card.dart';
+import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -117,9 +118,12 @@ class ChartCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 18, bottom: 20),
-            child: Text(title, style: TextStyles.h3),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 18, bottom: 20, left: 16),
+              child: Text(title, style: TextStyles.h3),
+            ),
           ),
           SizedBox(
             height: 300,
@@ -200,26 +204,29 @@ class RecentBooksWidget extends StatelessWidget {
               final entry = booksWithProgress[index];
               final book = entry.book;
               final progressMade = entry.progressMade;
-              return Row(
-                children: [
-                  _bookCover(book),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      book.book.title,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 13),
+              return GestureDetector(
+                onTap: () => context.push(LibraryBookPage(book.supaId)),
+                child: Row(
+                  children: [
+                    _bookCover(book),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        book.book.title,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 13),
+                      ),
                     ),
-                  ),
-                  Text(
-                    '+$progressMade%',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: CupertinoColors.systemGreen,
-                      fontWeight: FontWeight.w600,
+                    Text(
+                      '+$progressMade%',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: CupertinoColors.systemGreen,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               );
             },
           ),

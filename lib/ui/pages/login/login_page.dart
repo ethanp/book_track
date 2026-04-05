@@ -147,7 +147,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _doSignIn() async {
-    if (loginFormC.tokenInput.isNotEmpty) return await updatePassword();
     try {
       setState(() => _processingSignIn = true);
       final serviceFunc = _isSignUpMode
@@ -162,20 +161,6 @@ class _LoginPageState extends State<LoginPage> {
     } finally {
       if (mounted) setState(() => _processingSignIn = false);
     }
-  }
-
-  Future<void> updatePassword() async {
-    try {
-      await SupabaseAuthService.resetPassword(
-        emailInput: loginFormC.emailInput,
-        passwordInput: loginFormC.passwordInput,
-        tokenInput: loginFormC.tokenInput,
-      );
-      if (mounted) context.showSnackBar('Password updated');
-    } catch (e) {
-      if (mounted) context.showSnackBar("Couldn't update password: $e");
-    }
-    return;
   }
 
   @override

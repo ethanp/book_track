@@ -63,9 +63,12 @@ class ActivityCalendarCard extends StatelessWidget {
   }
 
   Widget _title() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 18, bottom: 12),
-      child: Text('Reading Activity', style: TextStyles.h3),
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 18, bottom: 12, left: 16),
+        child: Text('Reading Activity', style: TextStyles.h3),
+      ),
     );
   }
 
