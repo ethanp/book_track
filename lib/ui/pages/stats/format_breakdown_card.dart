@@ -1,7 +1,7 @@
 import 'dart:math' show max;
+import 'package:ethan_utils/ethan_utils.dart';
 
 import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';

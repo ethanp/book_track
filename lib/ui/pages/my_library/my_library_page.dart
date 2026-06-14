@@ -1,6 +1,5 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
-import 'package:book_track/helpers.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/sign_out_button.dart';
@@ -12,6 +11,8 @@ import 'package:book_track/ui/pages/my_library/archived_books_section.dart';
 import 'package:book_track/ui/pages/my_library/book_tile.dart';
 import 'dismissible_cupertino_bottom_sheet.dart';
 
+const _log = ELogger('MyLibraryPage');
+
 class MyLibraryPage extends ConsumerStatefulWidget {
   const MyLibraryPage({super.key});
 
@@ -20,8 +21,6 @@ class MyLibraryPage extends ConsumerStatefulWidget {
 }
 
 class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
-  static final SimpleLogger log = SimpleLogger(prefix: 'MyLibraryPage');
-
   _LibraryOrder _libraryOrder = _LibraryOrder.progress;
 
   @override
@@ -86,7 +85,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
 
   Widget errorScreen(Object err, StackTrace stack) {
     final String errorMessage = 'Error loading your library $err $stack';
-    log(errorMessage, error: true);
+    _log.error(errorMessage);
     return SelectableText(errorMessage, style: TextStyles.h1);
   }
 

@@ -1,5 +1,5 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_progress_service.dart';

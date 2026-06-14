@@ -1,12 +1,11 @@
-import 'package:book_track/extensions.dart';
-import 'package:book_track/helpers.dart';
 import 'package:book_track/services/supabase_auth_service.dart';
 import 'package:book_track/ui/pages/login/login_page.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 
-class SignOutButton extends StatelessWidget {
-  static final SimpleLogger log = SimpleLogger(prefix: 'SignOutButton');
+const _log = ELogger('SignOutButton');
 
+class SignOutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextButton(
@@ -14,7 +13,7 @@ class SignOutButton extends StatelessWidget {
         try {
           await SupabaseAuthService.signOut();
         } catch (error) {
-          log('Unexpected error occurred: $error', error: true);
+          _log.error('Unexpected error occurred: $error');
         } finally {
           if (context.mounted) context.pushReplacementPage(const LoginPage());
         }

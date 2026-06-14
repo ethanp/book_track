@@ -1,15 +1,14 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
-import 'package:book_track/helpers.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'supabase_auth_service.dart';
 import 'supabase_service.dart';
 
+const _log = ELogger('SupabaseProgressService');
+
 class SupabaseProgressService {
   static final _progressClient = supabase.from('progress_events');
-  static final SimpleLogger log =
-      SimpleLogger(prefix: 'SupabaseProgressService');
 
   /// [end] defaults to [DateTime.now].
   static Future<void> addProgressEvent({
@@ -28,7 +27,7 @@ class SupabaseProgressService {
         _SupaProgress.progressCol: newValue,
         _SupaProgress.startCol: start?.toIso8601String(),
         _SupaProgress.endCol: (end ?? DateTime.now()).toIso8601String(),
-      }).withRetry(log);
+      }).withRetry(_log);
 
   static Future<void> updateProgressEvent({
     required ProgressEvent preexistingEvent,
@@ -47,7 +46,7 @@ class SupabaseProgressService {
             _SupaProgress.endCol: end.toIso8601String(),
           })
           .eq(_SupaProgress.supaIdCol, preexistingEvent.supaId)
-          .withRetry(log);
+          .withRetry(_log);
 
   static Future<List<ProgressEvent>> history(int bookId) async {
     final queryResults = await _progressClient
@@ -55,14 +54,14 @@ class SupabaseProgressService {
         .eq(_SupaProgress.libraryBookIdCol, bookId)
         .eq(_SupaProgress.userIdCol, SupabaseAuthService.loggedInUserId!)
         .order(_SupaProgress.endCol, ascending: true)
-        .withRetry(log);
+        .withRetry(_log);
     return queryResults.mapL((result) => _SupaProgress(result).toProgressEvent);
   }
 
   static Future<void> delete(ProgressEvent ev) => _progressClient
       .delete()
       .eq(_SupaProgress.supaIdCol, ev.supaId)
-      .withRetry(log);
+      .withRetry(_log);
 
   static Future<Map<int, List<ProgressEvent>>> historyForLibraryBooks(
       List<int> libraryBookIds) async {
@@ -74,7 +73,7 @@ class SupabaseProgressService {
             '(${libraryBookIds.join(',')})')
         .eq(_SupaProgress.userIdCol, SupabaseAuthService.loggedInUserId!)
         .order(_SupaProgress.endCol, ascending: true)
-        .withRetry(log);
+        .withRetry(_log);
 
     final Map<int, List<ProgressEvent>> progressEventsMap = {};
     for (final result in queryResults) {
@@ -91,8 +90,6 @@ class _SupaProgress {
   const _SupaProgress(this.rawData);
 
   final PostgrestMap rawData;
-
-  // static SimpleLogger log = SimpleLogger(prefix: '_SupaProgress');
 
   ProgressEvent get toProgressEvent => ProgressEvent(
         supaId: supaId,

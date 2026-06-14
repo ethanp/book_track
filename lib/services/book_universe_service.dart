@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:http/http.dart' as http;
+
+const _log = ELogger('OpenLibraryBookUniverseRepository');
 
 class BookUniverseService {
   static final _bookUniverseRepo = _OpenLibraryBookUniverseRepository();
@@ -40,9 +42,6 @@ class BookUniverseService {
 ///   * Worth taking another look and maybe deleting this one from this list.
 ///
 class _OpenLibraryBookUniverseRepository {
-  static final SimpleLogger log =
-      SimpleLogger(prefix: 'OpenLibraryBookUniverseRepository');
-
   static final Uri apiUrl = Uri.parse('https://openlibrary.org/search.json');
 
   static Uri coverUrl(int coverId, String size) =>
@@ -60,7 +59,7 @@ class _OpenLibraryBookUniverseRepository {
       final oops = 'search error: '
           '${response.statusCode} ${response.reasonPhrase}.'
           ' Please try again.';
-      log(oops);
+      _log.warn(oops);
       return BookSearchResults.failed(oops);
     }
     final dynamic bodyJson = jsonDecode(response.body);

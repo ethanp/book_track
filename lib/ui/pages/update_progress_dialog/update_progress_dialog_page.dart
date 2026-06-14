@@ -1,7 +1,6 @@
 import 'package:book_track/data_model.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/data_model/library_book_format.dart';
-import 'package:book_track/extensions.dart';
-import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_progress_service.dart';
 import 'package:book_track/ui/common/length_input.dart';
@@ -11,7 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'update_format_selector.dart';
 
-final SimpleLogger log = SimpleLogger(prefix: 'UpdateProgressDialogPage');
+const _log = ELogger('UpdateProgressDialogPage');
 
 class UpdateProgressDialogPage extends ConsumerStatefulWidget {
   const UpdateProgressDialogPage({
@@ -180,7 +179,7 @@ class _UpdateProgressDialogState
               if (formatId == null) return;
               final newFormat = widget.book.formatById(formatId);
               if (newFormat == null) {
-                log.error('Format not found for ID: $formatId');
+                _log.error('Format not found for ID: $formatId');
                 return;
               }
 
@@ -338,7 +337,7 @@ class _UpdateProgressDialogState
     // Ensure format is set - fallback to first format if somehow null
     if (_selectedFormat == null) {
       if (widget.book.formats.isEmpty) {
-        log.error('Book has no formats');
+        _log.error('Book has no formats');
         context.pop(false);
         return;
       }
@@ -346,19 +345,19 @@ class _UpdateProgressDialogState
       _selectedProgressEventFormat = _selectedFormat!.isAudiobook
           ? ProgressEventFormat.minutes
           : ProgressEventFormat.pageNum;
-      log('Format was null, using first format: ${_selectedFormat!.format.name}');
+      _log.log('Format was null, using first format: ${_selectedFormat!.format.name}');
     }
 
     final int? newLen = _fieldControllers.value(_selectedProgressEventFormat);
     if (newLen == null) {
-      log.error('invalid length input');
+      _log.error('invalid length input');
       context.pop(false);
       return;
     }
 
-    log('Submitting progress: formatId=${_selectedFormat!.supaId}, value=$newLen, format=${_selectedProgressEventFormat.name}');
+    _log.log('Submitting progress: formatId=${_selectedFormat!.supaId}, value=$newLen, format=${_selectedProgressEventFormat.name}');
     if (widget.eventToUpdate != null) {
-      log('updating progress to $newLen');
+      _log.log('updating progress to $newLen');
       await SupabaseProgressService.updateProgressEvent(
         preexistingEvent: widget.eventToUpdate!,
         updatedValue: newLen,

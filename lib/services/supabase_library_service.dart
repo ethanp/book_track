@@ -1,7 +1,6 @@
 import 'package:book_track/data_model.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/data_model/library_book_format.dart';
-import 'package:book_track/extensions.dart';
-import 'package:book_track/helpers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'book_universe_service.dart';
@@ -11,9 +10,10 @@ import 'supabase_format_service.dart';
 import 'supabase_progress_service.dart';
 import 'supabase_service.dart';
 
+const _log = ELogger('SupabaseLibraryService');
+
 class SupabaseLibraryService {
   static final _libraryClient = supabase.from('library');
-  static SimpleLogger log = SimpleLogger(prefix: 'SupabaseLibraryService');
 
   static Future<List<LibraryBook>> myBooks() async {
     final library = await _forLoggedInUser();
@@ -89,12 +89,12 @@ class SupabaseLibraryService {
       _libraryClient
           .delete()
           .eq(_SupaLibrary.supaIdCol, book.supaId)
-          .withRetry(log);
+          .withRetry(_log);
 
   static Future<void> archive(LibraryBook book) => _libraryClient
       .update({_SupaLibrary.archivedCol: !book.archived})
       .eq(_SupaLibrary.supaIdCol, book.supaId)
-      .withRetry(log);
+      .withRetry(_log);
 
   /// Set or clear the abandoned status for a book.
   static Future<void> setAbandoned(LibraryBook book,
@@ -103,14 +103,14 @@ class SupabaseLibraryService {
     return _libraryClient
         .update({_SupaLibrary.abandonedAtCol: value})
         .eq(_SupaLibrary.supaIdCol, book.supaId)
-        .withRetry(log);
+        .withRetry(_log);
   }
 
   static Future<List<_SupaLibrary>> _forLoggedInUser() async {
     final PostgrestList rawData = await _libraryClient
         .select()
         .eq(_SupaLibrary.userIdCol, SupabaseAuthService.loggedInUserId!)
-        .withRetry(log);
+        .withRetry(_log);
     return rawData.mapL(_SupaLibrary.new);
   }
 
@@ -124,7 +124,7 @@ class SupabaseLibraryService {
         .eq(_SupaLibrary.userIdCol, SupabaseAuthService.loggedInUserId!)
         .limit(1)
         .maybeSingle()
-        .withRetry(log);
+        .withRetry(_log);
     return preExistQuery.map(_SupaLibrary.new).map((res) => res.supaId);
   }
 
@@ -137,7 +137,7 @@ class SupabaseLibraryService {
         .select(_SupaLibrary.supaIdCol)
         .limit(1)
         .single()
-        .withRetry(log);
+        .withRetry(_log);
     return supaEntity[_SupaLibrary.supaIdCol];
   }
 }

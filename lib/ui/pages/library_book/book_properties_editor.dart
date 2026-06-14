@@ -1,5 +1,5 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/helpers.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_book_service.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,12 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'editable_book_property.dart';
 
+const _log = ELogger('BookPropertiesEditor');
+
 class BookPropertiesEditor extends ConsumerWidget {
   const BookPropertiesEditor(this.libraryBook);
 
   final LibraryBook libraryBook;
-
-  static final SimpleLogger log = SimpleLogger(prefix: 'BookPropertiesEditor');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,7 +43,7 @@ class BookPropertiesEditor extends ConsumerWidget {
         )
       ],
       onPressed: (List<String> text) async {
-        log('updating author to ${text[0]}');
+        _log.log('updating author to ${text[0]}');
         await SupabaseBookService.updateAuthor(libraryBook.book, text[0]);
         ref.invalidate(userLibraryProvider);
       },

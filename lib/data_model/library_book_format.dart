@@ -1,5 +1,5 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 
 /// Represents a specific format (edition) of a book in the user's library.
 /// A LibraryBook can have multiple formats (e.g., hardcover + audiobook).

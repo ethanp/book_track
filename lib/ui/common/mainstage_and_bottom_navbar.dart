@@ -1,4 +1,4 @@
-import 'package:book_track/extensions.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/pages/my_library/my_library_page.dart';
 import 'package:book_track/ui/pages/stats/stats_page.dart';

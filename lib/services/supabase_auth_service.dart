@@ -1,14 +1,11 @@
 import 'dart:async';
 
-import 'package:book_track/helpers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'supabase_service.dart';
 
 class SupabaseAuthService {
   static final GoTrueClient _authClient = supabase.auth;
-
-  static SimpleLogger log = SimpleLogger(prefix: 'SupabaseAuthService');
 
   static bool get isLoggedOut => _authClient.currentSession == null;
 

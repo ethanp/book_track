@@ -1,4 +1,4 @@
-import 'package:book_track/helpers.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/ui/common/design.dart';
@@ -8,10 +8,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'manual_book_form.dart';
 import 'search_results.dart';
 
+const _log = ELogger('AddBookModalBody');
+
 class AddBookModalBody extends ConsumerStatefulWidget {
   const AddBookModalBody();
-
-  static final SimpleLogger log = SimpleLogger(prefix: 'AddBookModalBody');
 
   @override
   ConsumerState<AddBookModalBody> createState() => _AddBookModalBodyState();
@@ -95,7 +95,7 @@ class _AddBookModalBodyState extends ConsumerState<AddBookModalBody> {
   }
 
   void search(String text) {
-    AddBookModalBody.log('searching for: $text');
+    _log.log('searching for: $text');
     final BookSearchResultsNotifier results =
         ref.read(bookSearchResultsNotifierProvider.notifier);
     results.notify(BookSearchResults.loading);

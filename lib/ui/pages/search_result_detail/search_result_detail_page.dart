@@ -1,6 +1,5 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
-import 'package:book_track/helpers.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/services/supabase_library_service.dart';
@@ -10,6 +9,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'cover_art.dart';
+
+const _log = ELogger('SearchResultDetailPage');
 
 class SearchResultDetailPage extends ConsumerStatefulWidget {
   const SearchResultDetailPage(this.book);
@@ -21,8 +22,6 @@ class SearchResultDetailPage extends ConsumerStatefulWidget {
 }
 
 class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
-  static SimpleLogger log = SimpleLogger(prefix: 'SearchResultDetailPage');
-
   bool _saving = false;
 
   @override
@@ -105,7 +104,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
     try {
       await SupabaseLibraryService.addBook(widget.book, bookType, length);
     } catch (error, stack) {
-      log('(${error.runtimeType}) $error $stack');
+      _log.error('(${error.runtimeType}) $error', error, stack);
     } finally {
       if (mounted) {
         setState(() => _saving = false);

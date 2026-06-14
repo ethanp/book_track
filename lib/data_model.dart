@@ -1,8 +1,8 @@
 import 'dart:math';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'dart:typed_data';
 
 import 'package:book_track/data_model/library_book_format.dart';
-import 'package:book_track/extensions.dart';
 
 class LibraryBook {
   LibraryBook(

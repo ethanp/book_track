@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'package:ethan_utils/ethan_utils.dart';
 
-import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/main.dart';
 import 'package:book_track/services/supabase_auth_service.dart';
@@ -12,6 +12,8 @@ import 'login_form.dart';
 import 'login_form_controllers.dart';
 import 'text_and_button.dart';
 
+const _log = ELogger('LoginPage');
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -20,7 +22,6 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  static SimpleLogger log = SimpleLogger(prefix: 'LoginPage');
   final formKey = GlobalKey<FormState>();
 
   final LoginFormControllers loginFormC = LoginFormControllers();
@@ -45,9 +46,9 @@ class _LoginPageState extends State<LoginPage> {
 
   void pushLoggedInAppUponLogin() {
     _authStateSubscription = SupabaseAuthService.onAuthStateChange(
-      onError: (Object error) => log.error('Auth state change error: $error'),
+      onError: (Object error) => _log.error('Auth state change error: $error'),
       onEvent: (AuthState data) {
-        log('Auth state changed: $data');
+        _log.log('Auth state changed: $data');
         if (_redirectingToLoggedInApp) return;
         if (SupabaseAuthService.isLoggedIn) {
           _redirectingToLoggedInApp = true;
@@ -157,7 +158,7 @@ class _LoginPageState extends State<LoginPage> {
     } on AuthException catch (error) {
       _authError = error.message;
     } catch (error) {
-      log('Unexpected error occurred: $error', error: true);
+      _log.error('Unexpected error occurred: $error');
     } finally {
       if (mounted) setState(() => _processingSignIn = false);
     }

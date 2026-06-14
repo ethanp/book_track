@@ -4,8 +4,6 @@ import 'package:flutter/material.dart' show CircularProgressIndicator, Text, Wid
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-export 'package:ethan_utils/ethan_utils.dart';
-
 extension WidgetRefExtension on WidgetRef {
   Widget userLibrary(Widget Function(List<LibraryBook>) body) =>
       watch(userLibraryProvider).when(
@@ -13,19 +11,6 @@ extension WidgetRefExtension on WidgetRef {
         error: (err, trace) => Text(err.toString()),
         data: body,
       );
-}
-
-class ElemAndIndex<T> {
-  const ElemAndIndex({
-    required this.elem,
-    required this.idx,
-  });
-
-  final T elem;
-  final int idx;
-
-  @override
-  String toString() => '{elem: $elem, idx: $idx}';
 }
 
 extension SupaExtension<T> on RawPostgrestBuilder<T, T, T> {

@@ -1,5 +1,5 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/helpers.dart' show FlutterHelpers;
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';

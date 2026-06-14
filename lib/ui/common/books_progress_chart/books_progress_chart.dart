@@ -1,8 +1,8 @@
 import 'dart:math' as math;
+import 'package:ethan_utils/ethan_utils.dart';
 
 import 'package:book_track/data_model.dart';
 import 'package:intl/intl.dart';
-import 'package:book_track/extensions.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/books_progress_chart/date_axis.dart';
 import 'package:book_track/ui/common/books_progress_chart/timespan.dart';

@@ -1,5 +1,5 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 
 /// Shared stats utilities for filtering and grouping data.
 class StatsUtils {

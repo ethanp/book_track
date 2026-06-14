@@ -1,4 +1,4 @@
-import 'package:book_track/extensions.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 
 /// Input mode for length/progress entry.
