@@ -194,12 +194,12 @@ class _RollingAverageData {
         .minBy<num>((d) => d.millisecondsSinceEpoch);
 
     final today = DateTime.now();
-    final startDate = earliestDate.add(const Duration(days: 30));
+    final startDate = earliestDate.shiftedByDays(30);
     final daysToShow = today.difference(startDate).inDays;
 
     final allScores = <FlSpot>[];
-    for (int i = 0; i <= daysToShow; i++) {
-      final date = startDate.add(Duration(days: i));
+    for (var dayOffset = 0; dayOffset <= daysToShow; dayOffset++) {
+      final date = startDate.shiftedByDays(dayOffset);
       final score = _calculateScore(date, progressDeltas);
       allScores.add(FlSpot(date.millisecondsSinceEpoch.toDouble(), score));
     }
@@ -232,7 +232,7 @@ class _RollingAverageData {
   /// Score is based on progress percentage, not page count.
   static double _calculateScore(
       DateTime date, List<MapEntry<DateTime, double>> progressDeltas) {
-    final windowStart = date.subtract(const Duration(days: 30));
+    final windowStart = date.shiftedByDays(-30);
     double score = 0;
 
     for (final delta in progressDeltas) {

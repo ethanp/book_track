@@ -320,7 +320,7 @@ class _UpdateProgressDialogState
           child: CupertinoDatePicker(
             mode: CupertinoDatePickerMode.dateAndTime,
             minimumDate: dateTimeNow.copyWith(year: dateTimeNow.year - 20),
-            maximumDate: dateTimeNow.add(const Duration(days: 12)),
+            maximumDate: dateTimeNow.shiftedByDays(12),
             initialDateTime: widget.eventToUpdate?.dateTime ?? dateTimeNow,
             onDateTimeChanged: (t) =>
                 setState(() => _selectedUpdateTimestamp = t),

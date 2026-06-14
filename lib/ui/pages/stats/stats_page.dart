@@ -1,11 +1,11 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
-import 'package:book_track/ui/common/books_progress_chart/books_progress_chart.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/scroll_propagating_list_view.dart';
 import 'package:book_track/ui/pages/stats/filter_section.dart';
 import 'package:book_track/ui/pages/stats/format_breakdown_card.dart';
 import 'package:book_track/ui/pages/stats/progress_chart_card.dart';
+import 'package:book_track/ui/pages/stats/read_lines_card.dart';
 import 'package:book_track/ui/pages/stats/reading_patterns_card.dart';
 import 'package:book_track/ui/pages/stats/activity_calendar_card.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
@@ -67,11 +67,7 @@ class StatsPage extends ConsumerWidget {
                     books: books,
                     periodCutoff: periodCutoff,
                   ),
-                  ChartCard(
-                    title: 'Read Lines',
-                    chart: BooksProgressChart(
-                        books: books, periodCutoff: periodCutoff),
-                  ),
+                  ReadLinesCard(books: books, periodCutoff: periodCutoff),
                   ProgressChartCard(books: books, period: selectedPeriod),
                   FormatBreakdownCard(books: books, periodCutoff: periodCutoff),
                   ReadingPatternsCard(books: books, periodCutoff: periodCutoff),

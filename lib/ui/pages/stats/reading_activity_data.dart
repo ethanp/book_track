@@ -56,7 +56,7 @@ class ReadingActivityData {
 
     final sorted = activeDays.toList()..sort();
     final today = DateTime.now().startOfDay;
-    final yesterday = today.subtract(const Duration(days: 1));
+    final yesterday = today.shiftedByDays(-1);
 
     int currentStreak = 0;
     int longestStreak = 0;

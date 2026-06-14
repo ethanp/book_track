@@ -126,14 +126,13 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
       effectiveStartDate = cutoffDate;
     } else if (earliestDataDate != null) {
       // Use the earliest data date, but cap at 2 years back to avoid showing decades of empty data
-      final maxBackDate = today.subtract(const Duration(days: 365 * 2));
+      final maxBackDate = today.shiftedByDays(-365 * 2);
       effectiveStartDate = earliestDataDate.isAfter(maxBackDate)
           ? earliestDataDate
           : maxBackDate;
     } else {
       // No data at all, use weeksToShow as fallback
-      effectiveStartDate =
-          today.subtract(Duration(days: widget.weeksToShow * 7));
+      effectiveStartDate = today.shiftedByDays(-widget.weeksToShow * 7);
     }
 
     // Find the first day of the first month to show
@@ -166,7 +165,7 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
     final firstWeekday = firstDayOfMonth.weekday;
 
     // Find the Sunday that starts the week containing the 1st
-    var weekStart = firstDayOfMonth.subtract(Duration(days: firstWeekday % 7));
+    var weekStart = firstDayOfMonth.shiftedByDays(-(firstWeekday % 7));
 
     // Build all weeks that contain days from this month
     final weekColumns = <Widget>[];
@@ -179,10 +178,10 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
       if (weekColumn != null) {
         weekColumns.add(weekColumn);
       }
-      currentWeekStart = currentWeekStart.add(const Duration(days: 7));
+      currentWeekStart = currentWeekStart.shiftedByDays(7);
 
       // Stop if we've passed today
-      if (currentWeekStart.isAfter(today.add(const Duration(days: 6)))) {
+      if (currentWeekStart.isAfter(today.shiftedByDays(6))) {
         break;
       }
     }
@@ -238,8 +237,8 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
 
     bool hasAnyVisibleDays = false;
 
-    for (int i = 0; i < 7; i++) {
-      final date = weekStart.add(Duration(days: i)).startOfDay;
+    for (var dayOffset = 0; dayOffset < 7; dayOffset++) {
+      final date = weekStart.shiftedByDays(dayOffset).startOfDay;
 
       // Check if this date is in the current month
       final isInMonth =

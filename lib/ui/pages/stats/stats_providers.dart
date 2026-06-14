@@ -9,6 +9,11 @@ final showArchivedProvider = StateProvider<bool>((ref) => true);
 final statsPeriodProvider =
     StateProvider<StatsPeriod>((ref) => StatsPeriod.allTime);
 
+/// Provider for the Read Lines chart toggle. When true, the chart only shows
+/// books that are currently being read (not finished or abandoned).
+final readLinesCurrentlyReadingOnlyProvider =
+    StateProvider<bool>((ref) => false);
+
 enum ProgressAggregation { daily, weekly, monthly }
 
 /// Time period options for filtering stats.
@@ -28,7 +33,7 @@ enum StatsPeriod {
   /// Returns null for allTime (meaning no cutoff - show all data).
   DateTime? get cutoffDate {
     return daysAgo
-        .map((int days) => DateTime.now().subtract(Duration(days: days)));
+        .map((int days) => DateTime.now().shiftedByDays(-days));
   }
 
   ProgressAggregation get chartAggregation => switch (this) {

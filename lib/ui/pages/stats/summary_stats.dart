@@ -214,7 +214,7 @@ class _StreakCalculator {
 
   _StreakResult compute() {
     final today = DateTime.now().startOfDay;
-    final yesterday = today.subtract(const Duration(days: 1));
+    final yesterday = today.shiftedByDays(-1);
     final isActive = _sorted.last.sameDayAs(today) ||
         _sorted.last.sameDayAs(yesterday);
 

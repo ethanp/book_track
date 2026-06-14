@@ -10,11 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 DateTime _bucketStart(DateTime date, ProgressAggregation agg) => switch (agg) {
-      ProgressAggregation.daily => DateTime(date.year, date.month, date.day),
-      ProgressAggregation.weekly => () {
-          final monday = date.subtract(Duration(days: date.weekday - 1));
-          return DateTime(monday.year, monday.month, monday.day);
-        }(),
+      ProgressAggregation.daily => date.startOfDay,
+      ProgressAggregation.weekly => date.shiftedByDays(-(date.weekday - 1)),
       ProgressAggregation.monthly => DateTime(date.year, date.month),
     };
 
@@ -89,11 +86,8 @@ class ProgressPerMonthChart extends StatelessWidget {
 
   static DateTime _advanceBucket(DateTime date, ProgressAggregation agg) =>
       switch (agg) {
-        // date.add(const Duration(days: 7)) leads to a DST bug on the chart.
-        ProgressAggregation.daily =>
-          DateTime(date.year, date.month, date.day + 1),
-        ProgressAggregation.weekly =>
-          DateTime(date.year, date.month, date.day + 7),
+        ProgressAggregation.daily => date.shiftedByDays(1),
+        ProgressAggregation.weekly => date.shiftedByDays(7),
         ProgressAggregation.monthly => DateTime(date.year, date.month + 1),
       };
 
