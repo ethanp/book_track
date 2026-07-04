@@ -54,12 +54,12 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
 
   Widget titleAndValueLeft() {
     return Row(children: [
-      Text('${widget.title}: ', style: TextStyles.title),
+      Text('${widget.title}: ', style: AppTextStyles.label),
       SizedBox(width: 10),
       if (_editing)
         textField()
       else
-        Text(widget.value, style: TextStyles.value),
+        Text(widget.value, style: AppTextStyles.value),
     ]);
   }
 
@@ -90,7 +90,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
                 padding: const EdgeInsets.only(left: 3, right: 4),
                 child: Text(
                   field.value!,
-                  style: TextStyles.value,
+                  style: AppTextStyles.value,
                 ),
               ),
           ],
@@ -132,7 +132,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
     return CupertinoButton(
       padding: EdgeInsets.zero,
       onPressed: () => setEditing(true),
-      child: Text('Update', style: TextStyles.valueButton),
+      child: Text('Update', style: AppTextStyles.valueButton),
     );
   }
 

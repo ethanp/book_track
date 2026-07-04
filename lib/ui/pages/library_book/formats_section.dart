@@ -25,7 +25,7 @@ class FormatsSection extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Formats', style: TextStyles.h1),
+              Text('Formats', style: AppTextStyles.h2),
               CupertinoButton(
                 padding: EdgeInsets.zero,
                 onPressed: () => _showAddFormatSheet(context, ref),
@@ -37,7 +37,7 @@ class FormatsSection extends ConsumerWidget {
           if (formats.isEmpty)
             const Text(
               'No formats added',
-              style: TextStyle(color: CupertinoColors.systemGrey),
+              style: AppTextStyles.bodySecondary,
             )
           else
             ...formats.mapL((format) => _FormatRow(
@@ -157,10 +157,10 @@ class _FormatRow extends StatelessWidget {
   final VoidCallback? onDelete;
 
   Color get _formatColor => switch (format.format) {
-        BookFormat.audiobook => CupertinoColors.systemOrange,
-        BookFormat.eBook => CupertinoColors.systemBlue,
-        BookFormat.paperback => CupertinoColors.systemGreen,
-        BookFormat.hardcover => CupertinoColors.systemIndigo,
+        BookFormat.audiobook => AppColors.audiobook,
+        BookFormat.eBook => AppColors.ebook,
+        BookFormat.paperback => AppColors.paperback,
+        BookFormat.hardcover => AppColors.hardcover,
       };
 
   IconData get _formatIcon => switch (format.format) {
@@ -176,8 +176,9 @@ class _FormatRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: CupertinoColors.systemGrey6,
-        borderRadius: BorderRadius.circular(10),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        border: Border.all(color: AppColors.divider, width: 0.5),
       ),
       child: Row(
         children: [

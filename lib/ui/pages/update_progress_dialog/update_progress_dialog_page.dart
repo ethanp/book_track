@@ -3,9 +3,9 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/data_model/library_book_format.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_progress_service.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/length_input.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'update_format_selector.dart';
@@ -253,12 +253,12 @@ class _UpdateProgressDialogState
         height: 26,
         child: CupertinoTextField(
           decoration: BoxDecoration(
-            color: Colors.grey[100]!.withValues(alpha: .8),
-            border: Border.all(color: Colors.grey[400]!, width: 1),
+            color: AppColors.surface,
+            border: Border.all(color: AppColors.divider, width: 1),
             borderRadius: BorderRadius.circular(5),
           ),
           padding: EdgeInsets.only(top: 5, left: 4),
-          style: TextStyle(fontSize: 14, color: Colors.grey[900]),
+          style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
           autocorrect: false,
           enableSuggestions: false,
           autofocus: true,

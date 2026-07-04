@@ -1,8 +1,9 @@
 import 'dart:math' show max;
-import 'package:ethan_utils/ethan_utils.dart';
 
 import 'package:book_track/data_model.dart';
+import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -17,46 +18,32 @@ class FormatBreakdownCard extends StatelessWidget {
   final DateTime? periodCutoff;
 
   static const formatColors = <BookFormat, Color>{
-    BookFormat.audiobook: CupertinoColors.systemOrange,
-    BookFormat.eBook: CupertinoColors.systemBlue,
-    BookFormat.paperback: CupertinoColors.systemGreen,
-    BookFormat.hardcover: CupertinoColors.systemIndigo,
+    BookFormat.audiobook: AppColors.audiobook,
+    BookFormat.eBook: AppColors.ebook,
+    BookFormat.paperback: AppColors.paperback,
+    BookFormat.hardcover: AppColors.hardcover,
   };
 
   @override
   Widget build(BuildContext context) {
-    // Filter to books with activity in the period
     final cutoff = periodCutoff;
     final booksInPeriod = books
-        .where((b) =>
+        .where((book) =>
             cutoff == null ||
-            b.progressHistory.any((e) => e.end.isAfter(cutoff)))
+            book.progressHistory.any((event) => event.end.isAfter(cutoff)))
         .toList();
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemBackground,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: CupertinoColors.systemGrey.withValues(alpha: 0.2),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    return AppCard(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _title(),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           if (booksInPeriod.isEmpty)
             _emptyState()
           else
             _chartContent(booksInPeriod),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
         ],
       ),
     );
@@ -66,8 +53,12 @@ class FormatBreakdownCard extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Padding(
-        padding: const EdgeInsets.only(top: 18, bottom: 12, left: 16),
-        child: Text('Reading by Format', style: TextStyles.h3),
+        padding: const EdgeInsets.only(
+          top: AppSpacing.lg,
+          bottom: AppSpacing.md,
+          left: AppSpacing.lg,
+        ),
+        child: Text('Reading by Format', style: AppTextStyles.h3),
       ),
     );
   }
@@ -78,11 +69,9 @@ class FormatBreakdownCard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(CupertinoIcons.book,
-              size: 40, color: CupertinoColors.systemGrey3),
-          SizedBox(height: 8),
-          Text('No books in this period',
-              style: TextStyle(color: CupertinoColors.systemGrey)),
+          Icon(CupertinoIcons.book, size: 40, color: AppColors.shimmer),
+          SizedBox(height: AppSpacing.sm),
+          Text('No books in this period', style: AppTextStyles.bodySecondary),
         ],
       ),
     );
@@ -93,14 +82,11 @@ class FormatBreakdownCard extends StatelessWidget {
     if (data.isEmpty) return _emptyState();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Row(
         children: [
           Expanded(
-            child: SizedBox(
-              height: 150,
-              child: _pieChart(data),
-            ),
+            child: SizedBox(height: 150, child: _pieChart(data)),
           ),
           _legend(data),
         ],
@@ -108,29 +94,23 @@ class FormatBreakdownCard extends StatelessWidget {
     );
   }
 
-  /// Calculate aggregate progress percentage by format.
   Map<BookFormat, double> _progressByFormat(List<LibraryBook> books) {
     final progress = <BookFormat, double>{};
-
     for (final book in books) {
       if (book.progressHistory.isEmpty || book.formats.isEmpty) continue;
-
       final sorted = book.progressHistory.toList()
         ..sort((a, b) => a.end.compareTo(b.end));
-
       final cutoff = periodCutoff;
-      for (int i = 0; i < sorted.length; i++) {
-        final event = sorted[i];
+      for (int eventIdx = 0; eventIdx < sorted.length; eventIdx++) {
+        final event = sorted[eventIdx];
         if (cutoff != null && event.end.isBefore(cutoff)) continue;
-
         final format = book.formatById(event.formatId);
         if (format == null || !format.hasLength) continue;
-
         final currPercent = book.progressPercentAt(event) ?? 0;
-        final prevPercent =
-            i > 0 ? (book.progressPercentAt(sorted[i - 1]) ?? 0) : 0.0;
+        final prevPercent = eventIdx > 0
+            ? (book.progressPercentAt(sorted[eventIdx - 1]) ?? 0)
+            : 0.0;
         final percentDelta = max(0.0, currPercent - prevPercent);
-
         if (percentDelta > 0) {
           progress[format.format] =
               (progress[format.format] ?? 0) + percentDelta;
@@ -142,7 +122,6 @@ class FormatBreakdownCard extends StatelessWidget {
 
   Widget _pieChart(Map<BookFormat, double> data) {
     final total = data.values.sum;
-
     return PieChart(
       PieChartData(
         sectionsSpace: 2,
@@ -150,7 +129,7 @@ class FormatBreakdownCard extends StatelessWidget {
         sections: data.entries.mapL((entry) {
           final percentage = total > 0 ? (entry.value / total * 100) : 0.0;
           return PieChartSectionData(
-            color: formatColors[entry.key] ?? CupertinoColors.systemGrey,
+            color: formatColors[entry.key] ?? AppColors.shimmer,
             value: entry.value,
             title: '${percentage.round()}%',
             titleStyle: const TextStyle(
@@ -174,10 +153,9 @@ class FormatBreakdownCard extends StatelessWidget {
   }
 
   Widget _legendItem(BookFormat format, Map<BookFormat, double> data) {
-    final value = data[format] ?? 0;
-
+    final formatValue = data[format] ?? 0;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -185,14 +163,14 @@ class FormatBreakdownCard extends StatelessWidget {
             width: 12,
             height: 12,
             decoration: BoxDecoration(
-              color: formatColors[format] ?? CupertinoColors.systemGrey,
+              color: formatColors[format] ?? AppColors.shimmer,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.sm),
           Text(
-            '${format.nameAsCapitalizedWords} (${value.round()}%)',
-            style: const TextStyle(fontSize: 12),
+            '${format.nameAsCapitalizedWords} (${formatValue.round()}%)',
+            style: AppTextStyles.caption,
           ),
         ],
       ),

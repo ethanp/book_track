@@ -28,34 +28,37 @@ class _ProgressChartState extends ConsumerState<ProgressChart> {
     // Check if any format has a length set
     final hasAnyLength = _latestBook.formats.any((f) => f.hasLength);
     if (!hasAnyLength) {
-      return Padding(
-        padding: const EdgeInsets.all(16),
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.lg),
         child: Text(
           "Set a length for at least one format to see progress chart.",
-          style: TextStyle(color: CupertinoColors.systemGrey),
+          style: AppTextStyles.bodySecondary,
         ),
       );
     }
     return Container(
-      margin: const EdgeInsets.only(left: 16, right: 16, top: 28),
+      margin: const EdgeInsets.only(
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
+        top: AppSpacing.xl,
+      ),
       decoration: BoxDecoration(
-        color: CupertinoColors.systemGrey6,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: CupertinoColors.systemGrey.withValues(alpha: 0.2),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        boxShadow: const [AppShadows.card],
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
         child: Column(children: [
-          Text('Progress', style: TextStyles.h2),
+          Text('Progress', style: AppTextStyles.h3),
           _latestBook.progressHistory.isEmpty
-              ? Text('No progress updates yet')
+              ? const Text(
+                  'No progress updates yet',
+                  style: AppTextStyles.bodySecondary,
+                )
               : SizedBox(height: 300, child: ref.userLibrary(body))
         ]),
       ),

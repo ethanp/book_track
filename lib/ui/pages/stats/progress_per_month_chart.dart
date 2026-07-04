@@ -1,12 +1,11 @@
 import 'package:book_track/data_model.dart';
-import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/books_progress_chart/timespan.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 DateTime _bucketStart(DateTime date, ProgressAggregation agg) => switch (agg) {
@@ -20,23 +19,23 @@ class ProgressPerMonthChart extends StatelessWidget {
     required this.books,
     required this.period,
     super.key,
-  })  : totalByPeriod = _progressByPeriod(
+  })        : totalByPeriod = _progressByPeriod(
           books,
           period,
           'Total',
-          CupertinoColors.systemGreen,
+          AppColors.teal,
         ),
         audiobookByPeriod = _progressByPeriod(
           books.whereL((b) => b.isAudiobook),
           period,
           'Audio',
-          CupertinoColors.systemOrange,
+          AppColors.primary,
         ),
         visualByPeriod = _progressByPeriod(
           books.whereL((b) => !b.isAudiobook),
           period,
           'Visual',
-          CupertinoColors.systemBlue,
+          AppColors.burgundy,
         );
 
   final List<LibraryBook> books;
@@ -100,10 +99,12 @@ class ProgressPerMonthChart extends StatelessWidget {
     if (totalByPeriod.data.isEmpty) {
       return const Center(child: Text('No reading data in this period'));
     }
-    return Stack(children: [
-      lineChart(),
-      chartLegend(),
-    ]);
+    return Column(
+      children: [
+        _legendRow(),
+        Expanded(child: lineChart()),
+      ],
+    );
   }
 
   Widget lineChart() {
@@ -133,7 +134,7 @@ class ProgressPerMonthChart extends StatelessWidget {
             show: true,
             border: () {
               const borderSide =
-                  BorderSide(color: CupertinoColors.black, width: 2);
+                  BorderSide(color: AppColors.textSecondary, width: 1.5);
               return const Border(left: borderSide, bottom: borderSide);
             }()),
       ),
@@ -207,20 +208,15 @@ class ProgressPerMonthChart extends StatelessWidget {
     };
   }
 
-  Widget chartLegend() {
-    return Positioned(
-      top: 0,
-      right: 0,
-      child: Card(
-        elevation: 2,
-        color: Colors.yellow[100]!.withValues(alpha: .7),
-        shadowColor: Colors.green[100]!.withValues(alpha: .5),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
-        child: Padding(
-          padding: const EdgeInsets.all(3),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: lines.mapL((l) => _legendItem(l.color, l.name)),
+  Widget _legendRow() {
+    return Padding(
+      padding: const EdgeInsets.only(right: AppSpacing.sm, bottom: AppSpacing.xs),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: lines.mapL(
+          (line) => Padding(
+            padding: const EdgeInsets.only(left: AppSpacing.md),
+            child: _legendItem(line.color, line.name),
           ),
         ),
       ),
@@ -231,13 +227,18 @@ class ProgressPerMonthChart extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 1),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-              width: 8,
-              height: 8,
+            width: 8,
+            height: 8,
+            margin: const EdgeInsets.only(right: 6),
+            decoration: BoxDecoration(
               color: color,
-              margin: const EdgeInsets.only(right: 6)),
-          Text(label, style: const TextStyle(fontSize: 9)),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Text(label, style: AppTextStyles.caption.copyWith(fontSize: 9)),
         ],
       ),
     );
@@ -264,8 +265,8 @@ class ProgressPerMonthChart extends StatelessWidget {
       show: true,
       gradient: LinearGradient(
         colors: [
-          CupertinoColors.systemGreen.withValues(alpha: 0.15),
-          CupertinoColors.systemGreen.withValues(alpha: 0.04),
+          AppColors.teal.withValues(alpha: 0.15),
+          AppColors.teal.withValues(alpha: 0.04),
         ],
         stops: const [.4, 1],
         begin: Alignment.topCenter,
@@ -279,7 +280,7 @@ class ProgressPerMonthChart extends StatelessWidget {
       axisNameSize: 20,
       axisNameWidget: Transform.translate(
         offset: shiftTitle,
-        child: Text('Progress %', style: TextStyles.sideAxisLabel),
+        child: Text('Progress %', style: AppTextStyles.yAxisName),
       ),
       sideTitles: SideTitles(
         interval: horizontalInterval,
@@ -354,7 +355,7 @@ class _PeriodAxis {
             padding: const EdgeInsets.only(top: 1),
             child: Text(
               'Starting ${TimeHelpers.monthDayYear(timespan.beginning)}',
-              style: TextStyles.sideAxisLabelThin,
+              style: AppTextStyles.sideAxisLabelThin,
             ),
           ),
         ],

@@ -45,11 +45,11 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
 
   /// Get color for a format type (as decided in the plan).
   static Color colorForFormat(BookFormat? format) => switch (format) {
-        BookFormat.audiobook => CupertinoColors.systemOrange,
-        BookFormat.eBook => CupertinoColors.systemBlue,
-        BookFormat.paperback => CupertinoColors.systemGreen,
-        BookFormat.hardcover => CupertinoColors.systemIndigo,
-        null => Colors.grey,
+        BookFormat.audiobook => AppColors.audiobook,
+        BookFormat.eBook => AppColors.ebook,
+        BookFormat.paperback => AppColors.paperback,
+        BookFormat.hardcover => AppColors.hardcover,
+        null => AppColors.shimmer,
       };
 
   @override
@@ -182,10 +182,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
         child: Center(
           child: Text(
             'Tap a point to see details',
-            style: TextStyle(
-              color: CupertinoColors.systemGrey,
-              fontSize: 13,
-            ),
+            style: AppTextStyles.bodySecondary,
           ),
         ),
       );
@@ -224,15 +221,12 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: CupertinoColors.systemGreen,
+                    color: AppColors.teal,
                   ),
                 ),
                 Text(
                   dateStr,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: CupertinoColors.systemGrey,
-                  ),
+                  style: AppTextStyles.caption,
                 ),
               ],
             ),
@@ -336,13 +330,10 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
   }
 
   FlBorderData border() {
-    final borderSide = BorderSide(color: Colors.black, width: 2);
+    const borderSide = BorderSide(color: AppColors.textSecondary, width: 1.5);
     return FlBorderData(
       show: true,
-      border: Border(
-        left: borderSide,
-        bottom: borderSide,
-      ),
+      border: const Border(left: borderSide, bottom: borderSide),
     );
   }
 
@@ -399,7 +390,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
         isCurved: true,
         curveSmoothness: .05,
         belowBarData: gradientFill(),
-        color: Colors.grey[700]!.withValues(alpha: .7),
+        color: AppColors.textSecondary.withValues(alpha: 0.7),
         dotData: FlDotData(
           show: true,
           getDotPainter: (spot, xPercentage, bar, spotIndex) {
@@ -420,13 +411,16 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
             // Use format-based color if enabled
             final Color dotColor = widget.colorByFormat
                 ? colorForFormat(format?.format)
-                : Colors.blue.withValues(alpha: .7).lerpWith(
-                    Colors.blueGrey.withValues(alpha: .8), xPercentage / 100);
+                : AppColors.teal.withValues(alpha: 0.7).lerpWith(
+                    AppColors.primary.withValues(alpha: 0.8),
+                    xPercentage / 100);
 
             return FlDotCirclePainter(
               radius: radius,
-              color: isSelected ? CupertinoColors.systemRed : dotColor,
-              strokeColor: isSelected ? Colors.white : Colors.black,
+              color: isSelected ? AppColors.burgundy : dotColor,
+              strokeColor: isSelected
+                  ? CupertinoColors.white
+                  : AppColors.textPrimary,
               strokeWidth: isSelected ? 2 : 0,
             );
           },
@@ -441,8 +435,8 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
       show: true,
       gradient: LinearGradient(
         colors: [
-          Colors.teal[400]!.withValues(alpha: .15),
-          Colors.blue.withValues(alpha: .04)
+          AppColors.teal.withValues(alpha: 0.15),
+          AppColors.teal.withValues(alpha: 0.04),
         ],
         stops: [.4, 1],
         begin: Alignment.topCenter,
@@ -457,7 +451,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
         shift: shiftTitle,
         child: Text(
           'Percentage',
-          style: TextStyles.sideAxisLabel,
+          style: AppTextStyles.yAxisName,
         ),
       ),
       sideTitles: SideTitles(

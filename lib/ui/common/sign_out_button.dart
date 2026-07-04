@@ -1,14 +1,16 @@
 import 'package:book_track/services/supabase_auth_service.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/login/login_page.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 const _log = ELogger('SignOutButton');
 
 class SignOutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return TextButton(
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
       onPressed: () async {
         try {
           await SupabaseAuthService.signOut();
@@ -18,11 +20,12 @@ class SignOutButton extends StatelessWidget {
           if (context.mounted) context.pushReplacementPage(const LoginPage());
         }
       },
-      child: Text(
+      child: const Text(
         'Sign Out',
         style: TextStyle(
           fontWeight: FontWeight.w400,
-          fontSize: 15,
+          fontSize: 14,
+          color: AppColors.textSecondary,
         ),
       ),
     );

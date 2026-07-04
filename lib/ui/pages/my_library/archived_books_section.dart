@@ -58,7 +58,7 @@ class _ArchivedBooksSectionState extends State<ArchivedBooksSection> {
     return CupertinoButton(
       child: Text(
         '${_expanded ? 'Hide' : 'See'} archived books...',
-        style: TextStyles.h3.copyWith(color: CupertinoColors.activeBlue),
+        style: AppTextStyles.h4.copyWith(color: AppColors.primary),
       ),
       onPressed: () => setState(() => _expanded = !_expanded),
     );
@@ -89,7 +89,7 @@ class _ArchivedBooksSectionState extends State<ArchivedBooksSection> {
       padding: const EdgeInsets.all(12),
       child: Text(
         'Archived ($count)',
-        style: TextStyles.h1,
+        style: AppTextStyles.h2.copyWith(color: AppColors.burgundy),
       ),
     );
   }

@@ -1,8 +1,9 @@
 import 'package:book_track/data_model.dart';
-import 'package:ethan_utils/ethan_utils.dart';
+import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/async_stats_card.dart';
 import 'package:book_track/ui/pages/stats/summary_stats.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 
 class SummaryStatsCard extends StatelessWidget {
@@ -26,27 +27,14 @@ class SummaryStatsCard extends StatelessWidget {
   }
 
   Widget _buildCard(SummaryStats stats) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemBackground,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: CupertinoColors.systemGrey.withValues(alpha: 0.2),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    return AppCard(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _title(),
           _statusRow(stats),
           _totalsAndStreakRow(stats),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
         ],
       ),
     );
@@ -56,15 +44,22 @@ class SummaryStatsCard extends StatelessWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Padding(
-        padding: const EdgeInsets.only(top: 18, bottom: 16, left: 16),
-        child: Text('Your Reading Stats', style: TextStyles.h3),
+        padding: const EdgeInsets.only(
+          top: AppSpacing.lg,
+          bottom: AppSpacing.lg,
+          left: AppSpacing.lg,
+        ),
+        child: Text('Your Reading Stats', style: AppTextStyles.h3),
       ),
     );
   }
 
   Widget _statusRow(SummaryStats stats) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -80,7 +75,10 @@ class SummaryStatsCard extends StatelessWidget {
 
   Widget _totalsAndStreakRow(SummaryStats stats) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -99,48 +97,41 @@ class SummaryStatsCard extends StatelessWidget {
       children: [
         Text(
           '$days days',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        Text(
-          label,
           style: const TextStyle(
-            fontSize: 12,
-            color: CupertinoColors.systemGrey,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
           ),
         ),
+        Text(label, style: AppTextStyles.caption),
         if (dateRange != null && dateRange.isNotEmpty)
           Text(
             dateRange,
-            style: const TextStyle(
-              fontSize: 10,
-              color: CupertinoColors.systemGrey,
-            ),
+            style: AppTextStyles.caption.copyWith(fontSize: 10),
           ),
       ],
     );
   }
 
-  Widget _statTile(String value, String label) {
+  Widget _statTile(String statValue, String label) {
     return Column(
       children: [
         Text(
-          value,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          statValue,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.burgundy,
+          ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style:
-              const TextStyle(fontSize: 12, color: CupertinoColors.systemGrey),
-        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(label, style: AppTextStyles.caption),
       ],
     );
   }
 
   String _formatNumber(int n) {
-    if (n >= 1000) {
-      return '${(n / 1000).toStringAsFixed(1)}k';
-    }
+    if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}k';
     return n.toString();
   }
 }

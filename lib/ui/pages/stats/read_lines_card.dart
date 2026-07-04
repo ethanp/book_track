@@ -1,8 +1,9 @@
 import 'package:book_track/data_model.dart';
-import 'package:ethan_utils/ethan_utils.dart';
+import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/books_progress_chart/books_progress_chart.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,20 +26,7 @@ class ReadLinesCard extends ConsumerWidget {
         ? books.whereL((book) => book.readingStatus == ReadingStatus.reading)
         : books;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemBackground,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: CupertinoColors.systemGrey.withValues(alpha: 0.2),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    return AppCard(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -54,24 +42,29 @@ class ReadLinesCard extends ConsumerWidget {
     return Align(
       alignment: Alignment.centerLeft,
       child: Padding(
-        padding: const EdgeInsets.only(top: 18, bottom: 20, left: 16),
-        child: Text('Read Lines', style: TextStyles.h3),
+        padding: const EdgeInsets.only(
+          top: AppSpacing.lg,
+          bottom: AppSpacing.xl,
+          left: AppSpacing.lg,
+        ),
+        child: Text('Read Lines', style: AppTextStyles.h3),
       ),
     );
   }
 
   Widget _currentlyReadingToggle(WidgetRef ref, bool currentlyReadingOnly) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text('Currently reading only'),
+          const Text('Currently reading only', style: AppTextStyles.body),
           CupertinoSwitch(
             value: currentlyReadingOnly,
-            onChanged: (value) => ref
+            activeTrackColor: AppColors.primary,
+            onChanged: (switchValue) => ref
                 .read(readLinesCurrentlyReadingOnlyProvider.notifier)
-                .state = value,
+                .state = switchValue,
           ),
         ],
       ),
@@ -82,8 +75,7 @@ class ReadLinesCard extends ConsumerWidget {
     return SizedBox(
       height: 300,
       child: Padding(
-        padding:
-            const EdgeInsets.only(left: 18, right: 35, top: 8, bottom: 14),
+        padding: const EdgeInsets.only(left: 18, right: 35, top: 8, bottom: 14),
         child: BooksProgressChart(
           books: chartBooks,
           periodCutoff: periodCutoff,

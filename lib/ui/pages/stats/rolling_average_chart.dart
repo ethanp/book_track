@@ -1,7 +1,7 @@
-import 'dart:math' show max;
-import 'package:ethan_utils/ethan_utils.dart';
-
 import 'package:book_track/data_model.dart';
+import 'package:book_track/helpers.dart';
+import 'package:book_track/ui/common/design.dart';
+import 'package:book_track/ui/pages/stats/reading_pace.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
@@ -18,17 +18,21 @@ class RollingAverageChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final data =
-        _RollingAverageData.fromBooks(books, periodCutoff: periodCutoff);
+    final series = ReadingPaceSeries.fromProgressDeltas(
+      books
+          .where((book) => book.formats.isNotEmpty)
+          .expand((book) => book.progressDiffs),
+      periodCutoff: periodCutoff,
+    );
 
-    if (data.scores.isEmpty) {
+    if (series.points.isEmpty) {
       return _emptyState();
     }
 
     return Column(
       children: [
-        Expanded(child: _lineChart(data)),
-        _currentScore(data),
+        _currentPace(series),
+        Expanded(child: _lineChart(series)),
       ],
     );
   }
@@ -39,45 +43,64 @@ class RollingAverageChart extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(CupertinoIcons.graph_square,
-              size: 40, color: CupertinoColors.systemGrey3),
-          SizedBox(height: 8),
-          Text('Start reading to build momentum!',
-              style: TextStyle(color: CupertinoColors.systemGrey)),
+              size: 40, color: AppColors.shimmer),
+          SizedBox(height: AppSpacing.sm),
+          Text('Start reading to see your pace!',
+              style: AppTextStyles.bodySecondary),
         ],
       ),
     );
   }
 
-  Widget _lineChart(_RollingAverageData data) {
-    final minX = data.scores.first.x;
-    final maxX = data.scores.last.x;
+  Widget _lineChart(ReadingPaceSeries series) {
+    final spots = series.points
+        .map((point) => FlSpot(
+              point.day.millisecondsSinceEpoch.toDouble(),
+              point.percentPerDay,
+            ))
+        .toList();
+    final minX = spots.first.x;
+    final maxX = spots.last.x;
     final spanDays = (maxX - minX) / const Duration(days: 1).inMilliseconds;
     final axisInterval = spanDays <= 14
         ? const Duration(days: 2).inMilliseconds.toDouble()
         : spanDays <= 60
             ? const Duration(days: 7).inMilliseconds.toDouble()
             : const Duration(days: 30).inMilliseconds.toDouble();
+    final yInterval = _niceAxisInterval(series.maxPace);
 
     return LineChart(
       LineChartData(
         minY: 0,
-        maxY: data.maxScore * 1.1,
+        maxY: series.maxPace * 1.1,
         minX: minX,
         maxX: maxX,
         gridData: FlGridData(
           drawVerticalLine: false,
-          horizontalInterval: max(data.maxScore / 4, 1),
+          horizontalInterval: yInterval,
         ),
         titlesData: FlTitlesData(
           leftTitles: AxisTitles(
+            axisNameSize: 20,
+            axisNameWidget: FlutterHelpers.transform(
+              shift: const Offset(20, -10),
+              child: Text('% / day', style: AppTextStyles.yAxisName),
+            ),
             sideTitles: SideTitles(
               showTitles: true,
               maxIncluded: false,
-              reservedSize: 36,
-              interval: max(data.maxScore / 4, 1),
-              getTitlesWidget: (value, meta) => Text(
-                '${value.round()}%',
-                style: const TextStyle(fontSize: 10),
+              reservedSize: 26,
+              interval: yInterval,
+              getTitlesWidget: (value, meta) => Padding(
+                padding: const EdgeInsets.only(right: 3),
+                child: Text(
+                  '${value.round()}%',
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ),
             ),
           ),
@@ -89,13 +112,14 @@ class RollingAverageChart extends StatelessWidget {
             sideTitles: SideTitles(
               showTitles: true,
               minIncluded: false,
-              reservedSize: 22,
+              reservedSize: 28,
               interval: axisInterval,
               getTitlesWidget: (value, meta) {
                 final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-                return Text(
-                  DateFormat('MMM').format(date),
-                  style: const TextStyle(fontSize: 10),
+                return FlutterHelpers.transform(
+                  shift: const Offset(2, 2),
+                  angleDegrees: 40,
+                  child: _dateLabel(date),
                 );
               },
             ),
@@ -103,18 +127,18 @@ class RollingAverageChart extends StatelessWidget {
         ),
         lineBarsData: [
           LineChartBarData(
-            spots: data.scores,
+            spots: spots,
             isCurved: true,
             curveSmoothness: 0.2,
-            color: CupertinoColors.systemGreen,
+            color: AppColors.teal,
             barWidth: 2,
             dotData: const FlDotData(show: false),
             belowBarData: BarAreaData(
               show: true,
               gradient: LinearGradient(
                 colors: [
-                  CupertinoColors.systemGreen.withValues(alpha: 0.3),
-                  CupertinoColors.systemGreen.withValues(alpha: 0.05),
+                  AppColors.teal.withValues(alpha: 0.3),
+                  AppColors.teal.withValues(alpha: 0.05),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -125,8 +149,8 @@ class RollingAverageChart extends StatelessWidget {
         borderData: FlBorderData(
           show: true,
           border: const Border(
-            left: BorderSide(color: CupertinoColors.black, width: 2),
-            bottom: BorderSide(color: CupertinoColors.black, width: 2),
+            left: BorderSide(color: AppColors.textSecondary, width: 1.5),
+            bottom: BorderSide(color: AppColors.textSecondary, width: 1.5),
           ),
         ),
         lineTouchData: LineTouchData(
@@ -135,7 +159,7 @@ class RollingAverageChart extends StatelessWidget {
               final date = DateTime.fromMillisecondsSinceEpoch(spot.x.toInt());
               final dateStr = DateFormat('MMM d, yyyy').format(date);
               return LineTooltipItem(
-                '$dateStr\n${spot.y.round()}%',
+                '$dateStr\n${_formatDailyPercent(spot.y)}/day',
                 const TextStyle(
                   color: CupertinoColors.white,
                   fontWeight: FontWeight.bold,
@@ -149,113 +173,40 @@ class RollingAverageChart extends StatelessWidget {
     );
   }
 
-  Widget _currentScore(_RollingAverageData data) {
+  /// Angled axis label; January carries a two-digit year suffix (e.g.
+  /// "Jan 26") to mark the year boundary, matching the monthly chart.
+  Widget _dateLabel(DateTime date) {
+    final format = date.month == 1 ? 'MMM yy' : 'MMM';
+    return Text(
+      DateFormat(format).format(date),
+      style: const TextStyle(
+        letterSpacing: -.4,
+        fontSize: 9,
+        color: AppColors.textSecondary,
+      ),
+    );
+  }
+
+  Widget _currentPace(ReadingPaceSeries series) {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Text(
-        'Current Momentum: ${data.currentScore.round()}%',
+        'Reading pace: ${_formatDailyPercent(series.currentPace)}/day',
         style: const TextStyle(fontWeight: FontWeight.w600),
       ),
     );
   }
 }
 
-class _RollingAverageData {
-  const _RollingAverageData({
-    required this.scores,
-    required this.currentScore,
-    required this.maxScore,
-  });
+/// Formats a percent-per-day value. Small paces keep one decimal so a
+/// "2.4%/day" reader isn't flattened to "2%/day".
+String _formatDailyPercent(double value) =>
+    value >= 10 ? '${value.round()}%' : '${value.toStringAsFixed(1)}%';
 
-  final List<FlSpot> scores;
-  final double currentScore;
-  final double maxScore;
-
-  factory _RollingAverageData.fromBooks(
-    List<LibraryBook> books, {
-    DateTime? periodCutoff,
-  }) {
-    // Collect all progress deltas across full history for accurate window computation
-    final progressDeltas = <MapEntry<DateTime, double>>[];
-    for (final book in books) {
-      if (book.formats.isEmpty) continue;
-      for (final diff in book.progressDiffs) {
-        if (diff.value > 0) progressDeltas.add(diff);
-      }
-    }
-
-    if (progressDeltas.isEmpty) {
-      return const _RollingAverageData(
-          scores: [], currentScore: 0, maxScore: 0);
-    }
-
-    final earliestDate = progressDeltas
-        .map((e) => e.key)
-        .minBy<num>((d) => d.millisecondsSinceEpoch);
-
-    final today = DateTime.now();
-    final startDate = earliestDate.shiftedByDays(30);
-    final daysToShow = today.difference(startDate).inDays;
-
-    final allScores = <FlSpot>[];
-    for (var dayOffset = 0; dayOffset <= daysToShow; dayOffset++) {
-      final date = startDate.shiftedByDays(dayOffset);
-      final score = _calculateScore(date, progressDeltas);
-      allScores.add(FlSpot(date.millisecondsSinceEpoch.toDouble(), score));
-    }
-
-    // Clip to the visible window defined by periodCutoff
-    final displayedScores = periodCutoff == null
-        ? allScores
-        : allScores
-            .where((spot) =>
-                spot.x >= periodCutoff.millisecondsSinceEpoch.toDouble())
-            .toList();
-
-    if (displayedScores.isEmpty) {
-      return const _RollingAverageData(
-          scores: [], currentScore: 0, maxScore: 0);
-    }
-
-    final maxScore =
-        displayedScores.map((s) => s.y).reduce((a, b) => a > b ? a : b);
-
-    return _RollingAverageData(
-      scores: displayedScores,
-      currentScore: displayedScores.last.y,
-      maxScore: maxScore > 0 ? maxScore : 1,
-    );
-  }
-
-  /// Calculate rolling score using step function weight decay.
-  /// Full weight for last 7 days, then gradual decay to 0.1 at 30 days.
-  /// Score is based on progress percentage, not page count.
-  static double _calculateScore(
-      DateTime date, List<MapEntry<DateTime, double>> progressDeltas) {
-    final windowStart = date.shiftedByDays(-30);
-    double score = 0;
-
-    for (final delta in progressDeltas) {
-      if (delta.key.isBefore(windowStart)) continue;
-      if (delta.key.isAfter(date)) continue;
-
-      final daysAgo = date.difference(delta.key).inDays;
-      final weight = _calculateWeight(daysAgo);
-
-      // Add progress * weight to score
-      score += delta.value * weight;
-    }
-
-    return score;
-  }
-
-  /// Step function: full weight for 7 days, then decay.
-  static double _calculateWeight(int daysAgo) {
-    if (daysAgo <= 7) {
-      return 1.0; // Full weight for last 7 days
-    } else {
-      // Gradual decay from 1.0 to 0.1 over days 8-30
-      return 1.0 - ((daysAgo - 7) / 23 * 0.9);
-    }
-  }
+/// Rounds an axis step up to a friendly value (…, 2, 5, 10, 20, 25, …) so the
+/// y-axis lands on simple numbers like "5%" rather than "6.1%".
+double _niceAxisInterval(double maxValue) {
+  const steps = [1.0, 2.0, 5.0, 10.0, 20.0, 25.0, 50.0, 100.0];
+  final target = maxValue / 5;
+  return steps.firstWhere((step) => step >= target, orElse: () => steps.last);
 }

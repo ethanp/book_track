@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'package:ethan_utils/ethan_utils.dart';
 
 import 'package:book_track/data_model.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:segment_display/segment_display.dart';
@@ -24,48 +24,50 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
 
   @override
   Widget build(BuildContext context) {
-    updateTimer();
+    _updateTimer();
     return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(middle: Text('Session')),
+      navigationBar: CupertinoNavigationBar(
+        middle: const Text('Session'),
+      ),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(top: 40),
           child: Column(children: [
-            segmentDisplay(),
+            _segmentDisplay(),
             const SizedBox(height: 30),
-            toggleButtons(),
+            _toggleButtons(),
             const SizedBox(height: 80),
-            progressHistory(),
+            _progressHistory(),
           ]),
         ),
       ),
     );
   }
 
-  Widget toggleButtons() {
-    return !sessionInProgress
-        ? beginSessionButton()
-        : Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [endSessionButton(), cancelSessionButton()]);
+  Widget _toggleButtons() {
+    if (!sessionInProgress) return _beginSessionButton();
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [_endSessionButton(), _cancelSessionButton()],
+    );
   }
 
-  Widget beginSessionButton() {
+  Widget _beginSessionButton() {
     final SessionStartTime readSession =
         ref.read(sessionStartTimeProvider.notifier);
-    return toggleSessionButton(
+    return _toggleSessionButton(
       onPressed: () => readSession.start(),
-      backgroundColor: CupertinoColors.systemGreen,
+      backgroundColor: AppColors.teal,
       text: 'Begin Session',
     );
   }
 
-  Widget endSessionButton() {
+  Widget _endSessionButton() {
     final SessionStartTime readSession =
         ref.read(sessionStartTimeProvider.notifier);
     final DateTime? startTime = ref.read(sessionStartTimeProvider);
 
-    return toggleSessionButton(
+    return _toggleSessionButton(
       onPressed: () {
         readSession.stop();
         UpdateProgressDialogPage.show(
@@ -75,22 +77,22 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
           initialEndTime: DateTime.now(),
         );
       },
-      backgroundColor: CupertinoColors.systemOrange,
+      backgroundColor: AppColors.primary,
       text: 'End Session',
     );
   }
 
-  Widget cancelSessionButton() {
+  Widget _cancelSessionButton() {
     final SessionStartTime readSession =
         ref.read(sessionStartTimeProvider.notifier);
-    return toggleSessionButton(
+    return _toggleSessionButton(
       onPressed: () => readSession.stop(),
-      backgroundColor: CupertinoColors.systemRed,
+      backgroundColor: AppColors.destructive,
       text: 'Cancel Session',
     );
   }
 
-  Widget toggleSessionButton({
+  Widget _toggleSessionButton({
     required void Function() onPressed,
     required Color backgroundColor,
     required String text,
@@ -98,64 +100,71 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
       CupertinoButton(
         onPressed: () {
           onPressed();
-          repaint();
+          _repaint();
         },
         color: backgroundColor,
         padding: EdgeInsets.zero,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
         child: SizedBox(
           width: 170,
           height: 88,
           child: Center(
-            child: Text(text, style: TextStyles.h2, textAlign: TextAlign.center),
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: CupertinoColors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       );
 
-  Widget segmentDisplay() {
+  Widget _segmentDisplay() {
     final DateTime? currStartTime = ref.read(sessionStartTimeProvider);
-    final Color backgroundColor =
-        sessionInProgress ? CupertinoColors.systemGreen.withAlpha((0.2 * 255).toInt()) : CupertinoColors.systemGrey.withAlpha((0.2 * 255).toInt());
-    Widget border({required Widget child}) {
-      return Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: CupertinoColors.systemGrey, width: 8),
-          borderRadius: BorderRadius.circular(10),
-          color: backgroundColor,
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-        margin: const EdgeInsets.all(20),
-        child: child,
-      );
-    }
+    final Color displayBackground = sessionInProgress
+        ? AppColors.teal.withValues(alpha: 0.12)
+        : AppColors.shimmer.withValues(alpha: 0.3);
+    final Color borderColor = sessionInProgress
+        ? AppColors.teal.withValues(alpha: 0.4)
+        : AppColors.divider;
 
     final clockFace = SevenSegmentDisplay(
-      value: duration(currStartTime),
+      value: _duration(currStartTime),
       backgroundColor: CupertinoColors.white.withAlpha(0),
       segmentStyle: HexSegmentStyle(
         segmentBaseSize: const Size(.85, 3.0),
-        disabledColor: backgroundColor.lerpWith(CupertinoColors.systemGrey, .3),
-        enabledColor: CupertinoColors.black,
+        disabledColor: displayBackground.lerpWith(AppColors.shimmer, .3),
+        enabledColor: AppColors.textPrimary,
       ),
     );
 
-    return border(child: clockFace);
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: borderColor, width: 6),
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        color: displayBackground,
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      margin: const EdgeInsets.all(20),
+      child: clockFace,
+    );
   }
 
   Timer? _timer;
 
-  int timerNum = 0;
-
-  void updateTimer() {
+  void _updateTimer() {
     if (sessionInProgress) {
-      _timer ??= Timer.periodic(const Duration(seconds: 1), repaint);
+      _timer ??= Timer.periodic(const Duration(seconds: 1), _repaint);
     } else {
       _timer?.cancel();
       _timer = null;
     }
   }
 
-  void repaint([dynamic _]) => mounted ? setState(() {}) : {};
+  void _repaint([dynamic _]) => mounted ? setState(() {}) : {};
 
   @override
   void dispose() {
@@ -163,7 +172,7 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
     super.dispose();
   }
 
-  String duration(DateTime? currStartTime) {
+  String _duration(DateTime? currStartTime) {
     if (!sessionInProgress) return '**:**';
     final Duration elapsedTime = DateTime.now().difference(currStartTime!);
     final String minutes = elapsedTime.inMinutes.pad(2);
@@ -171,35 +180,50 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
     return '$minutes:$seconds';
   }
 
-  Widget progressHistory() {
+  Widget _progressHistory() {
     final List<ProgressEvent> progressEvents = widget.book.progressHistory;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Container(
         decoration: BoxDecoration(
-          color: CupertinoColors.systemGrey6,
-          borderRadius: BorderRadius.circular(10),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          boxShadow: const [AppShadows.card],
         ),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           constraints: const BoxConstraints(minHeight: 200, maxHeight: 270),
           child: Column(children: [
-            title(),
+            _historyTitle(),
             if (progressEvents.isEmpty)
-              Text('None', style: TextStyles.h2)
+              Text('None', style: AppTextStyles.h3)
             else
               Expanded(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.vertical,
-                  child: Table(
-                    columnWidths: const {0: FixedColumnWidth(110)},
-                    children: progressEvents.mapL(
-                      (ev) => TableRow(children: [
-                        Text(TimeHelpers.monthDayYear(ev.end)),
-                        Text(TimeHelpers.hourMinuteAmPm(ev.end)),
-                        Text('${widget.book.intPercentProgressAt(ev)}%'),
-                        Text(ev.stringWSuffix),
-                      ]),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                    ),
+                    child: Table(
+                      columnWidths: const {0: FixedColumnWidth(110)},
+                      children: progressEvents.mapL(
+                        (event) => TableRow(children: [
+                          Text(
+                            TimeHelpers.monthDayYear(event.end),
+                            style: AppTextStyles.caption,
+                          ),
+                          Text(
+                            TimeHelpers.hourMinuteAmPm(event.end),
+                            style: AppTextStyles.caption,
+                          ),
+                          Text(
+                            '${widget.book.intPercentProgressAt(event)}%',
+                            style: AppTextStyles.body,
+                          ),
+                          Text(event.stringWSuffix, style: AppTextStyles.body),
+                        ]),
+                      ),
                     ),
                   ),
                 ),
@@ -210,15 +234,14 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
     );
   }
 
-  Widget title() {
+  Widget _historyTitle() {
     return Container(
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: CupertinoColors.black)),
+        border: Border(bottom: BorderSide(color: AppColors.divider)),
       ),
-      padding: const EdgeInsets.only(bottom: 2),
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Text('Progress Events', style: TextStyles.h1),
+      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Text('Progress Events', style: AppTextStyles.h3),
     );
   }
 }
-

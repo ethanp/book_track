@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:book_track/services/supabase_auth_service.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/mainstage_and_bottom_navbar.dart';
 import 'package:book_track/ui/pages/login/login_page.dart';
 import 'package:ethan_utils/ethan_utils.dart';
@@ -57,9 +58,34 @@ class _TopLevelWidgetState extends ConsumerState<TopLevelWidget> {
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
-      title: 'The app itself',
+      title: 'Book Track',
       debugShowCheckedModeBanner: false,
-      theme: CupertinoThemeData(brightness: Brightness.light),
+      theme: CupertinoThemeData(
+        brightness: Brightness.light,
+        primaryColor: AppColors.primary,
+        scaffoldBackgroundColor: AppColors.background,
+        barBackgroundColor: AppColors.navBarBackground,
+        textTheme: CupertinoTextThemeData(
+          primaryColor: AppColors.primary,
+          textStyle: const TextStyle(
+            inherit: false,
+            color: AppColors.textPrimary,
+            fontSize: 16,
+          ),
+          navTitleTextStyle: const TextStyle(
+            inherit: false,
+            color: AppColors.textPrimary,
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
+          navLargeTitleTextStyle: const TextStyle(
+            inherit: false,
+            color: AppColors.textPrimary,
+            fontSize: 34,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
       home: _buildHome(),
     );
   }

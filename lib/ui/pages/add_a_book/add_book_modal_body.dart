@@ -60,7 +60,7 @@ class _AddBookModalBodyState extends ConsumerState<AddBookModalBody> {
   Widget bookSearchTitle() {
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: Text('Book Search', style: TextStyles.h1),
+      child: Text('Book Search', style: AppTextStyles.h1),
     );
   }
 
@@ -72,7 +72,7 @@ class _AddBookModalBodyState extends ConsumerState<AddBookModalBody> {
         placeholder: 'Book title...',
         onSubmitted: search,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        style: TextStyle(color: CupertinoColors.black),
+        style: const TextStyle(color: AppColors.textPrimary),
       ),
     );
   }
@@ -85,8 +85,7 @@ class _AddBookModalBodyState extends ConsumerState<AddBookModalBody> {
         onPressed: () => setState(() => _showManualForm = true),
         child: Text(
           "Can't find your book? Add it manually",
-          style: TextStyles.value.copyWith(
-            color: CupertinoColors.activeBlue,
+          style: AppTextStyles.valueButton.copyWith(
             decoration: TextDecoration.underline,
           ),
         ),

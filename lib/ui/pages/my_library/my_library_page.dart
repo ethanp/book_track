@@ -1,10 +1,9 @@
 import 'package:book_track/data_model.dart';
-import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/sign_out_button.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:book_track/ui/pages/my_library/archived_books_section.dart';
@@ -26,105 +25,146 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      navigationBar: navigationBar(context),
-      child: pageBody(),
+      navigationBar: _navigationBar(context),
+      child: _pageBody(),
     );
   }
 
-  CupertinoNavigationBar navigationBar(BuildContext context) {
+  CupertinoNavigationBar _navigationBar(BuildContext context) {
     return CupertinoNavigationBar(
-      leading: addABookButton(context),
+      leading: _addABookButton(context),
       middle: const Text('My Library'),
       trailing: SignOutButton(),
     );
   }
 
-  Widget pageBody() {
+  Widget _pageBody() {
     return SafeArea(
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: ref.watch(userLibraryProvider).when(
-                loading: loadingScreen,
-                error: errorScreen,
-                data: libraryScreen,
+                loading: _loadingScreen,
+                error: _errorScreen,
+                data: _libraryScreen,
               ),
         ),
       ),
     );
   }
 
-  Widget libraryScreen(List<LibraryBook> library) {
+  Widget _libraryScreen(List<LibraryBook> library) {
     library.sortOn(_libraryOrder.compareFn, descending: true);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        sortSelector(),
-        userLibraryByStatus(library),
-        if (library.any((b) => b.archived))
-          ArchivedBooksSection(books: library.whereL((b) => b.archived)),
+        _sortSelector(),
+        _userLibraryByStatus(library),
+        if (library.any((book) => book.archived))
+          ArchivedBooksSection(
+              books: library.whereL((book) => book.archived)),
       ],
     );
   }
 
-  Widget sortSelector() {
-    return Center(
-      child: CupertinoSegmentedControl<_LibraryOrder>(
-        groupValue: _libraryOrder,
-        children: {
-          for (final value in _LibraryOrder.values)
-            value: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(value.nameAsCapitalizedWords),
-            ),
-        },
-        onValueChanged: (choice) => setState(() => _libraryOrder = choice),
+  Widget _sortSelector() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Center(
+        child: CupertinoSlidingSegmentedControl<_LibraryOrder>(
+          groupValue: _libraryOrder,
+          children: {
+            for (final orderValue in _LibraryOrder.values)
+              orderValue: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Text(
+                  orderValue.nameAsCapitalizedWords,
+                  style: AppTextStyles.label,
+                ),
+              ),
+          },
+          onValueChanged: (choice) => setState(() => _libraryOrder = choice!),
+        ),
       ),
     );
   }
 
-  Widget errorScreen(Object err, StackTrace stack) {
-    final String errorMessage = 'Error loading your library $err $stack';
-    _log.error(errorMessage);
-    return SelectableText(errorMessage, style: TextStyles.h1);
+  Widget _errorScreen(Object err, StackTrace stack) {
+    _log.error('Error loading your library $err $stack');
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          children: [
+            const Icon(
+              CupertinoIcons.exclamationmark_triangle,
+              color: AppColors.destructive,
+              size: 40,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Something went wrong loading your library.',
+              style: AppTextStyles.body.copyWith(color: AppColors.destructive),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  Widget loadingScreen() =>
-      Text('Loading your library...', style: TextStyles.h1);
+  Widget _loadingScreen() {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          children: [
+            CupertinoActivityIndicator(radius: 14),
+            SizedBox(height: AppSpacing.md),
+            Text('Loading your library...', style: AppTextStyles.bodySecondary),
+          ],
+        ),
+      ),
+    );
+  }
 
-  Widget addABookButton(BuildContext context) {
+  Widget _addABookButton(BuildContext context) {
     return CupertinoButton(
       padding: EdgeInsets.zero,
       onPressed: () => DismissibleCupertinoBottomSheet.show(context),
-      child: Column(
+      child: const Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(CupertinoIcons.add, size: 20),
-          Text('Add book', style: const TextStyle(fontSize: 13))
+          Icon(CupertinoIcons.add, size: 20, color: AppColors.primary),
+          Text(
+            'Add book',
+            style: TextStyle(fontSize: 12, color: AppColors.primary),
+          ),
         ],
       ),
     );
   }
 
-  Widget userLibraryByStatus(Iterable<LibraryBook> fullLibrary) {
-    final liveBooks = fullLibrary.where((b) => !b.archived);
+  Widget _userLibraryByStatus(Iterable<LibraryBook> fullLibrary) {
+    final liveBooks = fullLibrary.where((book) => !book.archived);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: ReadingStatus.values.mapL(
-        (readingStatus) => bookSection(readingStatus.name,
-            liveBooks.whereL((b) => b.readingStatus == readingStatus)),
+        (readingStatus) => _bookSection(readingStatus.name,
+            liveBooks.whereL((book) => book.readingStatus == readingStatus)),
       ),
     );
   }
 
-  Widget bookSection(String name, List<LibraryBook> books) {
+  Widget _bookSection(String name, List<LibraryBook> books) {
+    if (books.isEmpty) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          statusTitle(name, books.length),
+          _statusTitle(name, books.length),
           ListView.builder(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
@@ -136,12 +176,15 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     );
   }
 
-  Widget statusTitle(String name, int count) {
+  Widget _statusTitle(String name, int count) {
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.sm,
+        horizontal: AppSpacing.xs,
+      ),
       child: Text(
         '${name.capitalize} ($count)',
-        style: TextStyles.h1,
+        style: AppTextStyles.h2.copyWith(color: AppColors.burgundy),
       ),
     );
   }
@@ -155,9 +198,7 @@ enum _LibraryOrder {
 
   const _LibraryOrder(this.compareFn);
 
-  // Enum constructor can only take "constants" (probably means lvalue?)
   static Comparable bookProgress(LibraryBook book) => book.progressPercentage;
 
-  // Enum constructor can only take "constants" (probably means lvalue?)
   static Comparable bookStartTime(LibraryBook book) => book.startTime;
 }

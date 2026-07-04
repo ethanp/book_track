@@ -1,9 +1,9 @@
-import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/riverpods.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/my_library/my_library_page.dart';
 import 'package:book_track/ui/pages/stats/stats_page.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class BottomNavbarElement {
@@ -18,14 +18,14 @@ class MainstageAndBottomNavbar extends ConsumerWidget {
     BottomNavbarElement(
       page: MyLibraryPage(),
       item: BottomNavigationBarItem(
-        icon: Icon(Icons.book),
+        icon: Icon(CupertinoIcons.book),
         label: 'Library',
       ),
     ),
     BottomNavbarElement(
       page: StatsPage(),
       item: BottomNavigationBarItem(
-        icon: Icon(Icons.ssid_chart),
+        icon: Icon(CupertinoIcons.chart_bar),
         label: 'Stats',
       ),
     ),
@@ -38,11 +38,14 @@ class MainstageAndBottomNavbar extends ConsumerWidget {
         ref.read(selectedBottomBarIdxProvider.notifier);
     return CupertinoTabScaffold(
       tabBar: CupertinoTabBar(
-        items: bottomNavbarElements.mapL((e) => e.item),
+        items: bottomNavbarElements.mapL((element) => element.item),
         currentIndex: curIdx,
         onTap: (idx) => idxSelector.update(idx),
+        activeColor: AppColors.tabBarActive,
+        inactiveColor: AppColors.tabBarInactive,
+        backgroundColor: AppColors.navBarBackground,
       ),
-      backgroundColor: Colors.lightGreen.lerpWith(Colors.grey[100]!, .92),
+      backgroundColor: AppColors.background,
       tabBuilder: (context, idx) => CupertinoTabView(
         builder: (context) => bottomNavbarElements[idx].page,
       ),

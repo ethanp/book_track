@@ -48,7 +48,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
       padding: const EdgeInsets.only(top: 30),
       child: Column(
         children: [
-          Text("I'm reading this in", style: TextStyles.h1),
+          Text("I'm reading this in", style: AppTextStyles.h2),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: _saving
@@ -69,14 +69,18 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
         onPressed: () => _promptForLength(bookType),
         padding: const EdgeInsets.symmetric(horizontal: 6),
         color: switch (bookType) {
-          BookFormat.audiobook => CupertinoColors.systemOrange,
-          BookFormat.eBook => CupertinoColors.systemBlue,
-          BookFormat.paperback => CupertinoColors.systemRed,
-          BookFormat.hardcover => CupertinoColors.systemGreen,
+          BookFormat.audiobook => AppColors.audiobook,
+          BookFormat.eBook => AppColors.ebook,
+          BookFormat.paperback => AppColors.paperback,
+          BookFormat.hardcover => AppColors.hardcover,
         },
         child: Text(
           bookType.name,
-          style: TextStyles.h4.copyWith(fontSize: 13),
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: CupertinoColors.white,
+          ),
         ),
       ),
     );
@@ -125,13 +129,13 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
   }
 
   Widget keyValueText(String key, String value) {
-    final TextStyle black = TextStyles.h3;
-    final TextStyle bold = black.copyWith(fontWeight: FontWeight.w700);
+    final TextStyle metadataValue = AppTextStyles.body;
+    final TextStyle metadataKey = AppTextStyles.label;
     final Widget keyWidget = SizedBox(
       width: 90,
       child: Text(
         key,
-        style: bold,
+        style: metadataKey,
         maxLines: 3,
         textAlign: TextAlign.right,
       ),
@@ -140,7 +144,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
       width: 200,
       child: Text(
         value,
-        style: black,
+        style: metadataValue,
         maxLines: 3,
       ),
     );

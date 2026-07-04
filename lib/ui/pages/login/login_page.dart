@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'package:ethan_utils/ethan_utils.dart';
 
-import 'package:book_track/helpers.dart';
 import 'package:book_track/main.dart';
 import 'package:book_track/services/supabase_auth_service.dart';
+import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'login_form.dart';
@@ -34,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    pushLoggedInAppUponLogin();
+    _pushLoggedInAppUponLogin();
     super.initState();
   }
 
@@ -44,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
     return which ? 'Sign Up' : 'Sign In';
   }
 
-  void pushLoggedInAppUponLogin() {
+  void _pushLoggedInAppUponLogin() {
     _authStateSubscription = SupabaseAuthService.onAuthStateChange(
       onError: (Object error) => _log.error('Auth state change error: $error'),
       onEvent: (AuthState data) {
@@ -61,24 +60,43 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      backgroundColor: Colors.grey[400],
-      navigationBar: CupertinoNavigationBar(middle: Text(signUpText())),
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(signUpText()),
+      ),
       child: SafeArea(
         child: Form(
           key: formKey,
           autovalidateMode: AutovalidateMode.always,
           child: ListView(
             padding: const EdgeInsets.symmetric(
-              vertical: 18,
-              horizontal: 12,
+              vertical: AppSpacing.xl,
+              horizontal: AppSpacing.lg,
             ),
             children: [
+              const SizedBox(height: AppSpacing.xxl),
+              Center(
+                child: Text(
+                  'Book Track',
+                  style: AppTextStyles.h1.copyWith(
+                    color: AppColors.burgundy,
+                    fontSize: 32,
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Center(
+                child: Text(
+                  'Track your reading journey',
+                  style: AppTextStyles.bodySecondary,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxl),
               LoginForm(loginFormC, _doSignIn),
-              const SizedBox(height: 10),
-              signInButton(),
-              showAuthErrorIfPresent(),
-              signInUpToggle(),
-              resetPassword(context),
+              const SizedBox(height: AppSpacing.lg),
+              _signInButton(),
+              _showAuthErrorIfPresent(),
+              _signInUpToggle(),
+              _resetPassword(context),
             ],
           ),
         ),
@@ -86,34 +104,42 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget showAuthErrorIfPresent() {
+  Widget _showAuthErrorIfPresent() {
+    if (_authError == null) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.only(left: 28, top: 10),
+      padding: const EdgeInsets.only(left: AppSpacing.xl, top: AppSpacing.sm),
       child: Text(
-        _authError ?? '',
-        style: TextStyle(
-          color: Colors.red[800],
-          fontWeight: FontWeight.w700,
+        _authError!,
+        style: const TextStyle(
+          color: AppColors.destructive,
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
         ),
       ),
     );
   }
 
-  Widget signInButton() {
+  Widget _signInButton() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green[100],
-          shape: FlutterHelpers.roundedRect(radius: 8),
-        ),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+      child: CupertinoButton(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(AppRadii.md),
         onPressed: _processingSignIn ? null : _doSignIn,
-        child: Text(_processingSignIn ? 'Processing...' : signUpText()),
+        child: _processingSignIn
+            ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+            : Text(
+                signUpText(),
+                style: const TextStyle(
+                  color: CupertinoColors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
       ),
     );
   }
 
-  Widget signInUpToggle() {
+  Widget _signInUpToggle() {
     return TextAndButton(
       title: '${_isSignUpMode ? "Already" : "Don't"} have an account? ',
       buttonText: signUpText(reverse: true),
@@ -121,22 +147,15 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget resetPassword(BuildContext context) {
+  Widget _resetPassword(BuildContext context) {
     return TextAndButton(
       title: 'Forgot your password? ',
       buttonText: 'Email reset link',
-      onTap: () => sendPasswordResetLink(context),
+      onTap: () => _sendPasswordResetLink(context),
     );
   }
 
-  BoxDecoration textFieldDecoration() {
-    return BoxDecoration(
-      border: Border.all(color: CupertinoColors.systemGrey, width: 1.0),
-      borderRadius: BorderRadius.circular(8),
-    );
-  }
-
-  Future<void> sendPasswordResetLink(BuildContext context) async {
+  Future<void> _sendPasswordResetLink(BuildContext context) async {
     try {
       await SupabaseAuthService.sentPasswordResetLink(loginFormC.emailInput);
       if (context.mounted) context.showSnackBar('Reset email sent');

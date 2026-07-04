@@ -1,6 +1,7 @@
 import 'package:book_track/data_model.dart';
-import 'package:ethan_utils/ethan_utils.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/day_progress_entry.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
@@ -25,13 +26,12 @@ class CalendarHeatmap extends StatefulWidget {
   /// Only show dates after this cutoff (inclusive).
   final DateTime? periodCutoff;
 
-  /// Color scale (5 levels like GitHub).
   static const colors = [
-    Color(0xFFEBEDF0), // 0: no activity
-    Color(0xFF9BE9A8), // 1: light
-    Color(0xFF40C463), // 2: medium-light
-    Color(0xFF30A14E), // 3: medium
-    Color(0xFF216E39), // 4: dark (high activity)
+    AppColors.heatmapEmpty,
+    AppColors.heatmapLight,
+    AppColors.heatmapMedium,
+    AppColors.heatmapDark,
+    AppColors.heatmapFull,
   ];
 
   @override
@@ -97,10 +97,10 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
   Widget _dayLabels() {
     const days = ['', 'M', '', 'W', '', 'F', ''];
     return Column(
-      children: days.mapL((d) => SizedBox(
+      children: days.mapL((day) => SizedBox(
             height: 12,
             width: 20,
-            child: Text(d, style: const TextStyle(fontSize: 9)),
+            child: Text(day, style: AppTextStyles.caption.copyWith(fontSize: 9)),
           )),
     );
   }
@@ -195,11 +195,10 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
           if (index == 0) {
             final monthName = DateFormat('MMM yy').format(monthStart);
             return SizedBox(
-              width: 12, // Same width as week column
+              width: 12,
               child: Text(
                 monthName,
-                style: const TextStyle(
-                    fontSize: 9, color: CupertinoColors.systemGrey),
+                style: AppTextStyles.caption.copyWith(fontSize: 9),
                 textAlign: TextAlign.left,
                 overflow: TextOverflow.visible,
                 softWrap: false,
@@ -286,7 +285,7 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
           color: CalendarHeatmap.colors[colorIndex],
           borderRadius: BorderRadius.circular(2),
           border: isSelected
-              ? Border.all(color: CupertinoColors.activeBlue, width: 1.5)
+              ? Border.all(color: AppColors.burgundy, width: 1.5)
               : null,
         ),
       ),
@@ -308,22 +307,20 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
     final tiles = DayProgressEntry.tilesForDate(date, widget.books, context);
 
     return Container(
-      padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.only(top: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: CupertinoColors.systemGrey6,
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.sm),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(dateStr, style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
+          Text(dateStr, style: AppTextStyles.h5),
+          const SizedBox(height: AppSpacing.sm),
           if (tiles.isEmpty)
-            const Text(
-              'No reading activity',
-              style: TextStyle(color: CupertinoColors.systemGrey),
-            )
+            const Text('No reading activity', style: AppTextStyles.bodySecondary)
           else
             ...tiles,
         ],

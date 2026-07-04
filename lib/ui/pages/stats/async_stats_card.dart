@@ -1,9 +1,6 @@
+import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
 
-/// A reusable wrapper that loads stats card data asynchronously.
-///
-/// Shows a loading skeleton while computing, then displays the result.
-/// Automatically recomputes when [cacheKey] changes.
 class AsyncStatsCard<T> extends StatefulWidget {
   const AsyncStatsCard({
     required this.cacheKey,
@@ -13,17 +10,9 @@ class AsyncStatsCard<T> extends StatefulWidget {
     super.key,
   });
 
-  /// Unique key for caching. Changes trigger recomputation.
-  /// Example: '${books.length}-$periodCutoff-$showArchived'
   final String cacheKey;
-
-  /// Function that computes the data. Runs in isolate if possible.
   final T Function() compute;
-
-  /// Builder that creates the UI from computed data.
   final Widget Function(T data) builder;
-
-  /// Height of the loading skeleton.
   final double loadingHeight;
 
   @override
@@ -51,9 +40,7 @@ class _AsyncStatsCardState<T> extends State<AsyncStatsCard<T>> {
   }
 
   Future<void> _computeData() async {
-    if (_cachedKey == widget.cacheKey && _cachedData != null) {
-      return; // Already computed
-    }
+    if (_cachedKey == widget.cacheKey && _cachedData != null) return;
 
     setState(() {
       _isLoading = true;
@@ -61,12 +48,8 @@ class _AsyncStatsCardState<T> extends State<AsyncStatsCard<T>> {
     });
 
     try {
-      // Run computation in next microtask to allow UI to update first
       await Future.microtask(() {});
-
-      // Compute the data (synchronously for now, could use compute() for heavy work)
       final data = widget.compute();
-
       if (mounted) {
         setState(() {
           _cachedData = data;
@@ -74,10 +57,10 @@ class _AsyncStatsCardState<T> extends State<AsyncStatsCard<T>> {
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (computeError) {
       if (mounted) {
         setState(() {
-          _error = e;
+          _error = computeError;
           _isLoading = false;
         });
       }
@@ -86,47 +69,40 @@ class _AsyncStatsCardState<T> extends State<AsyncStatsCard<T>> {
 
   @override
   Widget build(BuildContext context) {
-    if (_error != null) {
-      return _errorWidget();
-    }
-
-    if (_isLoading || _cachedData == null) {
-      return _loadingSkeleton();
-    }
-
+    if (_error != null) return _errorWidget();
+    if (_isLoading || _cachedData == null) return _loadingSkeleton();
     return widget.builder(_cachedData as T);
   }
 
   Widget _loadingSkeleton() {
     return Container(
       height: widget.loadingHeight,
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
-        color: CupertinoColors.systemBackground,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: CupertinoColors.systemGrey.withValues(alpha: 0.2),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        boxShadow: const [AppShadows.card],
       ),
-      child: const Center(
-        child: CupertinoActivityIndicator(),
-      ),
+      child: const Center(child: CupertinoActivityIndicator()),
     );
   }
 
   Widget _errorWidget() {
     return Container(
       height: widget.loadingHeight,
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
-        color: CupertinoColors.systemBackground,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: CupertinoColors.systemRed.withValues(alpha: 0.3)),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        border: Border.all(
+          color: AppColors.destructive.withValues(alpha: 0.3),
+        ),
       ),
       child: Center(
         child: Column(
@@ -134,14 +110,13 @@ class _AsyncStatsCardState<T> extends State<AsyncStatsCard<T>> {
           children: [
             const Icon(
               CupertinoIcons.exclamationmark_triangle,
-              color: CupertinoColors.systemRed,
+              color: AppColors.destructive,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               'Error loading data',
-              style: TextStyle(
-                color: CupertinoColors.systemRed.withValues(alpha: 0.8),
-                fontSize: 12,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.destructive,
               ),
             ),
           ],

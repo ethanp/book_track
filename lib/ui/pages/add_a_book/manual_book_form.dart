@@ -89,7 +89,7 @@ class _ManualBookFormState extends ConsumerState<ManualBookForm> {
         Expanded(
           child: Text(
             'Add Book Manually',
-            style: TextStyles.h1,
+            style: AppTextStyles.h1,
             textAlign: TextAlign.center,
           ),
         ),
@@ -109,7 +109,7 @@ class _ManualBookFormState extends ConsumerState<ManualBookForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyles.h4),
+          Text(label, style: AppTextStyles.h4),
           const SizedBox(height: 4),
           CupertinoTextField(
             controller: controller,
@@ -129,7 +129,7 @@ class _ManualBookFormState extends ConsumerState<ManualBookForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Format', style: TextStyles.h4),
+          Text('Format', style: AppTextStyles.h4),
           const SizedBox(height: 8),
           Row(
             children: BookFormat.values.mapL(formatButton),
@@ -150,9 +150,8 @@ class _ManualBookFormState extends ConsumerState<ManualBookForm> {
           onPressed: () => selectFormat(format),
           child: Text(
             format.name,
-            style: TextStyles.value.copyWith(
-              fontSize: 12,
-              color: isSelected ? CupertinoColors.white : CupertinoColors.black,
+            style: AppTextStyles.caption.copyWith(
+              color: isSelected ? CupertinoColors.white : AppColors.textPrimary,
             ),
           ),
         ),
@@ -161,10 +160,10 @@ class _ManualBookFormState extends ConsumerState<ManualBookForm> {
   }
 
   Color formatColor(BookFormat format) => switch (format) {
-        BookFormat.audiobook => CupertinoColors.systemOrange,
-        BookFormat.eBook => CupertinoColors.systemBlue,
-        BookFormat.paperback => CupertinoColors.systemRed,
-        BookFormat.hardcover => CupertinoColors.systemGreen,
+        BookFormat.audiobook => AppColors.audiobook,
+        BookFormat.eBook => AppColors.ebook,
+        BookFormat.paperback => AppColors.paperback,
+        BookFormat.hardcover => AppColors.hardcover,
       };
 
   void selectFormat(BookFormat format) {
@@ -183,7 +182,7 @@ class _ManualBookFormState extends ConsumerState<ManualBookForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(isAudiobook ? 'Length (h:mm)' : 'Pages', style: TextStyles.h4),
+          Text(isAudiobook ? 'Length (h:mm)' : 'Pages', style: AppTextStyles.h4),
           const SizedBox(height: 4),
           LengthInput(
             controller: _lengthController,

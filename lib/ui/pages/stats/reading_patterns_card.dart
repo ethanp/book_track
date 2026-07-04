@@ -1,7 +1,8 @@
 import 'package:book_track/data_model.dart';
-import 'package:ethan_utils/ethan_utils.dart';
+import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/async_stats_card.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 
 class ReadingPatternsCard extends StatelessWidget {
@@ -25,36 +26,20 @@ class ReadingPatternsCard extends StatelessWidget {
   }
 
   Widget _buildCard(_ReadingPatternsData data) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemBackground,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: CupertinoColors.systemGrey.withValues(alpha: 0.2),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    return AppCard(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 18, bottom: 8, left: 16),
-              child: Text('Reading Patterns', style: TextStyles.h3),
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: Text('Reading Patterns', style: AppTextStyles.h3),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Most Active Days (by progress)',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.lg),
+            Text('Most Active Days (by progress)', style: AppTextStyles.h5),
+            const SizedBox(height: AppSpacing.sm),
             if (data.activityByDayOfWeek.isEmpty)
               _emptyState()
             else
@@ -71,7 +56,7 @@ class ReadingPatternsCard extends StatelessWidget {
       child: Center(
         child: Text(
           'No reading activity in this period',
-          style: TextStyle(color: CupertinoColors.systemGrey),
+          style: AppTextStyles.bodySecondary,
         ),
       ),
     );
@@ -82,7 +67,6 @@ class ReadingPatternsCard extends StatelessWidget {
     DateTime? periodCutoff,
   ) {
     final byDay = <int, double>{};
-
     for (final book in books) {
       final diffs = book.progressDiffs;
       for (final diff in diffs) {
@@ -94,15 +78,12 @@ class ReadingPatternsCard extends StatelessWidget {
         }
       }
     }
-
     return _ReadingPatternsData(activityByDayOfWeek: byDay);
   }
 }
 
 class _ReadingPatternsData {
-  const _ReadingPatternsData({
-    required this.activityByDayOfWeek,
-  });
+  const _ReadingPatternsData({required this.activityByDayOfWeek});
 
   final Map<int, double> activityByDayOfWeek;
 }
@@ -128,15 +109,15 @@ class _DayOfWeekChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: List.generate(7, (index) {
           final weekday = index + 1;
-          final value = activityByDay[weekday] ?? 0;
-          return _dayBar(dayNames[index], value, maxValue);
+          final dayValue = activityByDay[weekday] ?? 0;
+          return _dayBar(dayNames[index], dayValue, maxValue);
         }),
       ),
     );
   }
 
-  Widget _dayBar(String day, double value, double maxValue) {
-    final fraction = maxValue > 0 ? value / maxValue : 0.0;
+  Widget _dayBar(String day, double dayValue, double maxValue) {
+    final fraction = maxValue > 0 ? dayValue / maxValue : 0.0;
     final barHeight = maxBarHeight * fraction;
 
     return Column(
@@ -150,8 +131,8 @@ class _DayOfWeekChart extends StatelessWidget {
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
               colors: [
-                CupertinoColors.systemGreen.withValues(alpha: 0.5),
-                CupertinoColors.systemGreen.withValues(alpha: 0.85),
+                AppColors.teal.withValues(alpha: 0.4),
+                AppColors.teal.withValues(alpha: 0.8),
               ],
             ),
             borderRadius: const BorderRadius.vertical(
@@ -160,19 +141,14 @@ class _DayOfWeekChart extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          day,
-          style:
-              const TextStyle(fontSize: 10, color: CupertinoColors.systemGrey),
-        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(day, style: AppTextStyles.caption.copyWith(fontSize: 10)),
         const SizedBox(height: 2),
         Text(
-          '${value.round()}%',
-          style: const TextStyle(
+          '${dayValue.round()}%',
+          style: AppTextStyles.caption.copyWith(
             fontSize: 9,
             fontWeight: FontWeight.w600,
-            color: CupertinoColors.systemGrey,
           ),
         ),
       ],

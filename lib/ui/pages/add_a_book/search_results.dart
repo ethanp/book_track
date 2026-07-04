@@ -1,10 +1,9 @@
-import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/search_result_detail/search_result_detail_page.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'results_count.dart';
@@ -15,9 +14,9 @@ class SearchResults extends ConsumerWidget {
     final BookSearchResults searchResult =
         ref.watch(bookSearchResultsNotifierProvider);
     if (searchResult.isLoading) {
-      return SizedBox(
+      return const SizedBox(
         height: 400,
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(child: CupertinoActivityIndicator(radius: 14)),
       );
     }
     if (searchResult.failure != null) {
@@ -25,12 +24,9 @@ class SearchResults extends ConsumerWidget {
         children: [
           Text(
             'Request to OpenLibrary failed. Please search again.',
-            style: TextStyles.h3,
+            style: AppTextStyles.h4,
           ),
-          Text(
-            '\n${searchResult.failure}',
-            style: TextStyles.value,
-          )
+          Text('\n${searchResult.failure}', style: AppTextStyles.bodySecondary),
         ],
       );
     }
@@ -40,7 +36,7 @@ class SearchResults extends ConsumerWidget {
         Expanded(
           child: ListView(
             children: searchResult.books.mapL(
-              (book) => resultBook(book, ref),
+              (book) => _resultBook(book, ref),
             ),
           ),
         ),
@@ -48,42 +44,28 @@ class SearchResults extends ConsumerWidget {
     );
   }
 
-  Widget resultBook(OpenLibraryBook book, WidgetRef ref) {
+  Widget _resultBook(OpenLibraryBook book, WidgetRef ref) {
     return Container(
-      margin: const EdgeInsets.all(1),
+      margin: const EdgeInsets.symmetric(vertical: 1),
       child: CupertinoListTile(
-        leading: coverArt(book),
-        title: title(book),
-        subtitle: author(book),
+        leading: _coverArt(book),
+        title: Text(
+          book.title,
+          maxLines: 3,
+          style: AppTextStyles.h5,
+        ),
+        subtitle: Text(
+          book.firstAuthor,
+          style: AppTextStyles.bodySecondary.copyWith(
+            fontStyle: FontStyle.italic,
+          ),
+        ),
         onTap: () => ref.context.push(SearchResultDetailPage(book)),
       ),
     );
   }
 
-  Widget author(OpenLibraryBook book) {
-    return Text(
-      book.firstAuthor,
-      style: TextStyle(
-        fontStyle: FontStyle.italic,
-        fontWeight: FontWeight.w500,
-        color: CupertinoColors.systemGrey,
-      ),
-    );
-  }
-
-  Widget title(OpenLibraryBook book) {
-    return Text(
-      book.title,
-      maxLines: 3,
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w700,
-        color: CupertinoColors.systemGrey,
-      ),
-    );
-  }
-
-  Widget coverArt(OpenLibraryBook book) {
+  Widget _coverArt(OpenLibraryBook book) {
     return SizedBox(
       width: 50,
       child: book.coverArtS.map(Image.memory),

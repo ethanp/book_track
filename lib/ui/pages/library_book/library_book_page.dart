@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/my_library/reading_progress_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,13 +23,17 @@ class LibraryBookPage extends ConsumerWidget {
       loading: () => const CupertinoPageScaffold(
         child: Center(child: CupertinoActivityIndicator()),
       ),
-      error: (e, _) => CupertinoPageScaffold(
-        child: Center(child: Text('Error: $e')),
+      error: (error, _) => CupertinoPageScaffold(
+        child: Center(
+          child: Text(
+            'Error: $error',
+            style: AppTextStyles.body.copyWith(color: AppColors.destructive),
+          ),
+        ),
       ),
       data: (books) {
-        final book = books.where((b) => b.supaId == bookId).firstOrNull;
+        final book = books.where((book) => book.supaId == bookId).firstOrNull;
         if (book == null) {
-          // Book was deleted, pop back
           WidgetsBinding.instance.addPostFrameCallback((_) {
             Navigator.of(context).pop();
           });
@@ -66,7 +71,10 @@ class LibraryBookPage extends ConsumerWidget {
         children: [
           Flexible(
             flex: 5,
-            child: Text('${book.book.title} (${book.readingStatus.name})'),
+            child: Text(
+              '${book.book.title} (${book.readingStatus.name})',
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           Flexible(flex: 2, child: ReadingProgressIndicator(book)),
         ],

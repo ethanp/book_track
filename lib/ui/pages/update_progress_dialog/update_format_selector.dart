@@ -1,4 +1,5 @@
 import 'package:book_track/data_model.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -21,8 +22,8 @@ class UpdateFormatSelector extends StatelessWidget {
         SegmentedButton<ProgressEventFormat>(
           showSelectedIcon: false,
           style: ButtonStyle(
-            backgroundColor: ifSelected(Colors.blue, otw: Colors.grey[200]),
-            foregroundColor: ifSelected(Colors.white, otw: Colors.black),
+            backgroundColor: ifSelected(AppColors.primary, otw: AppColors.divider),
+            foregroundColor: ifSelected(Colors.white, otw: AppColors.textPrimary),
             visualDensity: VisualDensity.comfortable,
           ),
           selected: {currentlySelectedFormat},

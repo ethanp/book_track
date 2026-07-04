@@ -1,8 +1,9 @@
 import 'package:book_track/data_model.dart';
-import 'package:ethan_utils/ethan_utils.dart';
-import 'package:book_track/helpers.dart' show FlutterHelpers;
+import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
+import 'package:ethan_utils/ethan_utils.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -19,36 +20,44 @@ class BookTile extends ConsumerWidget {
       key: Key(book.book.supaId.toString()),
       direction: DismissDirection.startToEnd,
       confirmDismiss: (direction) => UpdateProgressDialogPage.show(ref, book),
-      background: dragBackground(),
-      child: bookListTile(context),
+      background: _dragBackground(),
+      child: _bookListTile(context),
     );
   }
 
-  Widget bookListTile(BuildContext context) {
+  Widget _bookListTile(BuildContext context) {
     return GestureDetector(
       onTap: () => context.push(LibraryBookPage(book.supaId)),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        margin: const EdgeInsets.symmetric(vertical: 2),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadii.sm),
+        ),
         child: Row(
           children: [
-            coverArt(),
-            SizedBox(width: 12),
+            _coverArt(),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [Expanded(child: title()), progressPercentage()],
+                    children: [Expanded(child: _title()), _progressPercentage()],
                   ),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 2),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [author(), pagesRead()],
+                    children: [_author(), _pagesRead()],
                   ),
-                  startedDate(),
-                  SizedBox(height: 8),
-                  progressBar(),
+                  _startedDate(),
+                  const SizedBox(height: AppSpacing.sm),
+                  _progressBar(),
                 ],
               ),
             ),
@@ -58,71 +67,72 @@ class BookTile extends ConsumerWidget {
     );
   }
 
-  Widget progressBar() {
-    return LinearProgressIndicator(
-      value: book.progressPercentage.toDouble() / 100,
-      minHeight: 6,
+  Widget _progressBar() {
+    return ClipRRect(
       borderRadius: BorderRadius.circular(4),
-      backgroundColor: Colors.grey[300],
+      child: LinearProgressIndicator(
+        value: book.progressPercentage.toDouble() / 100,
+        minHeight: 5,
+        backgroundColor: AppColors.progressBarTrack,
+        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.teal),
+      ),
     );
   }
 
-  Widget pagesRead() {
+  Widget _pagesRead() {
     return Text(
       book.currentBookProgressString ?? '',
-      style: TextStyle(
-        fontSize: 12,
-        color: Colors.grey[700],
-      ),
+      style: AppTextStyles.caption,
     );
   }
 
-  Widget author() {
+  Widget _author() {
     return Text(
       book.book.author ?? 'Author Unknown',
-      style: TextStyle(
-        color: Colors.grey[600],
-        fontSize: 14,
-      ),
+      style: AppTextStyles.bodySecondary,
     );
   }
 
-  Widget startedDate() {
+  Widget _startedDate() {
     final String formatted = DateFormat('MMM d, y').format(book.startTime);
-    return Text(
-      'Started $formatted',
-      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-    );
+    return Text('Started $formatted', style: AppTextStyles.caption);
   }
 
-  Widget title() {
+  Widget _title() {
     return Text(
       book.book.title,
-      style: TextStyle(
-        fontWeight: FontWeight.w500,
-        fontSize: 15,
-      ),
+      style: AppTextStyles.h5,
     );
   }
 
-  Widget progressPercentage() {
+  Widget _progressPercentage() {
     return Text(
       '${book.progressPercentage}%',
-      style: TextStyle(
-        fontSize: 12,
-        color: Colors.grey[700],
+      style: AppTextStyles.caption.copyWith(
+        fontWeight: FontWeight.w600,
+        color: AppColors.teal,
       ),
     );
   }
 
-  Widget coverArt() {
-    final double height = 60;
-    final double width = 45;
-    Widget bookArt = SizedBox(
+  Widget _coverArt() {
+    const double height = 60.0;
+    const double width = 45.0;
+
+    Widget bookArt = Container(
       height: height,
       width: width,
-      child: Icon(Icons.question_mark),
+      decoration: BoxDecoration(
+        color: AppColors.primaryLight.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(AppRadii.sm),
+      ),
+      child: const Icon(
+        CupertinoIcons.book,
+        color: AppColors.primary,
+        size: 24,
+      ),
     );
+
     if (book.book.coverArtS != null) {
       final bool validCover = (true &&
           book.book.coverArtS![0] == 255 &&
@@ -131,7 +141,7 @@ class BookTile extends ConsumerWidget {
           book.book.coverArtS![3] == 224);
       if (validCover) {
         bookArt = ClipRRect(
-          borderRadius: BorderRadius.circular(3),
+          borderRadius: BorderRadius.circular(AppRadii.sm),
           child: Image.memory(
             fit: BoxFit.fill,
             height: height,
@@ -141,26 +151,37 @@ class BookTile extends ConsumerWidget {
         );
       }
     }
-    return Card(
-      elevation: 4,
-      shape: FlutterHelpers.roundedRect(radius: 6),
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadii.sm),
+        boxShadow: const [AppShadows.coverArt],
+      ),
       child: bookArt,
     );
   }
 
-  Widget dragBackground() {
+  Widget _dragBackground() {
     return Container(
-      color: Colors.green,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(
-          'Add progress',
-          style: TextStyle(
-            color: Colors.grey[100],
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+      decoration: BoxDecoration(
+        color: AppColors.success,
+        borderRadius: BorderRadius.circular(AppRadii.sm),
+      ),
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: const Row(
+        children: [
+          Icon(CupertinoIcons.add, color: CupertinoColors.white, size: 18),
+          SizedBox(width: AppSpacing.xs),
+          Text(
+            'Add progress',
+            style: TextStyle(
+              color: CupertinoColors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

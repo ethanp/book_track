@@ -1,3 +1,4 @@
+import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,7 +18,7 @@ class FilterSection extends ConsumerWidget {
           for (final period in StatsPeriod.values)
             period: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Text(period.label, style: const TextStyle(fontSize: 13)),
+              child: Text(period.label, style: AppTextStyles.label),
             ),
         },
         onValueChanged: (value) {

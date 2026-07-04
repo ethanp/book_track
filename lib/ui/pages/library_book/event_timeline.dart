@@ -1,11 +1,12 @@
 import 'package:book_track/data_model.dart';
-import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_progress_service.dart';
 import 'package:book_track/ui/common/confirmation_dialog.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
-import 'package:flutter/material.dart';
+import 'package:ethan_utils/ethan_utils.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class EventTimeline extends StatelessWidget {
@@ -16,10 +17,10 @@ class EventTimeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         children: libraryBook.progressHistory
-            .mapL((e) => _EventTimelineItem(libraryBook, e)),
+            .mapL((event) => _EventTimelineItem(libraryBook, event)),
       ),
     );
   }
@@ -34,32 +35,45 @@ class _EventTimelineItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(children: [
-      pipe(onTop: true),
-      card(ref),
-      pipe(onTop: false),
+      _pipe(onTop: true),
+      _card(ref),
+      _pipe(onTop: false),
     ]);
   }
 
-  Widget card(WidgetRef ref) {
-    return Card(
+  Widget _card(WidgetRef ref) {
+    return Container(
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.only(left: 12, top: 6, bottom: 6),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [eventInfo(), modifyButtons(ref)],
-        ),
+      padding: const EdgeInsets.only(
+        left: AppSpacing.md,
+        top: AppSpacing.sm,
+        bottom: AppSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadii.sm),
+        boxShadow: const [AppShadows.card],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [_eventInfo(), _modifyButtons(ref)],
       ),
     );
   }
 
-  Widget eventInfo() {
+  Widget _eventInfo() {
     final percentString = libraryBook.intPercentProgressAt(progressEvent);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        dateTimeString(),
-        Text('Progress: ${_progressDisplayString()} ($percentString%)'),
+        Text(
+          TimeHelpers.dateAndTime(progressEvent.dateTime),
+          style: AppTextStyles.caption,
+        ),
+        Text(
+          'Progress: ${_progressDisplayString()} ($percentString%)',
+          style: AppTextStyles.body,
+        ),
       ],
     );
   }
@@ -77,20 +91,25 @@ class _EventTimelineItem extends ConsumerWidget {
     return '${nativeAmount.round()} pgs';
   }
 
-  Widget modifyButtons(WidgetRef ref) =>
-      Row(children: [updateButton(ref), deleteButton(ref)]);
+  Widget _modifyButtons(WidgetRef ref) =>
+      Row(children: [_updateButton(ref), _deleteButton(ref)]);
 
-  Widget updateButton(WidgetRef ref) {
-    return IconButton(
-      icon: Icon(Icons.edit_note, size: 28),
+  Widget _updateButton(WidgetRef ref) {
+    return CupertinoButton(
+      padding: const EdgeInsets.all(AppSpacing.sm),
       onPressed: () =>
           UpdateProgressDialogPage.update(ref, libraryBook, progressEvent),
+      child: const Icon(
+        CupertinoIcons.pencil,
+        size: 22,
+        color: AppColors.primary,
+      ),
     );
   }
 
-  Widget deleteButton(WidgetRef ref) {
-    return IconButton(
-      icon: Icon(Icons.delete, size: 22, color: Colors.red[900]),
+  Widget _deleteButton(WidgetRef ref) {
+    return CupertinoButton(
+      padding: const EdgeInsets.all(AppSpacing.sm),
       onPressed: () => ConfirmationDialog.show(
         context: ref.context,
         text: 'Are you sure you want to delete this event?',
@@ -101,13 +120,15 @@ class _EventTimelineItem extends ConsumerWidget {
           ref.invalidate(userLibraryProvider);
         },
       ),
+      child: const Icon(
+        CupertinoIcons.trash,
+        size: 20,
+        color: AppColors.destructive,
+      ),
     );
   }
 
-  Widget dateTimeString() =>
-      Text(TimeHelpers.dateAndTime(progressEvent.dateTime));
-
-  Widget pipe({required bool onTop}) {
+  Widget _pipe({required bool onTop}) {
     return Container(
       height: 6,
       width: 12,
@@ -119,7 +140,11 @@ class _EventTimelineItem extends ConsumerWidget {
         gradient: LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
-          colors: [Colors.grey[700]!, Colors.grey[300]!, Colors.grey[700]!],
+          colors: [
+            AppColors.divider,
+            AppColors.shimmer,
+            AppColors.divider,
+          ],
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,22 +21,22 @@ class ReadingProgressIndicator extends ConsumerWidget {
           children: [
             Text(
               '${book.progressPercentage}%',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
-                color: Colors.grey[900],
+                color: AppColors.textPrimary,
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
-              child: SizedBox(width: 80, child: progressBarColors()),
+              child: SizedBox(width: 80, child: _progressBar()),
             ),
             Text(
               book.currentBookProgressString ?? '',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w400,
-                color: Colors.grey[900],
+                color: AppColors.textSecondary,
               ),
             ),
           ],
@@ -44,12 +45,12 @@ class ReadingProgressIndicator extends ConsumerWidget {
     );
   }
 
-  Widget progressBarColors() {
+  Widget _progressBar() {
     return LinearProgressIndicator(
       borderRadius: BorderRadius.circular(6),
       minHeight: 6,
-      color: Colors.green,
-      backgroundColor: Colors.grey[300],
+      color: AppColors.teal,
+      backgroundColor: AppColors.progressBarTrack,
       value: book.progressPercentage.toDouble() / 100,
     );
   }

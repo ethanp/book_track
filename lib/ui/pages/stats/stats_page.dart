@@ -1,8 +1,9 @@
 import 'package:book_track/data_model.dart';
-import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/scroll_propagating_list_view.dart';
+import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:book_track/ui/pages/stats/filter_section.dart';
 import 'package:book_track/ui/pages/stats/format_breakdown_card.dart';
 import 'package:book_track/ui/pages/stats/progress_chart_card.dart';
@@ -11,7 +12,7 @@ import 'package:book_track/ui/pages/stats/reading_patterns_card.dart';
 import 'package:book_track/ui/pages/stats/activity_calendar_card.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:book_track/ui/pages/stats/summary_stats_card.dart';
-import 'package:book_track/ui/pages/library_book/library_book_page.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,19 +22,21 @@ class StatsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(middle: Text('Stats')),
+      navigationBar: CupertinoNavigationBar(
+        middle: const Text('Stats'),
+      ),
       child: ref.userLibrary((books) => _body(books, ref)),
     );
   }
 
   Widget _body(List<LibraryBook> userLibrary, WidgetRef ref) {
-    final showArchived = ref.watch(showArchivedProvider);
-    final selectedPeriod = ref.watch(statsPeriodProvider);
-    final periodCutoff = selectedPeriod.cutoffDate;
+    final bool showArchived = ref.watch(showArchivedProvider);
+    final StatsPeriod selectedPeriod = ref.watch(statsPeriodProvider);
+    final DateTime? periodCutoff = selectedPeriod.cutoffDate;
 
-    final books = showArchived
+    final List<LibraryBook> books = showArchived
         ? userLibrary
-        : userLibrary.whereL((b) => !b.archived);
+        : userLibrary.whereL((book) => !book.archived);
 
     return SafeArea(
       child: Column(
@@ -44,24 +47,7 @@ class StatsPage extends ConsumerWidget {
               key: const PageStorageKey('stats_scroll'),
               child: Column(
                 children: [
-                  // Abandoned books toggle
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('Include abandoned books'),
-                        CupertinoSwitch(
-                          value: showArchived,
-                          onChanged: (value) {
-                            ref.read(showArchivedProvider.notifier).state =
-                                value;
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
+                  _archivedToggle(ref, showArchived),
                   SummaryStatsCard(books: books, periodCutoff: periodCutoff),
                   ActivityCalendarCard(
                     key: ValueKey('calendar-${books.length}-$showArchived'),
@@ -85,6 +71,28 @@ class StatsPage extends ConsumerWidget {
       ),
     );
   }
+
+  Widget _archivedToggle(WidgetRef ref, bool showArchived) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.sm,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text('Include abandoned books', style: AppTextStyles.body),
+          CupertinoSwitch(
+            value: showArchived,
+            activeTrackColor: AppColors.primary,
+            onChanged: (value) {
+              ref.read(showArchivedProvider.notifier).state = value;
+            },
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class ChartCard extends StatelessWidget {
@@ -98,35 +106,30 @@ class ChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemBackground,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: CupertinoColors.systemGrey.withValues(alpha: 0.2),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    return AppCard(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Align(
             alignment: Alignment.centerLeft,
             child: Padding(
-              padding: const EdgeInsets.only(top: 18, bottom: 20, left: 16),
-              child: Text(title, style: TextStyles.h3),
+              padding: const EdgeInsets.only(
+                top: AppSpacing.lg,
+                bottom: AppSpacing.xl,
+                left: AppSpacing.lg,
+              ),
+              child: Text(title, style: AppTextStyles.h3),
             ),
           ),
           SizedBox(
             height: 300,
             child: Padding(
               padding: const EdgeInsets.only(
-                  left: 18, right: 35, top: 8, bottom: 14),
+                left: 18,
+                right: 35,
+                top: AppSpacing.sm,
+                bottom: 14,
+              ),
               child: chart,
             ),
           ),
@@ -159,7 +162,7 @@ class RecentBooksWidget extends StatelessWidget {
       return const Center(
         child: Text(
           'No books read in this period',
-          style: TextStyle(color: CupertinoColors.systemGrey),
+          style: AppTextStyles.bodySecondary,
         ),
       );
     }
@@ -171,7 +174,7 @@ class RecentBooksWidget extends StatelessWidget {
         ..sort((a, b) => a.end.compareTo(b.end));
       final beforeWindow = cutoff == null
           ? null
-          : sorted.where((e) => e.end.isBefore(cutoff)).lastOrNull;
+          : sorted.where((event) => event.end.isBefore(cutoff)).lastOrNull;
       final startPercent =
           beforeWindow == null ? 0 : book.intPercentProgressAt(beforeWindow);
       final endPercent = book.intPercentProgressAt(sorted.last);
@@ -188,11 +191,11 @@ class RecentBooksWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Books read in this period',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: AppTextStyles.h5,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         Expanded(
           child: ScrollPropagatingListView(
             itemCount: booksWithProgress.length,
@@ -206,19 +209,18 @@ class RecentBooksWidget extends StatelessWidget {
                 child: Row(
                   children: [
                     _bookCover(book),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Text(
                         book.book.title,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 13),
+                        style: AppTextStyles.body,
                       ),
                     ),
                     Text(
                       '+$progressMade%',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: CupertinoColors.systemGreen,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.teal,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -248,7 +250,7 @@ class RecentBooksWidget extends StatelessWidget {
     return SizedBox(
       width: size * 0.75,
       height: size,
-      child: const Icon(CupertinoIcons.book, size: 16),
+      child: const Icon(CupertinoIcons.book, size: 16, color: AppColors.primary),
     );
   }
 }

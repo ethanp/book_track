@@ -31,42 +31,43 @@ class BookDetailButton extends StatelessWidget {
           ),
           onPressed: onPressed,
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(10),
-          child: buttonBody(),
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          child: _buttonBody(),
         ),
       ),
     );
   }
 
-  Widget buttonBody() {
-    final titleText = Text(
-      title,
-      style: dense ? TextStyles.h4.copyWith(fontSize: 13) : TextStyles.h3,
-    );
-    final subtitleText = Text(
-      subtitle,
-      style: TextStyle(
-        color: CupertinoColors.black.withAlpha((0.72 * 255).toInt()),
-        fontSize: dense ? 9 : 14.5,
-      ),
-    );
-    final textColumn = Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        titleText,
-        SizedBox(height: dense ? 0 : 2),
-        subtitleText,
-      ],
-    );
-    final iconWidget = Icon(
-      icon,
-      color: CupertinoColors.black.withAlpha((0.5 * 255).toInt()),
-      size: dense ? 25 : 46,
-    );
+  Widget _buttonBody() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [textColumn, iconWidget],
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: dense
+                  ? AppTextStyles.h4.copyWith(fontSize: 13)
+                  : AppTextStyles.h4,
+            ),
+            SizedBox(height: dense ? 0 : 2),
+            Text(
+              subtitle,
+              style: TextStyle(
+                color: AppColors.textPrimary.withValues(alpha: 0.65),
+                fontSize: dense ? 9 : 14,
+              ),
+            ),
+          ],
+        ),
+        Icon(
+          icon,
+          color: AppColors.textPrimary.withValues(alpha: 0.45),
+          size: dense ? 25 : 42,
+        ),
+      ],
     );
   }
 }
