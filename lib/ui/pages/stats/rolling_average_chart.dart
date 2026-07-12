@@ -129,7 +129,7 @@ class RollingAverageChart extends StatelessWidget {
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            curveSmoothness: 0.2,
+            curveSmoothness: 0.35,
             color: AppColors.teal,
             barWidth: 2,
             dotData: const FlDotData(show: false),

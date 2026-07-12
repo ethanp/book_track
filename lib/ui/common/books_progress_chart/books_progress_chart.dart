@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/books_progress_chart/date_axis.dart';
 import 'package:book_track/ui/common/books_progress_chart/timespan.dart';
+import 'package:book_track/ui/common/cover_art_bytes.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -231,32 +232,28 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
     final double height = size;
     final double width = size * 0.75;
 
-    Widget bookArt = SizedBox(
+    final placeholder = SizedBox(
       height: height,
       width: width,
       child: const Icon(CupertinoIcons.book,
           size: 30, color: CupertinoColors.systemGrey),
     );
 
-    if (book.book.coverArtS != null) {
-      final bool validCover = (book.book.coverArtS!.length >= 4 &&
-          book.book.coverArtS![0] == 255 &&
-          book.book.coverArtS![1] == 216 &&
-          book.book.coverArtS![2] == 255 &&
-          book.book.coverArtS![3] == 224);
-      if (validCover) {
-        bookArt = SizedBox(
-          height: height,
-          width: width,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: Image.memory(
-              fit: BoxFit.cover,
-              book.book.coverArtS!,
-            ),
+    Widget bookArt = placeholder;
+    if (book.book.coverArtS != null &&
+        coverArtLooksDecodable(book.book.coverArtS!)) {
+      bookArt = SizedBox(
+        height: height,
+        width: width,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: Image.memory(
+            fit: BoxFit.cover,
+            book.book.coverArtS!,
+            errorBuilder: (_, __, ___) => placeholder,
           ),
-        );
-      }
+        ),
+      );
     }
 
     return Container(

@@ -1,4 +1,5 @@
 import 'package:book_track/data_model.dart';
+import 'package:book_track/ui/common/cover_art_bytes.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
@@ -129,7 +130,7 @@ class BookTile extends ConsumerWidget {
     const double height = 60.0;
     const double width = 45.0;
 
-    Widget bookArt = Container(
+    final placeholder = Container(
       height: height,
       width: width,
       decoration: BoxDecoration(
@@ -143,23 +144,19 @@ class BookTile extends ConsumerWidget {
       ),
     );
 
-    if (book.book.coverArtS != null) {
-      final bool validCover = (true &&
-          book.book.coverArtS![0] == 255 &&
-          book.book.coverArtS![1] == 216 &&
-          book.book.coverArtS![2] == 255 &&
-          book.book.coverArtS![3] == 224);
-      if (validCover) {
-        bookArt = ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadii.sm),
-          child: Image.memory(
-            fit: BoxFit.fill,
-            height: height,
-            width: width,
-            book.book.coverArtS!,
-          ),
-        );
-      }
+    Widget bookArt = placeholder;
+    if (book.book.coverArtS != null &&
+        coverArtLooksDecodable(book.book.coverArtS!)) {
+      bookArt = ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadii.sm),
+        child: Image.memory(
+          fit: BoxFit.fill,
+          height: height,
+          width: width,
+          book.book.coverArtS!,
+          errorBuilder: (_, __, ___) => placeholder,
+        ),
+      );
     }
 
     return Container(

@@ -38,9 +38,11 @@ void main() {
     });
 
     test('reading a steady rate reports that rate as the pace', () {
+      // History must outrun the blur kernel (wide half-window × many passes)
+      // so the left-edge trailing-window ramp cannot reach the tip.
       final series = ReadingPaceSeries.fromProgressDeltas(
-        steadyReading(percentPerDay: 5, days: 40),
-        now: day(40),
+        steadyReading(percentPerDay: 5, days: 120),
+        now: day(120),
       );
 
       expect(series.currentPace, closeTo(5, 1e-9));
@@ -48,7 +50,7 @@ void main() {
 
     test('same-day progress across books sums into the daily pace', () {
       final twoBooksAt2PercentEach = [
-        for (var offset = 0; offset < 40; offset++) ...[
+        for (var offset = 0; offset < 120; offset++) ...[
           read(day(1 + offset), 2),
           read(day(1 + offset), 2),
         ],
@@ -56,7 +58,7 @@ void main() {
 
       final series = ReadingPaceSeries.fromProgressDeltas(
         twoBooksAt2PercentEach,
-        now: day(40),
+        now: day(120),
       );
 
       expect(series.currentPace, closeTo(4, 1e-9));

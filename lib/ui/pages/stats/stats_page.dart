@@ -2,6 +2,7 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/common/app_bars.dart';
 import 'package:book_track/ui/common/app_card.dart';
+import 'package:book_track/ui/common/cover_art_bytes.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/scroll_propagating_list_view.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
@@ -237,21 +238,24 @@ class RecentBooksWidget extends StatelessWidget {
 
   Widget _bookCover(LibraryBook book) {
     const double size = 30;
-    if (book.book.coverArtS != null && book.book.coverArtS!.length >= 4) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(3),
-        child: Image.memory(
-          book.book.coverArtS!,
-          width: size * 0.75,
-          height: size,
-          fit: BoxFit.cover,
-        ),
-      );
-    }
-    return SizedBox(
+    final placeholder = SizedBox(
       width: size * 0.75,
       height: size,
       child: const Icon(CupertinoIcons.book, size: 16, color: AppColors.primary),
+    );
+    final coverArt = book.book.coverArtS;
+    if (coverArt == null || !coverArtLooksDecodable(coverArt)) {
+      return placeholder;
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(3),
+      child: Image.memory(
+        coverArt,
+        width: size * 0.75,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => placeholder,
+      ),
     );
   }
 }

@@ -18,7 +18,8 @@ class ReadingPacePoint {
 ///    day" rate; rest days count as zero, so the pace reflects consistency.
 /// 2. A centered moving average, applied [_smoothingPasses] times, erases the
 ///    day-to-day ripples a boxcar window leaves when a reading day enters or
-///    exits it — the same smoothing the workout load chart uses.
+///    exits it — the same approach as the workout load chart, tuned more
+///    aggressively because percent-of-book spikes are sharper than Z2 load.
 ///
 /// Callers pass raw per-event percent deltas (event day -> percent gained);
 /// day-bucketing, averaging, smoothing, and period-clipping all happen here,
@@ -31,15 +32,15 @@ class ReadingPaceSeries {
   });
 
   /// Trailing window whose average defines the raw daily pace before smoothing.
-  static const trailingWindowDays = 7;
+  static const trailingWindowDays = 14;
 
-  /// Days on each side included in each smoothing pass — five plus the point
-  /// itself is a centered 11-day window.
-  static const _smoothingHalfWindow = 5;
+  /// Days on each side included in each smoothing pass — fourteen plus the
+  /// point itself is a centered 29-day (~month) window.
+  static const _smoothingHalfWindow = 14;
 
   /// Repeated centered averaging approximates a Gaussian blur; more passes
   /// widen the blur and erase the bursty spikes left by big reading days.
-  static const _smoothingPasses = 3;
+  static const _smoothingPasses = 5;
 
   static const empty = ReadingPaceSeries(
     points: [],
