@@ -175,3 +175,22 @@ class AppShadows {
     offset: Offset(2, 3),
   );
 }
+
+class AppGradients {
+  static const Color barEdge = Color(0xFFEADCC8);
+  static const Color barInner = Color(0xFFFAF4EC);
+
+  /// Darkens toward the top edge of the screen.
+  static const LinearGradient topBar = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [barEdge, barInner],
+  );
+
+  /// Same colors, mirrored — darkens toward the bottom edge of the screen.
+  static const LinearGradient bottomBar = LinearGradient(
+    begin: Alignment.bottomCenter,
+    end: Alignment.topCenter,
+    colors: [barEdge, barInner],
+  );
+}

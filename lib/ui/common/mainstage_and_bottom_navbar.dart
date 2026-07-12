@@ -1,4 +1,5 @@
 import 'package:book_track/riverpods.dart';
+import 'package:book_track/ui/common/app_bars.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/my_library/my_library_page.dart';
 import 'package:book_track/ui/pages/stats/stats_page.dart';
@@ -37,13 +38,12 @@ class MainstageAndBottomNavbar extends ConsumerWidget {
     final SelectedBottomBarIdx idxSelector =
         ref.read(selectedBottomBarIdxProvider.notifier);
     return CupertinoTabScaffold(
-      tabBar: CupertinoTabBar(
+      tabBar: GradientCupertinoTabBar(
         items: bottomNavbarElements.mapL((element) => element.item),
         currentIndex: curIdx,
         onTap: (idx) => idxSelector.update(idx),
         activeColor: AppColors.tabBarActive,
         inactiveColor: AppColors.tabBarInactive,
-        backgroundColor: AppColors.navBarBackground,
       ),
       backgroundColor: AppColors.background,
       tabBuilder: (context, idx) => CupertinoTabView(

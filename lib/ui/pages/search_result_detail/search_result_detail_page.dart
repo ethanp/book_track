@@ -1,10 +1,11 @@
 import 'package:book_track/data_model.dart';
-import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/services/supabase_library_service.dart';
+import 'package:book_track/ui/common/app_bars.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/length_input.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -27,7 +28,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
+      navigationBar: AppNavigationBar(
         middle: Text(widget.book.title),
       ),
       child: SafeArea(

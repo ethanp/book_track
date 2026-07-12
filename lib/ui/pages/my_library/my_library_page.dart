@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
+import 'package:book_track/ui/common/app_bars.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/sign_out_button.dart';
 import 'package:ethan_utils/ethan_utils.dart';
@@ -20,7 +21,7 @@ class MyLibraryPage extends ConsumerStatefulWidget {
 }
 
 class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
-  _LibraryOrder _libraryOrder = _LibraryOrder.progress;
+  _LibraryOrder _libraryOrder = _LibraryOrder.eta;
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +31,8 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     );
   }
 
-  CupertinoNavigationBar _navigationBar(BuildContext context) {
-    return CupertinoNavigationBar(
+  ObstructingPreferredSizeWidget _navigationBar(BuildContext context) {
+    return AppNavigationBar(
       leading: _addABookButton(context),
       middle: const Text('My Library'),
       trailing: SignOutButton(),
@@ -54,7 +55,10 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
   }
 
   Widget _libraryScreen(List<LibraryBook> library) {
-    library.sortOn(_libraryOrder.compareFn, descending: true);
+    library.sortOn(
+      _libraryOrder.compareFn,
+      descending: _libraryOrder.descending,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -78,7 +82,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
               orderValue: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 child: Text(
-                  orderValue.nameAsCapitalizedWords,
+                  orderValue.label,
                   style: AppTextStyles.label,
                 ),
               ),
@@ -191,14 +195,32 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
 }
 
 enum _LibraryOrder {
-  progress(bookProgress),
-  startDate(bookStartTime);
+  eta(bookEta, descending: false),
+  pace(bookPace, descending: true),
+  progress(bookProgress, descending: true),
+  startDate(bookStartTime, descending: true);
 
   final Comparable Function(LibraryBook) compareFn;
+  final bool descending;
 
-  const _LibraryOrder(this.compareFn);
+  const _LibraryOrder(this.compareFn, {required this.descending});
+
+  String get label => switch (this) {
+        eta => 'ETA',
+        pace => 'Pace',
+        progress => 'Progress',
+        startDate => 'Start Date',
+      };
 
   static Comparable bookProgress(LibraryBook book) => book.progressPercentage;
 
   static Comparable bookStartTime(LibraryBook book) => book.startTime;
+
+  static Comparable bookPace(LibraryBook book) =>
+      book.averageReadingPace?.unitsPerDay ?? 0;
+
+  /// Soonest ETA first; books without an ETA sort last.
+  static Comparable bookEta(LibraryBook book) =>
+      book.averageReadingPace?.eta ??
+      DateTime.fromMillisecondsSinceEpoch(8640000000000000);
 }

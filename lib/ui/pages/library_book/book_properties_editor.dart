@@ -1,7 +1,7 @@
 import 'package:book_track/data_model.dart';
-import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_book_service.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -26,13 +26,13 @@ class BookPropertiesEditor extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          author(ref),
+          _author(ref),
         ],
       ),
     );
   }
 
-  Widget author(WidgetRef ref) {
+  Widget _author(WidgetRef ref) {
     return EditableBookProperty(
       title: 'Author',
       value: libraryBook.book.author ?? 'unknown',

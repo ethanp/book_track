@@ -55,7 +55,17 @@ class BookTile extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [_author(), _pagesRead()],
                   ),
-                  _startedDate(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _startedDate(),
+                      if (book.averagePaceDisplay != null)
+                        Text(
+                          book.averagePaceDisplay!,
+                          style: AppTextStyles.caption,
+                        ),
+                    ],
+                  ),
                   const SizedBox(height: AppSpacing.sm),
                   _progressBar(),
                 ],

@@ -53,7 +53,7 @@ class _ProgressChartState extends ConsumerState<ProgressChart> {
           vertical: AppSpacing.xs,
         ),
         child: Column(children: [
-          Text('Progress', style: AppTextStyles.h3),
+          _header(),
           _latestBook.progressHistory.isEmpty
               ? const Text(
                   'No progress updates yet',
@@ -61,6 +61,31 @@ class _ProgressChartState extends ConsumerState<ProgressChart> {
                 )
               : SizedBox(height: 300, child: ref.userLibrary(body))
         ]),
+      ),
+    );
+  }
+
+  Widget _header() {
+    final String? paceDisplay = _latestBook.averagePaceDisplay;
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      child: Row(
+        children: [
+          Text('Progress', style: AppTextStyles.h3),
+          if (paceDisplay != null) ...[
+            const Spacer(),
+            Text(
+              paceDisplay,
+              style: AppTextStyles.caption.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.teal,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

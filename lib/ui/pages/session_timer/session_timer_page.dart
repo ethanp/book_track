@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:book_track/data_model.dart';
 import 'package:book_track/helpers.dart';
 import 'package:book_track/riverpods.dart';
+import 'package:book_track/ui/common/app_bars.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:ethan_utils/ethan_utils.dart';
@@ -26,8 +27,8 @@ class _SessionTimerState extends ConsumerState<SessionTimerPage> {
   Widget build(BuildContext context) {
     _updateTimer();
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: const Text('Session'),
+      navigationBar: const AppNavigationBar(
+        middle: Text('Session'),
       ),
       child: SafeArea(
         child: Padding(

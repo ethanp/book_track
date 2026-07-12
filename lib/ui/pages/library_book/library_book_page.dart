@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
+import 'package:book_track/ui/common/app_bars.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/my_library/reading_progress_indicator.dart';
 import 'package:flutter/cupertino.dart';
@@ -64,19 +65,27 @@ class LibraryBookPage extends ConsumerWidget {
     );
   }
 
-  CupertinoNavigationBar _navBar(LibraryBook book) {
-    return CupertinoNavigationBar(
+  ObstructingPreferredSizeWidget _navBar(LibraryBook book) {
+    return AppNavigationBar(
       middle: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          Flexible(
-            flex: 5,
+          Expanded(
             child: Text(
               '${book.book.title} (${book.readingStatus.name})',
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                inherit: false,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                height: 1.15,
+                color: AppColors.textPrimary,
+                decoration: TextDecoration.none,
+              ),
             ),
           ),
-          Flexible(flex: 2, child: ReadingProgressIndicator(book)),
+          const SizedBox(width: AppSpacing.sm),
+          ReadingProgressIndicator(book),
         ],
       ),
     );

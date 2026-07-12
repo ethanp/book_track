@@ -192,6 +192,103 @@ class LibraryBook {
     // Pages to minutes doesn't make sense, return 0
     return 0;
   }
+
+  /// Average reading pace from first progress event to the pace end date.
+  ///
+  /// Uses progress *gained* since the first marker (so a partway start isn't
+  /// counted as pages already read). Finished/abandoned books end at the final
+  /// marker's date; in-progress books end today.
+  AverageReadingPace? get averageReadingPace {
+    if (progressHistory.length < 2) return null;
+
+    final ProgressEvent firstEvent = progressHistory.first;
+    final ProgressEvent lastEvent = progressHistory.last;
+    final LibraryBookFormat? format = formatById(lastEvent.formatId);
+    if (format == null || !format.hasLength) return null;
+
+    final double? startPercent = progressPercentAt(firstEvent);
+    final double? endPercent = progressPercentAt(lastEvent);
+    if (startPercent == null || endPercent == null) return null;
+
+    final double percentGained = endPercent - startPercent;
+    if (percentGained <= 0) return null;
+
+    final double amount = format.percentToProgress(percentGained).toDouble();
+    if (amount <= 0) return null;
+
+    final DateTime paceStart = firstEvent.end.startOfDay;
+    final DateTime paceEnd = readingStatus == ReadingStatus.reading
+        ? DateTime.now().startOfDay
+        : lastEvent.end.startOfDay;
+    final int elapsedDays = max(1, paceEnd.difference(paceStart).inDays);
+    final double unitsPerDay = amount / elapsedDays;
+
+    DateTime? eta;
+    if (readingStatus == ReadingStatus.reading) {
+      final double remainingPercent = (100 - endPercent).clamp(0.0, 100.0);
+      if (remainingPercent > 0) {
+        final double remainingUnits =
+            format.percentToProgress(remainingPercent).toDouble();
+        final int daysRemaining = max(1, (remainingUnits / unitsPerDay).ceil());
+        eta = DateTime.now().startOfDay.add(Duration(days: daysRemaining));
+      }
+    }
+
+    return AverageReadingPace(
+      unitsPerDay: unitsPerDay,
+      isAudiobook: format.isAudiobook,
+      eta: eta,
+    );
+  }
+
+  String? get averagePaceDisplay => averageReadingPace?.display;
+}
+
+class AverageReadingPace {
+  const AverageReadingPace({
+    required this.unitsPerDay,
+    required this.isAudiobook,
+    this.eta,
+  });
+
+  final double unitsPerDay;
+  final bool isAudiobook;
+  final DateTime? eta;
+
+  String get unitLabel => isAudiobook ? 'min' : 'pages';
+
+  String get paceLabel {
+    final String formatted = unitsPerDay >= 10
+        ? unitsPerDay.round().toString()
+        : unitsPerDay.toStringAsFixed(1);
+    return '$formatted $unitLabel/day';
+  }
+
+  String get display {
+    if (eta == null) return paceLabel;
+    final bool sameYear = eta!.year == DateTime.now().year;
+    final String etaDate =
+        sameYear ? _monthDay(eta!) : '${_monthDay(eta!)}, ${eta!.year}';
+    return '$paceLabel · ETA $etaDate';
+  }
+
+  static String _monthDay(DateTime date) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${months[date.month - 1]} ${date.day}';
+  }
 }
 
 class ProgressEvent {

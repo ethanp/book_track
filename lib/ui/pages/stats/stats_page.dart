@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/extensions.dart';
+import 'package:book_track/ui/common/app_bars.dart';
 import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/scroll_propagating_list_view.dart';
@@ -22,8 +23,8 @@ class StatsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: const Text('Stats'),
+      navigationBar: const AppNavigationBar(
+        middle: Text('Stats'),
       ),
       child: ref.userLibrary((books) => _body(books, ref)),
     );

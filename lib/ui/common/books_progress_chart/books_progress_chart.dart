@@ -176,17 +176,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
   }
 
   Widget _buildSelectedEventInfo() {
-    if (_selectedEvent == null) {
-      return const SizedBox(
-        height: 50,
-        child: Center(
-          child: Text(
-            'Tap a point to see details',
-            style: AppTextStyles.bodySecondary,
-          ),
-        ),
-      );
-    }
+    if (_selectedEvent == null) return const SizedBox.shrink();
 
     final (book, event, percent) = _selectedEvent!;
     final dateStr = DateFormat('MMM d, yyyy').format(event.end);
@@ -194,24 +184,28 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
     return GestureDetector(
       onTap: () => context.push(LibraryBookPage(book.supaId)),
       child: Container(
-        height: 50,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(AppRadii.sm),
+        ),
         child: Row(
           children: [
             _bookCover(book, size: 40),
-            const SizedBox(width: 10),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
                 book.book.title,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppTextStyles.h5,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: AppSpacing.sm),
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -224,10 +218,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
                     color: AppColors.teal,
                   ),
                 ),
-                Text(
-                  dateStr,
-                  style: AppTextStyles.caption,
-                ),
+                Text(dateStr, style: AppTextStyles.caption),
               ],
             ),
           ],

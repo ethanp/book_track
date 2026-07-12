@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:book_track/main.dart';
 import 'package:book_track/services/supabase_auth_service.dart';
+import 'package:book_track/ui/common/app_bars.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
@@ -60,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
+      navigationBar: AppNavigationBar(
         middle: Text(signUpText()),
       ),
       child: SafeArea(
