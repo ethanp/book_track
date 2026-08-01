@@ -6,7 +6,6 @@ import 'package:book_track/ui/common/mainstage_and_bottom_navbar.dart';
 import 'package:book_track/ui/pages/login/login_page.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -16,7 +15,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   installAppLogCapture();
-  await dotenv.load();
+  await loadAppDotEnv(isOptional: false);
   await Supabase.initialize(
     url: dotenv.env['URL']!,
     anonKey: dotenv.env['ANON_KEY']!,
