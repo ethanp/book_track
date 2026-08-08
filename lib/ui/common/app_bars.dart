@@ -4,14 +4,12 @@ import 'package:flutter/cupertino.dart';
 /// Cupertino navigation bar with a light warm cream→amber gradient.
 class AppNavigationBar extends StatelessWidget
     implements ObstructingPreferredSizeWidget {
-  const AppNavigationBar({
-    this.leading,
-    this.middle,
-    this.trailing,
-    this.previousPageTitle,
-    this.automaticallyImplyLeading = true,
-    super.key,
-  });
+  const AppNavigationBar(
+      {this.leading,
+      this.middle,
+      this.trailing,
+      this.previousPageTitle,
+      this.automaticallyImplyLeading = true});
 
   final Widget? leading;
   final Widget? middle;
@@ -155,7 +153,8 @@ class GradientCupertinoTabBar extends CupertinoTabBar {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Expanded(child: Center(child: active ? item.activeIcon : item.icon)),
+              Expanded(
+                  child: Center(child: active ? item.activeIcon : item.icon)),
               if (item.label != null) Text(item.label!),
             ],
           ),

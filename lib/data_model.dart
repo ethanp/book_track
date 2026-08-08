@@ -104,6 +104,14 @@ class LibraryBook {
     return ReadingStatus.reading;
   }
 
+  bool get hasProgress => progressHistory.isNotEmpty;
+
+  bool get isFinished => readingStatus == ReadingStatus.finished;
+
+  bool get isAbandoned => readingStatus == ReadingStatus.abandoned;
+
+  bool get isReading => readingStatus == ReadingStatus.reading;
+
   /// Get progress events for a specific format.
   List<ProgressEvent> progressForFormat(LibraryBookFormat format) =>
       progressHistory.whereL((e) => e.formatId == format.supaId);
@@ -217,14 +225,14 @@ class LibraryBook {
     if (amount <= 0) return null;
 
     final DateTime paceStart = firstEvent.end.startOfDay;
-    final DateTime paceEnd = readingStatus == ReadingStatus.reading
+    final DateTime paceEnd = isReading
         ? DateTime.now().startOfDay
         : lastEvent.end.startOfDay;
     final int elapsedDays = max(1, paceEnd.difference(paceStart).inDays);
     final double unitsPerDay = amount / elapsedDays;
 
     DateTime? eta;
-    if (readingStatus == ReadingStatus.reading) {
+    if (isReading) {
       final double remainingPercent = (100 - endPercent).clamp(0.0, 100.0);
       if (remainingPercent > 0) {
         final double remainingUnits =

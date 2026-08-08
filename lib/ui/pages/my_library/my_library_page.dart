@@ -14,7 +14,7 @@ import 'dismissible_cupertino_bottom_sheet.dart';
 const _log = ELogger('MyLibraryPage');
 
 class MyLibraryPage extends ConsumerStatefulWidget {
-  const MyLibraryPage({super.key});
+  const MyLibraryPage();
 
   @override
   ConsumerState createState() => _MyLibraryPageState();
@@ -65,8 +65,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
         _sortSelector(),
         _userLibraryByStatus(library),
         if (library.any((book) => book.archived))
-          ArchivedBooksSection(
-              books: library.whereL((book) => book.archived)),
+          ArchivedBooksSection(books: library.whereL((book) => book.archived)),
       ],
     );
   }
@@ -195,22 +194,22 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
 }
 
 enum _LibraryOrder {
-  eta(bookEta, descending: false),
+  eta(bookEta, descending: false, label: 'ETA'),
   pace(bookPace, descending: true),
   progress(bookProgress, descending: true),
   startDate(bookStartTime, descending: true);
 
   final Comparable Function(LibraryBook) compareFn;
   final bool descending;
+  final String? _label;
 
-  const _LibraryOrder(this.compareFn, {required this.descending});
+  const _LibraryOrder(
+    this.compareFn, {
+    required this.descending,
+    String? label,
+  }) : _label = label;
 
-  String get label => switch (this) {
-        eta => 'ETA',
-        pace => 'Pace',
-        progress => 'Progress',
-        startDate => 'Start Date',
-      };
+  String get label => _label ?? nameAsCapitalizedWords;
 
   static Comparable bookProgress(LibraryBook book) => book.progressPercentage;
 

@@ -49,7 +49,10 @@ class BookTile extends ConsumerWidget {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [Expanded(child: _title()), _progressPercentage()],
+                    children: [
+                      Expanded(child: _title()),
+                      _progressPercentage()
+                    ],
                   ),
                   const SizedBox(height: 2),
                   Row(

@@ -14,12 +14,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class BooksProgressChart extends StatefulWidget {
-  const BooksProgressChart({
-    required this.books,
-    this.periodCutoff,
-    this.colorByFormat = false,
-    super.key,
-  });
+  const BooksProgressChart(
+      {required this.books, this.periodCutoff, this.colorByFormat = false});
 
   final List<LibraryBook> books;
 
@@ -64,7 +60,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
             .toList();
 
     if (filteredBooks.isEmpty ||
-        filteredBooks.every((b) => b.progressHistory.isEmpty)) {
+        filteredBooks.every((b) => !b.hasProgress)) {
       return const Center(
         child: Text('No reading data in this period'),
       );
@@ -406,9 +402,8 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
             return FlDotCirclePainter(
               radius: radius,
               color: isSelected ? AppColors.burgundy : dotColor,
-              strokeColor: isSelected
-                  ? CupertinoColors.white
-                  : AppColors.textPrimary,
+              strokeColor:
+                  isSelected ? CupertinoColors.white : AppColors.textPrimary,
               strokeWidth: isSelected ? 2 : 0,
             );
           },

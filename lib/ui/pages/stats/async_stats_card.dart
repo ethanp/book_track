@@ -2,13 +2,11 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
 
 class AsyncStatsCard<T> extends StatefulWidget {
-  const AsyncStatsCard({
-    required this.cacheKey,
-    required this.compute,
-    required this.builder,
-    this.loadingHeight = 150,
-    super.key,
-  });
+  const AsyncStatsCard(
+      {required this.cacheKey,
+      required this.compute,
+      required this.builder,
+      this.loadingHeight = 150});
 
   final String cacheKey;
   final T Function() compute;

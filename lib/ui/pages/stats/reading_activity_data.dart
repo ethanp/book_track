@@ -21,8 +21,7 @@ class ReadingActivityData {
     DateTime? periodCutoff,
   }) {
     final activityByDay = <DateTime, int>{};
-    final cutoffDate =
-        periodCutoff.map((d) => d.startOfDay);
+    final cutoffDate = periodCutoff.map((d) => d.startOfDay);
 
     for (final book in books) {
       // Use percentage mode to get % deltas directly
@@ -63,8 +62,8 @@ class ReadingActivityData {
     int runningStreak = 1;
 
     // Check if streak is active (today or yesterday has activity)
-    final hasRecentActivity = sorted.last.sameDayAs(today) ||
-        sorted.last.sameDayAs(yesterday);
+    final hasRecentActivity =
+        sorted.last.sameDayAs(today) || sorted.last.sameDayAs(yesterday);
 
     for (int i = 1; i < sorted.length; i++) {
       final diff = sorted[i].difference(sorted[i - 1]).inDays;

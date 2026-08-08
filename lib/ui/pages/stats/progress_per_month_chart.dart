@@ -8,18 +8,11 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
-DateTime _bucketStart(DateTime date, ProgressAggregation agg) => switch (agg) {
-      ProgressAggregation.daily => date.startOfDay,
-      ProgressAggregation.weekly => date.shiftedByDays(-(date.weekday - 1)),
-      ProgressAggregation.monthly => DateTime(date.year, date.month),
-    };
-
 class ProgressPerMonthChart extends StatelessWidget {
   ProgressPerMonthChart({
     required this.books,
     required this.period,
-    super.key,
-  })        : totalByPeriod = _progressByPeriod(
+  })  : totalByPeriod = _progressByPeriod(
           books,
           period,
           'Total',
@@ -82,6 +75,13 @@ class ProgressPerMonthChart extends StatelessWidget {
         .toList();
     return ProgressLine(data: sortedPoints, name: name, color: color);
   }
+
+  static DateTime _bucketStart(DateTime date, ProgressAggregation agg) =>
+      switch (agg) {
+        ProgressAggregation.daily => date.startOfDay,
+        ProgressAggregation.weekly => date.shiftedByDays(-(date.weekday - 1)),
+        ProgressAggregation.monthly => DateTime(date.year, date.month),
+      };
 
   static DateTime _advanceBucket(DateTime date, ProgressAggregation agg) =>
       switch (agg) {
@@ -210,7 +210,8 @@ class ProgressPerMonthChart extends StatelessWidget {
 
   Widget _legendRow() {
     return Padding(
-      padding: const EdgeInsets.only(right: AppSpacing.sm, bottom: AppSpacing.xs),
+      padding:
+          const EdgeInsets.only(right: AppSpacing.sm, bottom: AppSpacing.xs),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: lines.mapL(

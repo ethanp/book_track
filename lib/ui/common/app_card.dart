@@ -2,12 +2,7 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
 
 class AppCard extends StatelessWidget {
-  const AppCard({
-    required this.child,
-    this.margin,
-    this.padding,
-    super.key,
-  });
+  const AppCard({required this.child, this.margin, this.padding});
 
   final Widget child;
   final EdgeInsetsGeometry? margin;

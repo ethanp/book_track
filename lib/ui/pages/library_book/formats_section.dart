@@ -9,7 +9,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FormatsSection extends ConsumerWidget {
-  const FormatsSection(this.libraryBook, {super.key});
+  const FormatsSection(
+    this.libraryBook,
+  );
 
   final LibraryBook libraryBook;
 
@@ -259,6 +261,7 @@ class _AddFormatSheetState extends State<_AddFormatSheet> {
         Navigator.pop(context, (_selectedFormat!, length));
       }
     }
+
     return CupertinoAlertDialog(
       title: const Text('Add Format'),
       content: Column(
@@ -341,6 +344,7 @@ class _EditLengthSheetState extends State<_EditLengthSheet> {
         Navigator.pop(context, length);
       }
     }
+
     return CupertinoAlertDialog(
       title: Text('Edit ${widget.format.format.name} Length'),
       content: Padding(

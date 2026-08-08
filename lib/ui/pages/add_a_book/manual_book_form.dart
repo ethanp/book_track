@@ -182,7 +182,8 @@ class _ManualBookFormState extends ConsumerState<ManualBookForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(isAudiobook ? 'Length (h:mm)' : 'Pages', style: AppTextStyles.h4),
+          Text(isAudiobook ? 'Length (h:mm)' : 'Pages',
+              style: AppTextStyles.h4),
           const SizedBox(height: 4),
           LengthInput(
             controller: _lengthController,

@@ -7,11 +7,7 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 
 class SummaryStatsCard extends StatelessWidget {
-  const SummaryStatsCard({
-    required this.books,
-    required this.periodCutoff,
-    super.key,
-  });
+  const SummaryStatsCard({required this.books, required this.periodCutoff});
 
   final List<LibraryBook> books;
   final DateTime? periodCutoff;

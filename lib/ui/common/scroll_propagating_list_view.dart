@@ -4,12 +4,10 @@ import 'package:flutter/material.dart';
 /// When the user scrolls past the edges, the scroll gesture is forwarded
 /// to the parent scroll view with momentum preserved.
 class ScrollPropagatingListView extends StatefulWidget {
-  const ScrollPropagatingListView({
-    required this.itemCount,
-    required this.itemBuilder,
-    this.separatorBuilder,
-    super.key,
-  });
+  const ScrollPropagatingListView(
+      {required this.itemCount,
+      required this.itemBuilder,
+      this.separatorBuilder});
 
   final int itemCount;
   final Widget Function(BuildContext, int) itemBuilder;

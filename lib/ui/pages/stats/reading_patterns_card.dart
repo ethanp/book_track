@@ -6,11 +6,7 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 
 class ReadingPatternsCard extends StatelessWidget {
-  const ReadingPatternsCard({
-    required this.books,
-    required this.periodCutoff,
-    super.key,
-  });
+  const ReadingPatternsCard({required this.books, required this.periodCutoff});
 
   final List<LibraryBook> books;
   final DateTime? periodCutoff;

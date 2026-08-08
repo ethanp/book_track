@@ -199,6 +199,7 @@ class _LengthInputDialogState extends State<_LengthInputDialog> {
       final length = _controller.value;
       if (length != null && length > 0) Navigator.pop(context, length);
     }
+
     return CupertinoAlertDialog(
       title: Text(widget.isAudiobook ? 'Audiobook Length' : 'Book Length'),
       content: Padding(

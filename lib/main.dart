@@ -24,7 +24,7 @@ Future<void> main() async {
 }
 
 class TopLevelWidget extends ConsumerStatefulWidget {
-  const TopLevelWidget({super.key});
+  const TopLevelWidget();
 
   @override
   ConsumerState<TopLevelWidget> createState() => _TopLevelWidgetState();

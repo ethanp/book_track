@@ -11,10 +11,11 @@ DateTime day(int dayOfMonth) => DateTime(2026, 1, dayOfMonth);
 List<MapEntry<DateTime, double>> steadyReading({
   required double percentPerDay,
   required int days,
-}) => [
-  for (var offset = 0; offset < days; offset++)
-    read(day(1 + offset), percentPerDay),
-];
+}) =>
+    [
+      for (var offset = 0; offset < days; offset++)
+        read(day(1 + offset), percentPerDay),
+    ];
 
 double paceOn(ReadingPaceSeries series, DateTime day) =>
     series.points.firstWhere((point) => point.day == day).percentPerDay;

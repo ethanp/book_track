@@ -5,15 +5,12 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
-
 class CalendarHeatmap extends StatefulWidget {
-  const CalendarHeatmap({
-    required this.activityByDay,
-    required this.books,
-    this.weeksToShow = 26,
-    this.periodCutoff,
-    super.key,
-  });
+  const CalendarHeatmap(
+      {required this.activityByDay,
+      required this.books,
+      this.weeksToShow = 26,
+      this.periodCutoff});
 
   final Map<DateTime, int> activityByDay;
 
@@ -100,7 +97,8 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
       children: days.mapL((day) => SizedBox(
             height: 12,
             width: 20,
-            child: Text(day, style: AppTextStyles.caption.copyWith(fontSize: 9)),
+            child:
+                Text(day, style: AppTextStyles.caption.copyWith(fontSize: 9)),
           )),
     );
   }
@@ -320,7 +318,8 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
           Text(dateStr, style: AppTextStyles.h5),
           const SizedBox(height: AppSpacing.sm),
           if (tiles.isEmpty)
-            const Text('No reading activity', style: AppTextStyles.bodySecondary)
+            const Text('No reading activity',
+                style: AppTextStyles.bodySecondary)
           else
             ...tiles,
         ],

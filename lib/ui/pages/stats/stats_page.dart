@@ -19,7 +19,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class StatsPage extends ConsumerWidget {
-  const StatsPage({super.key});
+  const StatsPage();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -142,11 +142,7 @@ class ChartCard extends StatelessWidget {
 }
 
 class RecentBooksWidget extends StatelessWidget {
-  const RecentBooksWidget({
-    required this.books,
-    required this.periodCutoff,
-    super.key,
-  });
+  const RecentBooksWidget({required this.books, required this.periodCutoff});
 
   final List<LibraryBook> books;
   final DateTime? periodCutoff;
@@ -170,7 +166,7 @@ class RecentBooksWidget extends StatelessWidget {
     }
 
     final booksWithProgress = recentBooks
-        .where((book) => book.progressHistory.isNotEmpty)
+        .where((book) => book.hasProgress)
         .map((book) {
       final sorted = book.progressHistory.toList()
         ..sort((a, b) => a.end.compareTo(b.end));
@@ -241,7 +237,8 @@ class RecentBooksWidget extends StatelessWidget {
     final placeholder = SizedBox(
       width: size * 0.75,
       height: size,
-      child: const Icon(CupertinoIcons.book, size: 16, color: AppColors.primary),
+      child:
+          const Icon(CupertinoIcons.book, size: 16, color: AppColors.primary),
     );
     final coverArt = book.book.coverArtS;
     if (coverArt == null || !coverArtLooksDecodable(coverArt)) {

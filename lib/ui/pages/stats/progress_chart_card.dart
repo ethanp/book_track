@@ -8,11 +8,7 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 
 class ProgressChartCard extends StatelessWidget {
-  const ProgressChartCard({
-    required this.books,
-    required this.period,
-    super.key,
-  });
+  const ProgressChartCard({required this.books, required this.period});
 
   final List<LibraryBook> books;
   final StatsPeriod period;

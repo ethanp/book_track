@@ -22,8 +22,10 @@ class UpdateFormatSelector extends StatelessWidget {
         SegmentedButton<ProgressEventFormat>(
           showSelectedIcon: false,
           style: ButtonStyle(
-            backgroundColor: ifSelected(AppColors.primary, otw: AppColors.divider),
-            foregroundColor: ifSelected(Colors.white, otw: AppColors.textPrimary),
+            backgroundColor:
+                ifSelected(AppColors.primary, otw: AppColors.divider),
+            foregroundColor:
+                ifSelected(Colors.white, otw: AppColors.textPrimary),
             visualDensity: VisualDensity.comfortable,
           ),
           selected: {currentlySelectedFormat},

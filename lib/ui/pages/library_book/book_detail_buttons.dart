@@ -13,19 +13,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'book_detail_button.dart';
 
 class BookDetailButtons extends ConsumerWidget {
-  BookDetailButtons(this.book) : dense = book.progressHistory.isNotEmpty;
+  BookDetailButtons(this.book) : dense = book.hasProgress;
   final LibraryBook book;
   final bool dense;
-
-  bool get completed => book.readingStatus == ReadingStatus.finished;
-
-  bool get abandoned => book.readingStatus == ReadingStatus.abandoned;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(userLibraryProvider);
 
-    final List<Widget> children = (completed || abandoned)
+    final List<Widget> children = (book.isFinished || book.isAbandoned)
         ? [
             _archive(ref),
             _remove(ref),
@@ -131,16 +127,19 @@ class BookDetailButtons extends ConsumerWidget {
 
   Widget _abandon(WidgetRef ref) {
     return BookDetailButton(
-      title: abandoned ? 'Resume' : 'Abandon',
-      subtitle: '${abandoned ? 'Continue' : 'Stop'} reading',
-      icon: abandoned
+      title: book.isAbandoned ? 'Resume' : 'Abandon',
+      subtitle: '${book.isAbandoned ? 'Continue' : 'Stop'} reading',
+      icon: book.isAbandoned
           ? CupertinoIcons.play_circle
           : CupertinoIcons.minus_circle,
       onPressed: () async {
-        await SupabaseLibraryService.setAbandoned(book, abandoned: !abandoned);
+        await SupabaseLibraryService.setAbandoned(
+          book,
+          abandoned: !book.isAbandoned,
+        );
         ref.invalidate(userLibraryProvider);
       },
-      backgroundColor: abandoned
+      backgroundColor: book.isAbandoned
           ? AppColors.teal.withValues(alpha: 0.15)
           : AppColors.primaryLight.withValues(alpha: 0.5),
       dense: dense,
@@ -159,8 +158,7 @@ class BookDetailButtons extends ConsumerWidget {
         title: '${actionName.capitalize} Book',
         actionName: actionName,
         onConfirm: () async {
-          onConfirm(book)
-              .then((_) => ref.invalidate(userLibraryProvider));
+          onConfirm(book).then((_) => ref.invalidate(userLibraryProvider));
           ref.context.pop();
         },
       );

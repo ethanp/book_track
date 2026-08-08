@@ -32,8 +32,7 @@ enum StatsPeriod {
 
   /// Returns null for allTime (meaning no cutoff - show all data).
   DateTime? get cutoffDate {
-    return daysAgo
-        .map((int days) => DateTime.now().shiftedByDays(-days));
+    return daysAgo.map((int days) => DateTime.now().shiftedByDays(-days));
   }
 
   ProgressAggregation get chartAggregation => switch (this) {

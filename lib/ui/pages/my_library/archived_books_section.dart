@@ -5,7 +5,7 @@ import 'package:book_track/ui/pages/my_library/book_tile.dart';
 import 'package:flutter/cupertino.dart';
 
 class ArchivedBooksSection extends StatefulWidget {
-  const ArchivedBooksSection({required this.books, super.key});
+  const ArchivedBooksSection({required this.books});
 
   final List<LibraryBook> books;
 
@@ -77,7 +77,8 @@ class _ArchivedBooksSectionState extends State<ArchivedBooksSection> {
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: filteredBooks.length,
-            itemBuilder: (context, index) => BookTile(filteredBooks[index], index),
+            itemBuilder: (context, index) =>
+                BookTile(filteredBooks[index], index),
           ),
         ],
       ),

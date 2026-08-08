@@ -96,7 +96,7 @@ class _ProgressTotals {
     int minutes = 0;
 
     for (final book in books) {
-      if (book.progressHistory.isEmpty || book.formats.isEmpty) continue;
+      if (!book.hasProgress || book.formats.isEmpty) continue;
       final deltas = _BookProgressDeltas(book, cutoff);
       pages += deltas.pages;
       minutes += deltas.minutes;
@@ -215,8 +215,8 @@ class _StreakCalculator {
   _StreakResult compute() {
     final today = DateTime.now().startOfDay;
     final yesterday = today.shiftedByDays(-1);
-    final isActive = _sorted.last.sameDayAs(today) ||
-        _sorted.last.sameDayAs(yesterday);
+    final isActive =
+        _sorted.last.sameDayAs(today) || _sorted.last.sameDayAs(yesterday);
 
     int longest = 1, longestStart = 0, longestEnd = 0;
     int running = 1, runningStart = 0;

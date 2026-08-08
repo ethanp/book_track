@@ -345,7 +345,8 @@ class _UpdateProgressDialogState
       _selectedProgressEventFormat = _selectedFormat!.isAudiobook
           ? ProgressEventFormat.minutes
           : ProgressEventFormat.pageNum;
-      _log.log('Format was null, using first format: ${_selectedFormat!.format.name}');
+      _log.log(
+          'Format was null, using first format: ${_selectedFormat!.format.name}');
     }
 
     final int? newLen = _fieldControllers.value(_selectedProgressEventFormat);
@@ -355,7 +356,8 @@ class _UpdateProgressDialogState
       return;
     }
 
-    _log.log('Submitting progress: formatId=${_selectedFormat!.supaId}, value=$newLen, format=${_selectedProgressEventFormat.name}');
+    _log.log(
+        'Submitting progress: formatId=${_selectedFormat!.supaId}, value=$newLen, format=${_selectedProgressEventFormat.name}');
     if (widget.eventToUpdate != null) {
       _log.log('updating progress to $newLen');
       await SupabaseProgressService.updateProgressEvent(

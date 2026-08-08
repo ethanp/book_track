@@ -8,11 +8,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 
 class FormatBreakdownCard extends StatelessWidget {
-  const FormatBreakdownCard({
-    required this.books,
-    required this.periodCutoff,
-    super.key,
-  });
+  const FormatBreakdownCard({required this.books, required this.periodCutoff});
 
   final List<LibraryBook> books;
   final DateTime? periodCutoff;
@@ -97,7 +93,7 @@ class FormatBreakdownCard extends StatelessWidget {
   Map<BookFormat, double> _progressByFormat(List<LibraryBook> books) {
     final progress = <BookFormat, double>{};
     for (final book in books) {
-      if (book.progressHistory.isEmpty || book.formats.isEmpty) continue;
+      if (!book.hasProgress || book.formats.isEmpty) continue;
       final sorted = book.progressHistory.toList()
         ..sort((a, b) => a.end.compareTo(b.end));
       final cutoff = periodCutoff;

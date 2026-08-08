@@ -89,8 +89,8 @@ class ReadingPaceSeries {
     final displayedPoints = periodCutoff == null
         ? allPoints
         : allPoints
-              .where((point) => !point.day.isBefore(periodCutoff.startOfDay))
-              .toList();
+            .where((point) => !point.day.isBefore(periodCutoff.startOfDay))
+            .toList();
 
     if (displayedPoints.isEmpty) return empty;
 

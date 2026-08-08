@@ -1,6 +1,7 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
-import 'package:flutter/material.dart' show CircularProgressIndicator, Text, Widget;
+import 'package:flutter/material.dart'
+    show CircularProgressIndicator, Text, Widget;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

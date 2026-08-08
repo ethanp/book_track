@@ -122,7 +122,8 @@ class DayProgressEntry {
   static List<Widget> tilesForDate(
           DateTime date, List<LibraryBook> books, BuildContext context) =>
       books
-          .map((book) => DayProgressEntry.forBook(book, date)?.buildTile(context))
+          .map((book) =>
+              DayProgressEntry.forBook(book, date)?.buildTile(context))
           .nonNulls
           .toList();
 

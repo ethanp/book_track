@@ -15,7 +15,7 @@ import 'text_and_button.dart';
 const _log = ELogger('LoginPage');
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage();
 
   @override
   State<LoginPage> createState() => _LoginPageState();

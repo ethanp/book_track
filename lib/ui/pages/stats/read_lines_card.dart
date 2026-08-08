@@ -8,11 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ReadLinesCard extends ConsumerWidget {
-  const ReadLinesCard({
-    required this.books,
-    required this.periodCutoff,
-    super.key,
-  });
+  const ReadLinesCard({required this.books, required this.periodCutoff});
 
   final List<LibraryBook> books;
   final DateTime? periodCutoff;
@@ -23,7 +19,7 @@ class ReadLinesCard extends ConsumerWidget {
         ref.watch(readLinesCurrentlyReadingOnlyProvider);
 
     final List<LibraryBook> chartBooks = currentlyReadingOnly
-        ? books.whereL((book) => book.readingStatus == ReadingStatus.reading)
+        ? books.whereL((book) => book.isReading)
         : books;
 
     return AppCard(

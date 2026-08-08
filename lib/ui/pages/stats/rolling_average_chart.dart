@@ -7,11 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
 class RollingAverageChart extends StatelessWidget {
-  const RollingAverageChart({
-    required this.books,
-    this.periodCutoff,
-    super.key,
-  });
+  const RollingAverageChart({required this.books, this.periodCutoff});
 
   final List<LibraryBook> books;
   final DateTime? periodCutoff;
@@ -42,8 +38,7 @@ class RollingAverageChart extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(CupertinoIcons.graph_square,
-              size: 40, color: AppColors.shimmer),
+          Icon(CupertinoIcons.graph_square, size: 40, color: AppColors.shimmer),
           SizedBox(height: AppSpacing.sm),
           Text('Start reading to see your pace!',
               style: AppTextStyles.bodySecondary),
