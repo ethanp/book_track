@@ -42,7 +42,7 @@ class BookPropertiesEditor extends ConsumerWidget {
           null,
         )
       ],
-      onPressed: (List<String> text) async {
+      onValuesCommitted: (List<String> text) async {
         _log.log('updating author to ${text[0]}');
         await SupabaseBookService.updateAuthor(libraryBook.book, text[0]);
         ref.invalidate(userLibraryProvider);

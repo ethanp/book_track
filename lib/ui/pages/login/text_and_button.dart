@@ -5,12 +5,12 @@ class TextAndButton extends StatelessWidget {
   const TextAndButton({
     required this.title,
     required this.buttonText,
-    required this.onTap,
+    required this.onActivated,
   });
 
   final String title;
   final String buttonText;
-  final void Function() onTap;
+  final void Function() onActivated;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +28,7 @@ class TextAndButton extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
-              recognizer: TapGestureRecognizer()..onTap = onTap,
+              recognizer: TapGestureRecognizer()..onTap = onActivated,
             ),
           ],
         ),

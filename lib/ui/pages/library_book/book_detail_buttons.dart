@@ -4,7 +4,6 @@ import 'package:book_track/services/supabase_library_service.dart';
 import 'package:book_track/services/supabase_progress_service.dart';
 import 'package:book_track/ui/common/confirmation_dialog.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:book_track/ui/pages/session_timer/session_timer_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
@@ -28,7 +27,6 @@ class BookDetailButtons extends ConsumerWidget {
           ]
         : [
             _updateProgress(ref),
-            _startSession(context),
             _complete(ref),
             _abandon(ref),
             _remove(ref)
@@ -55,7 +53,7 @@ class BookDetailButtons extends ConsumerWidget {
       title: 'Update progress',
       subtitle: 'Sync with reality',
       icon: CupertinoIcons.list_bullet,
-      onPressed: () => UpdateProgressDialogPage.show(ref, book),
+      onActivated: () => UpdateProgressDialogPage.show(ref, book),
       backgroundColor: AppColors.primary.withValues(alpha: 0.25),
       dense: dense,
     );
@@ -66,7 +64,7 @@ class BookDetailButtons extends ConsumerWidget {
       title: 'Complete',
       subtitle: 'Mark book as finished',
       icon: CupertinoIcons.checkmark_square,
-      onPressed: () async {
+      onActivated: () async {
         final format = book.lastUsedFormat ?? book.primaryFormat;
         if (format != null) {
           await SupabaseProgressService.addProgressEvent(
@@ -83,23 +81,12 @@ class BookDetailButtons extends ConsumerWidget {
     );
   }
 
-  Widget _startSession(BuildContext context) {
-    return BookDetailButton(
-      title: 'Start session',
-      subtitle: 'Reading timer',
-      icon: CupertinoIcons.timer,
-      onPressed: () => context.push(SessionTimerPage(book)),
-      backgroundColor: AppColors.teal.withValues(alpha: 0.2),
-      dense: dense,
-    );
-  }
-
   Widget _remove(WidgetRef ref) {
     return BookDetailButton(
       title: 'Remove',
       subtitle: 'Remove book from app',
       icon: CupertinoIcons.trash,
-      onPressed: () => _showBookActionDialog(
+      onActivated: () => _showBookActionDialog(
         ref: ref,
         actionName: 'remove',
         onConfirm: SupabaseLibraryService.remove,
@@ -115,7 +102,7 @@ class BookDetailButtons extends ConsumerWidget {
       title: actionName,
       subtitle: '${book.archived ? 'Show on' : 'Hide from'} home screen',
       icon: CupertinoIcons.archivebox,
-      onPressed: () => _showBookActionDialog(
+      onActivated: () => _showBookActionDialog(
         ref: ref,
         actionName: actionName,
         onConfirm: SupabaseLibraryService.archive,
@@ -132,7 +119,7 @@ class BookDetailButtons extends ConsumerWidget {
       icon: book.isAbandoned
           ? CupertinoIcons.play_circle
           : CupertinoIcons.minus_circle,
-      onPressed: () async {
+      onActivated: () async {
         await SupabaseLibraryService.setAbandoned(
           book,
           abandoned: !book.isAbandoned,

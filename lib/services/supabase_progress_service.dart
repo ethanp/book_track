@@ -16,7 +16,6 @@ class SupabaseProgressService {
     required int formatId,
     required int newValue,
     required ProgressEventFormat format,
-    DateTime? start,
     DateTime? end,
   }) =>
       _progressClient.insert({
@@ -25,7 +24,6 @@ class SupabaseProgressService {
         _SupaProgress.userIdCol: SupabaseAuthService.loggedInUserId,
         _SupaProgress.formatCol: format.name,
         _SupaProgress.progressCol: newValue,
-        _SupaProgress.startCol: start?.toIso8601String(),
         _SupaProgress.endCol: (end ?? DateTime.now()).toIso8601String(),
       }).withRetry(_log);
 
@@ -34,7 +32,6 @@ class SupabaseProgressService {
     required int updatedValue,
     required ProgressEventFormat format,
     required int formatId,
-    DateTime? start,
     required DateTime end,
   }) =>
       _progressClient
@@ -42,7 +39,6 @@ class SupabaseProgressService {
             _SupaProgress.formatIdCol: formatId,
             _SupaProgress.progressCol: updatedValue,
             _SupaProgress.formatCol: format.name,
-            _SupaProgress.startCol: start?.toIso8601String(),
             _SupaProgress.endCol: end.toIso8601String(),
           })
           .eq(_SupaProgress.supaIdCol, preexistingEvent.supaId)
@@ -97,7 +93,6 @@ class _SupaProgress {
         end: end,
         progress: progress,
         format: format,
-        start: start,
       );
 
   int get supaId => rawData[supaIdCol];
@@ -124,9 +119,6 @@ class _SupaProgress {
 
   int get progress => rawData[progressCol];
   static const String progressCol = 'progress';
-
-  DateTime? get start => parseDateCol(rawData[startCol]);
-  static const String startCol = 'start';
 
   DateTime get end => parseDateCol(rawData[endCol])!;
   static const String endCol = 'end';

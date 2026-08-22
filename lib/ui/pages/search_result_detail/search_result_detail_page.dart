@@ -193,13 +193,13 @@ class _LengthInputDialogState extends State<_LengthInputDialog> {
     super.dispose();
   }
 
+  void _submitEnteredLength() {
+    final length = _controller.value;
+    if (length != null && length > 0) Navigator.pop(context, length);
+  }
+
   @override
   Widget build(BuildContext context) {
-    void onSubmit() {
-      final length = _controller.value;
-      if (length != null && length > 0) Navigator.pop(context, length);
-    }
-
     return CupertinoAlertDialog(
       title: Text(widget.isAudiobook ? 'Audiobook Length' : 'Book Length'),
       content: Padding(
@@ -220,7 +220,7 @@ class _LengthInputDialogState extends State<_LengthInputDialog> {
           ],
         ),
       ),
-      actions: _controller.dialogActions(context, onSubmit),
+      actions: _controller.dialogActions(context, _submitEnteredLength),
     );
   }
 }

@@ -144,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
     return TextAndButton(
       title: '${_isSignUpMode ? "Already" : "Don't"} have an account? ',
       buttonText: signUpText(reverse: true),
-      onTap: () => setState(() => _isSignUpMode = !_isSignUpMode),
+      onActivated: () => setState(() => _isSignUpMode = !_isSignUpMode),
     );
   }
 
@@ -152,7 +152,7 @@ class _LoginPageState extends State<LoginPage> {
     return TextAndButton(
       title: 'Forgot your password? ',
       buttonText: 'Email reset link',
-      onTap: () => _sendPasswordResetLink(context),
+      onActivated: () => _sendPasswordResetLink(context),
     );
   }
 

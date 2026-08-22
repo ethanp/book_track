@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// When true (default), archived books are included in stats.
 final showArchivedProvider = StateProvider<bool>((ref) => true);
 
+/// When true (default), audiobooks are included in stats. Session-scoped.
+final includeAudiobooksProvider = StateProvider<bool>((ref) => true);
+
 /// Provider for the time period filter in stats.
 final statsPeriodProvider =
     StateProvider<StatsPeriod>((ref) => StatsPeriod.allTime);

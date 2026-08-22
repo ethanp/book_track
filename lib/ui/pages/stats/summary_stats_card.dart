@@ -78,7 +78,7 @@ class SummaryStatsCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _statTile(_formatNumber(stats.totalPages), 'pages read'),
+          _statTile(stats.totalPages.asCompactCount, 'pages read'),
           _statTile('${stats.totalHours}h', 'listened'),
           _streakTile('Current Streak', stats.currentStreak, null),
           _streakTile('Longest Streak', stats.longestStreak,
@@ -124,10 +124,5 @@ class SummaryStatsCard extends StatelessWidget {
         Text(label, style: AppTextStyles.caption),
       ],
     );
-  }
-
-  String _formatNumber(int n) {
-    if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}k';
-    return n.toString();
   }
 }

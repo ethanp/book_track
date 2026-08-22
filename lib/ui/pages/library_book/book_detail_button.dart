@@ -6,7 +6,7 @@ class BookDetailButton extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
-    required this.onPressed,
+    required this.onActivated,
     required this.backgroundColor,
     required this.dense,
   });
@@ -14,7 +14,7 @@ class BookDetailButton extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
-  final VoidCallback onPressed;
+  final VoidCallback onActivated;
   final Color backgroundColor;
   final bool dense;
 
@@ -29,7 +29,7 @@ class BookDetailButton extends StatelessWidget {
             horizontal: dense ? 10 : 20,
             vertical: dense ? 0 : 10,
           ),
-          onPressed: onPressed,
+          onPressed: onActivated,
           color: backgroundColor,
           borderRadius: BorderRadius.circular(AppRadii.md),
           child: _buttonBody(),

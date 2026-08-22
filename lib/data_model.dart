@@ -306,7 +306,6 @@ class ProgressEvent {
     required this.end,
     required this.progress,
     required this.format,
-    this.start,
   });
 
   final int supaId;
@@ -315,7 +314,6 @@ class ProgressEvent {
   final int formatId;
 
   final int progress;
-  final DateTime? start;
   final DateTime end;
 
   /// How the progress value should be interpreted (pages, minutes, or percent).
@@ -327,7 +325,7 @@ class ProgressEvent {
 
   @override
   String toString() =>
-      '{progress: $progress, formatId: $formatId, start: $start, end: $end, format: $format}';
+      '{progress: $progress, formatId: $formatId, end: $end, format: $format}';
 
   String get stringWSuffix => switch (format) {
         ProgressEventFormat.pageNum => '$progress pgs',

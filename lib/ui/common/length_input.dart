@@ -96,12 +96,12 @@ class LengthInputController {
 
   bool get hasEmptyField => firstEmptyField != null;
 
-  /// Handles Fill/Submit button logic: focuses empty field if any, else calls onSubmit.
-  void fillOrSubmit(VoidCallback onSubmit) {
+  /// Handles Fill/Submit button logic: focuses empty field if any, else calls [onLengthSubmitted].
+  void fillOrSubmit(VoidCallback onLengthSubmitted) {
     if (hasEmptyField) {
       firstEmptyField?.requestFocus();
     } else {
-      onSubmit();
+      onLengthSubmitted();
     }
   }
 
@@ -109,13 +109,15 @@ class LengthInputController {
   String get saveLabel => hasEmptyField ? 'Fill' : 'Save';
 
   /// Standard Cancel/Save dialog actions for length input forms.
-  List<Widget> dialogActions(BuildContext context, VoidCallback onSubmit) => [
+  List<Widget> dialogActions(
+          BuildContext context, VoidCallback onLengthSubmitted) =>
+      [
         CupertinoDialogAction(
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
         CupertinoDialogAction(
-          onPressed: () => fillOrSubmit(onSubmit),
+          onPressed: () => fillOrSubmit(onLengthSubmitted),
           child: Text(saveLabel),
         ),
       ];

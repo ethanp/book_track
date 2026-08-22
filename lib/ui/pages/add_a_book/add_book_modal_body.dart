@@ -54,7 +54,7 @@ class _AddBookModalBodyState extends ConsumerState<AddBookModalBody> {
 
   Widget manualFormView() {
     return ManualBookForm(
-        onBack: () => setState(() => _showManualForm = false));
+        onBackActivated: () => setState(() => _showManualForm = false));
   }
 
   Widget bookSearchTitle() {

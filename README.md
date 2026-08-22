@@ -28,9 +28,6 @@ Consider looking at the [Flutter Cookbook](https://docs.flutter.dev/cookbook) fo
 
 Have a PNG of the icon 1024x1024px.
 
-Find the current
-design [here on Canva](https://www.canva.com/design/DAGdUjxKLrc/cpdRXKwv_ZsDuiwb3pXkUQ/edit).
-
 Overwrite the file at `assets/icon/app_icon.png` (as referenced by `flutter_launcher_icons` in
 the `pubspec.yaml`).
 

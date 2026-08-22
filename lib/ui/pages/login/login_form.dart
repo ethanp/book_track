@@ -6,10 +6,10 @@ import 'package:flutter/services.dart';
 import 'login_form_controllers.dart';
 
 class LoginForm extends StatelessWidget {
-  const LoginForm(this.loginFormC, this.onSubmit);
+  const LoginForm(this.loginFormC, this.onCredentialsSubmitted);
 
   final LoginFormControllers loginFormC;
-  final Future<void> Function() onSubmit;
+  final Future<void> Function() onCredentialsSubmitted;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +68,7 @@ class LoginForm extends StatelessWidget {
       autofillHints: autofillHints,
       onFieldSubmitted: (_) {
         TextInput.finishAutofillContext();
-        onSubmit();
+        onCredentialsSubmitted();
       },
       textInputAction: TextInputAction.done,
       autovalidateMode: AutovalidateMode.onUserInteraction,

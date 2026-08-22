@@ -15,12 +15,12 @@ class EditableBookProperty extends ConsumerStatefulWidget {
     required this.title,
     required this.value,
     required this.initialTextFieldValues,
-    required this.onPressed,
+    required this.onValuesCommitted,
   });
 
   final String title;
   final String value;
-  final void Function(List<String>) onPressed;
+  final void Function(List<String>) onValuesCommitted;
   final List<TextFieldValueAndSuffix> initialTextFieldValues;
 
   @override
@@ -82,7 +82,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
                 style: TextStyle(fontSize: 14, color: CupertinoColors.label),
                 autocorrect: false,
                 controller: field.key,
-                onSubmitted: (_) => onSubmit(),
+                onSubmitted: (_) => _commitEditedValues(),
               ),
             ),
             if (field.value != null)
@@ -99,10 +99,10 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
     );
   }
 
-  void onSubmit() {
+  void _commitEditedValues() {
     setEditing(false);
     if (textFields.keys.any((e) => e.text.isEmpty)) return;
-    widget.onPressed(textFields.keys.mapL((e) => e.text));
+    widget.onValuesCommitted(textFields.keys.mapL((e) => e.text));
   }
 
   Widget trailingButtonsRight() {
@@ -118,7 +118,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
   Widget submitButton() {
     return buttonStyle(
       color: CupertinoColors.systemGreen,
-      onPressed: onSubmit,
+      onPressed: _commitEditedValues,
       child: Icon(
         CupertinoIcons.check_mark,
         color: CupertinoColors.white,

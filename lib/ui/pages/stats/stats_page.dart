@@ -16,6 +16,7 @@ import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:book_track/ui/pages/stats/summary_stats_card.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Material, MaterialType, Switch;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class StatsPage extends ConsumerWidget {
@@ -33,12 +34,13 @@ class StatsPage extends ConsumerWidget {
 
   Widget _body(List<LibraryBook> userLibrary, WidgetRef ref) {
     final bool showArchived = ref.watch(showArchivedProvider);
+    final bool includeAudiobooks = ref.watch(includeAudiobooksProvider);
     final StatsPeriod selectedPeriod = ref.watch(statsPeriodProvider);
     final DateTime? periodCutoff = selectedPeriod.cutoffDate;
 
-    final List<LibraryBook> books = showArchived
-        ? userLibrary
-        : userLibrary.whereL((book) => !book.archived);
+    final List<LibraryBook> books = userLibrary.whereL((book) =>
+        (showArchived || !book.archived) &&
+        (includeAudiobooks || !book.isAudiobook));
 
     return SafeArea(
       child: Column(
@@ -49,10 +51,12 @@ class StatsPage extends ConsumerWidget {
               key: const PageStorageKey('stats_scroll'),
               child: Column(
                 children: [
-                  _archivedToggle(ref, showArchived),
+                  _filterToggles(ref, includeAudiobooks, showArchived),
                   SummaryStatsCard(books: books, periodCutoff: periodCutoff),
                   ActivityCalendarCard(
-                    key: ValueKey('calendar-${books.length}-$showArchived'),
+                    key: ValueKey(
+                      'calendar-${books.length}-$showArchived-$includeAudiobooks',
+                    ),
                     books: books,
                     periodCutoff: periodCutoff,
                   ),
@@ -74,7 +78,39 @@ class StatsPage extends ConsumerWidget {
     );
   }
 
-  Widget _archivedToggle(WidgetRef ref, bool showArchived) {
+  Widget _filterToggles(
+    WidgetRef ref,
+    bool includeAudiobooks,
+    bool showArchived,
+  ) {
+    return Material(
+      type: MaterialType.transparency,
+      child: Column(
+        children: [
+          _filterToggle(
+            label: 'Include audiobooks',
+            value: includeAudiobooks,
+            onChanged: (value) {
+              ref.read(includeAudiobooksProvider.notifier).state = value;
+            },
+          ),
+          _filterToggle(
+            label: 'Include abandoned books',
+            value: showArchived,
+            onChanged: (value) {
+              ref.read(showArchivedProvider.notifier).state = value;
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _filterToggle({
+    required String label,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
@@ -83,13 +119,11 @@ class StatsPage extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text('Include abandoned books', style: AppTextStyles.body),
-          CupertinoSwitch(
-            value: showArchived,
+          Text(label, style: AppTextStyles.body),
+          Switch(
+            value: value,
             activeTrackColor: AppColors.primary,
-            onChanged: (value) {
-              ref.read(showArchivedProvider.notifier).state = value;
-            },
+            onChanged: onChanged,
           ),
         ],
       ),

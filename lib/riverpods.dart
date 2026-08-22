@@ -29,18 +29,6 @@ class SelectedBottomBarIdx extends _$SelectedBottomBarIdx {
   void update(int idx) => state = idx;
 }
 
-// Why keepAlive? To keep the session alive even if all listeners have been
-// disposed off-screen.
-@Riverpod(keepAlive: true)
-class SessionStartTime extends _$SessionStartTime {
-  @override
-  DateTime? build() => null;
-
-  void start() => state = DateTime.now();
-  void stop() => state = null;
-  void toggle() => state == null ? start() : stop();
-}
-
 @riverpod
 class BookSearchResultsNotifier extends _$BookSearchResultsNotifier {
   @override

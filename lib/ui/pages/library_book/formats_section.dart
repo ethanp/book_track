@@ -45,8 +45,9 @@ class FormatsSection extends ConsumerWidget {
             ...formats.mapL((format) => _FormatRow(
                   format: format,
                   libraryBook: libraryBook,
-                  onEdit: () => _showEditFormatSheet(context, ref, format),
-                  onDelete: formats.length > 1
+                  onLengthEditActivated: () =>
+                      _showEditFormatSheet(context, ref, format),
+                  onDeleteActivated: formats.length > 1
                       ? () => _confirmDeleteFormat(context, ref, format)
                       : null,
                 )),
@@ -149,14 +150,14 @@ class _FormatRow extends StatelessWidget {
   const _FormatRow({
     required this.format,
     required this.libraryBook,
-    required this.onEdit,
-    this.onDelete,
+    required this.onLengthEditActivated,
+    this.onDeleteActivated,
   });
 
   final LibraryBookFormat format;
   final LibraryBook libraryBook;
-  final VoidCallback onEdit;
-  final VoidCallback? onDelete;
+  final VoidCallback onLengthEditActivated;
+  final VoidCallback? onDeleteActivated;
 
   Color get _formatColor => switch (format.format) {
         BookFormat.audiobook => AppColors.audiobook,
@@ -195,7 +196,7 @@ class _FormatRow extends StatelessWidget {
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 GestureDetector(
-                  onTap: onEdit,
+                  onTap: onLengthEditActivated,
                   child: Text(
                     format.lengthDisplay,
                     style: TextStyle(
@@ -209,10 +210,10 @@ class _FormatRow extends StatelessWidget {
               ],
             ),
           ),
-          if (onDelete != null)
+          if (onDeleteActivated != null)
             CupertinoButton(
               padding: EdgeInsets.zero,
-              onPressed: onDelete,
+              onPressed: onDeleteActivated,
               child: const Icon(
                 CupertinoIcons.trash,
                 size: 18,
@@ -238,12 +239,20 @@ class _AddFormatSheetState extends State<_AddFormatSheet> {
   BookFormat? _selectedFormat;
   LengthInputController? _lengthController;
 
-  void _onFormatSelected(BookFormat format) {
+  void _prepareLengthInputForFormat(BookFormat format) {
     _lengthController?.dispose();
     _lengthController = LengthInputController.fromAudiobook(
       isAudiobook: format == BookFormat.audiobook,
     );
     setState(() => _selectedFormat = format);
+  }
+
+  void _submitAddedFormat() {
+    if (_selectedFormat == null) return;
+    final length = _lengthController!.value;
+    if (length != null && length > 0) {
+      Navigator.pop(context, (_selectedFormat!, length));
+    }
   }
 
   @override
@@ -254,14 +263,6 @@ class _AddFormatSheetState extends State<_AddFormatSheet> {
 
   @override
   Widget build(BuildContext context) {
-    void onSubmit() {
-      if (_selectedFormat == null) return;
-      final length = _lengthController!.value;
-      if (length != null && length > 0) {
-        Navigator.pop(context, (_selectedFormat!, length));
-      }
-    }
-
     return CupertinoAlertDialog(
       title: const Text('Add Format'),
       content: Column(
@@ -280,7 +281,8 @@ class _AddFormatSheetState extends State<_AddFormatSheet> {
                     : (isDisabled
                         ? CupertinoColors.systemGrey4
                         : CupertinoColors.systemGrey5),
-                onPressed: isDisabled ? null : () => _onFormatSelected(format),
+                onPressed:
+                    isDisabled ? null : () => _prepareLengthInputForFormat(format),
                 child: Text(
                   format.name,
                   style: TextStyle(
@@ -304,7 +306,7 @@ class _AddFormatSheetState extends State<_AddFormatSheet> {
           ],
         ],
       ),
-      actions: _lengthController?.dialogActions(context, onSubmit) ?? [],
+      actions: _lengthController?.dialogActions(context, _submitAddedFormat) ?? [],
     );
   }
 }
@@ -336,22 +338,22 @@ class _EditLengthSheetState extends State<_EditLengthSheet> {
     super.dispose();
   }
 
+  void _submitEditedLength() {
+    final length = _controller.value;
+    if (length != null && length > 0) {
+      Navigator.pop(context, length);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    void onSubmit() {
-      final length = _controller.value;
-      if (length != null && length > 0) {
-        Navigator.pop(context, length);
-      }
-    }
-
     return CupertinoAlertDialog(
       title: Text('Edit ${widget.format.format.name} Length'),
       content: Padding(
         padding: const EdgeInsets.only(top: 16),
         child: LengthInput(controller: _controller),
       ),
-      actions: _controller.dialogActions(context, onSubmit),
+      actions: _controller.dialogActions(context, _submitEditedLength),
     );
   }
 }

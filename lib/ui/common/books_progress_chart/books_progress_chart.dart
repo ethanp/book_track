@@ -108,7 +108,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
                       response != null &&
                       response.lineBarSpots != null &&
                       response.lineBarSpots!.isNotEmpty) {
-                    _handleSpotTap(
+                    _selectProgressEventAtSpot(
                         filteredBooks, response, event.localPosition, timespan);
                   }
                 },
@@ -122,7 +122,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
     );
   }
 
-  void _handleSpotTap(List<LibraryBook> filteredBooks,
+  void _selectProgressEventAtSpot(List<LibraryBook> filteredBooks,
       LineTouchResponse response, Offset? touchPos, TimeSpan timespan) {
     // Find the closest spot to the touch position
     final spots = response.lineBarSpots!;

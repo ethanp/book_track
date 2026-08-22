@@ -8,9 +8,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ManualBookForm extends ConsumerStatefulWidget {
-  const ManualBookForm({required this.onBack});
+  const ManualBookForm({required this.onBackActivated});
 
-  final VoidCallback onBack;
+  final VoidCallback onBackActivated;
 
   @override
   ConsumerState<ManualBookForm> createState() => _ManualBookFormState();
@@ -83,7 +83,7 @@ class _ManualBookFormState extends ConsumerState<ManualBookForm> {
       children: [
         CupertinoButton(
           padding: EdgeInsets.zero,
-          onPressed: widget.onBack,
+          onPressed: widget.onBackActivated,
           child: const Icon(CupertinoIcons.back),
         ),
         Expanded(

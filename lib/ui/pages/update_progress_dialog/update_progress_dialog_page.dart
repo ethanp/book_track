@@ -15,14 +15,10 @@ const _log = ELogger('UpdateProgressDialogPage');
 class UpdateProgressDialogPage extends ConsumerStatefulWidget {
   const UpdateProgressDialogPage({
     required this.book,
-    this.startTime,
-    this.initialEndTime,
     this.eventToUpdate,
   });
 
   final LibraryBook book;
-  final DateTime? startTime;
-  final DateTime? initialEndTime;
   final ProgressEvent? eventToUpdate;
 
   LibraryBookFormat? get _initialFormat {
@@ -43,25 +39,18 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
         : ProgressEventFormat.pageNum;
   }
 
-  DateTime get initialTimestamp =>
-      eventToUpdate?.end ?? initialEndTime ?? DateTime.now();
+  DateTime get initialTimestamp => eventToUpdate?.end ?? DateTime.now();
 
   @override
   ConsumerState createState() => _UpdateProgressDialogState();
 
   static Future<bool> show(
     WidgetRef ref,
-    LibraryBook book, {
-    DateTime? startTime,
-    DateTime? initialEndTime,
-  }) async {
+    LibraryBook book,
+  ) async {
     final bool? updateConfirmed = await showCupertinoDialog(
       context: ref.context,
-      builder: (context) => UpdateProgressDialogPage(
-        book: book,
-        startTime: startTime,
-        initialEndTime: initialEndTime,
-      ),
+      builder: (context) => UpdateProgressDialogPage(book: book),
     );
     if (updateConfirmed == true) ref.invalidate(userLibraryProvider);
     return false; // <- This means *don't* remove the book from the ListView.
@@ -365,7 +354,6 @@ class _UpdateProgressDialogState
         updatedValue: newLen,
         format: _selectedProgressEventFormat,
         formatId: _selectedFormat!.supaId,
-        start: widget.startTime,
         end: _selectedUpdateTimestamp,
       );
     } else {
@@ -374,7 +362,6 @@ class _UpdateProgressDialogState
         formatId: _selectedFormat!.supaId,
         newValue: newLen,
         format: _selectedProgressEventFormat,
-        start: widget.startTime,
         end: _selectedUpdateTimestamp,
       );
     }
@@ -415,8 +402,8 @@ class _FieldControllers {
   int? value(ProgressEventFormat format) => forFormat(format).value;
 
   List<Widget> dialogActions(BuildContext context, ProgressEventFormat format,
-          VoidCallback onSubmit) =>
-      forFormat(format).dialogActions(context, onSubmit);
+          VoidCallback onLengthSubmitted) =>
+      forFormat(format).dialogActions(context, onLengthSubmitted);
 
   void dispose() {
     _minutes.dispose();
