@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:book_track/services/supabase_auth_service.dart';
-import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/mainstage_and_bottom_navbar.dart';
 import 'package:book_track/ui/pages/login/login_page.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -56,35 +56,10 @@ class _TopLevelWidgetState extends ConsumerState<TopLevelWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoApp(
+    return MaterialApp(
       title: 'Book Track',
       debugShowCheckedModeBanner: false,
-      theme: CupertinoThemeData(
-        brightness: Brightness.light,
-        primaryColor: AppColors.primary,
-        scaffoldBackgroundColor: AppColors.background,
-        barBackgroundColor: AppColors.navBarBackground,
-        textTheme: CupertinoTextThemeData(
-          primaryColor: AppColors.primary,
-          textStyle: const TextStyle(
-            inherit: false,
-            color: AppColors.textPrimary,
-            fontSize: 16,
-          ),
-          navTitleTextStyle: const TextStyle(
-            inherit: false,
-            color: AppColors.textPrimary,
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-          ),
-          navLargeTitleTextStyle: const TextStyle(
-            inherit: false,
-            color: AppColors.textPrimary,
-            fontSize: 34,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
+      theme: ETheme.build(),
       home: _buildHome(),
     );
   }
