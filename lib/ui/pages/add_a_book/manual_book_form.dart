@@ -7,16 +7,13 @@ import 'package:book_track/ui/common/length_input.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ManualBookForm extends ConsumerStatefulWidget {
-  const ManualBookForm({required this.onBackActivated});
-
-  final VoidCallback onBackActivated;
-
+class const ManualBookForm({required final VoidCallback onBackActivated})
+    extends ConsumerStatefulWidget {
   @override
   ConsumerState<ManualBookForm> createState() => _ManualBookFormState();
 }
 
-class _ManualBookFormState extends ConsumerState<ManualBookForm> {
+class _ManualBookFormState() extends ConsumerState<ManualBookForm> {
   final _titleController = TextEditingController();
   final _authorController = TextEditingController();
   final _yearController = TextEditingController();
@@ -131,9 +128,7 @@ class _ManualBookFormState extends ConsumerState<ManualBookForm> {
         children: [
           Text('Format', style: AppTextStyles.h4),
           const SizedBox(height: 8),
-          Row(
-            children: BookFormat.values.mapL(formatButton),
-          ),
+          Row(children: BookFormat.values.mapL(formatButton)),
         ],
       ),
     );
@@ -146,7 +141,7 @@ class _ManualBookFormState extends ConsumerState<ManualBookForm> {
         padding: const EdgeInsets.symmetric(horizontal: 2),
         child: CupertinoButton(
           padding: const EdgeInsets.symmetric(vertical: 8),
-          color: isSelected ? formatColor(format) : CupertinoColors.systemGrey4,
+          color: isSelected ? format.color : AppColors.shimmer,
           onPressed: () => selectFormat(format),
           child: Text(
             format.name,
@@ -159,20 +154,14 @@ class _ManualBookFormState extends ConsumerState<ManualBookForm> {
     );
   }
 
-  Color formatColor(BookFormat format) => switch (format) {
-        BookFormat.audiobook => AppColors.audiobook,
-        BookFormat.eBook => AppColors.ebook,
-        BookFormat.paperback => AppColors.paperback,
-        BookFormat.hardcover => AppColors.hardcover,
-      };
-
   void selectFormat(BookFormat format) {
     if (format == _selectedFormat) return;
     setState(() {
       _selectedFormat = format;
       _lengthController.dispose();
-      _lengthController =
-          LengthInputController.fromAudiobook(isAudiobook: isAudiobook);
+      _lengthController = LengthInputController.fromAudiobook(
+        isAudiobook: isAudiobook,
+      );
     });
   }
 
@@ -182,8 +171,10 @@ class _ManualBookFormState extends ConsumerState<ManualBookForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(isAudiobook ? 'Length (h:mm)' : 'Pages',
-              style: AppTextStyles.h4),
+          Text(
+            isAudiobook ? 'Length (h:mm)' : 'Pages',
+            style: AppTextStyles.h4,
+          ),
           const SizedBox(height: 4),
           LengthInput(
             controller: _lengthController,

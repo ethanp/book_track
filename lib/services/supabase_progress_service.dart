@@ -7,7 +7,7 @@ import 'supabase_service.dart';
 
 const _log = ELogger('SupabaseProgressService');
 
-class SupabaseProgressService {
+class SupabaseProgressService() {
   static final _progressClient = supabase.from('progress_events');
 
   /// [end] defaults to [DateTime.now].
@@ -17,15 +17,16 @@ class SupabaseProgressService {
     required int newValue,
     required ProgressEventFormat format,
     DateTime? end,
-  }) =>
-      _progressClient.insert({
+  }) => _progressClient
+      .insert({
         _SupaProgress.libraryBookIdCol: libraryBookId,
         _SupaProgress.formatIdCol: formatId,
         _SupaProgress.userIdCol: SupabaseAuthService.loggedInUserId,
         _SupaProgress.formatCol: format.name,
         _SupaProgress.progressCol: newValue,
         _SupaProgress.endCol: (end ?? DateTime.now()).toIso8601String(),
-      }).withRetry(_log);
+      })
+      .withRetry(_log);
 
   static Future<void> updateProgressEvent({
     required ProgressEvent preexistingEvent,
@@ -33,16 +34,15 @@ class SupabaseProgressService {
     required ProgressEventFormat format,
     required int formatId,
     required DateTime end,
-  }) =>
-      _progressClient
-          .update({
-            _SupaProgress.formatIdCol: formatId,
-            _SupaProgress.progressCol: updatedValue,
-            _SupaProgress.formatCol: format.name,
-            _SupaProgress.endCol: end.toIso8601String(),
-          })
-          .eq(_SupaProgress.supaIdCol, preexistingEvent.supaId)
-          .withRetry(_log);
+  }) => _progressClient
+      .update({
+        _SupaProgress.formatIdCol: formatId,
+        _SupaProgress.progressCol: updatedValue,
+        _SupaProgress.formatCol: format.name,
+        _SupaProgress.endCol: end.toIso8601String(),
+      })
+      .eq(_SupaProgress.supaIdCol, preexistingEvent.supaId)
+      .withRetry(_log);
 
   static Future<List<ProgressEvent>> history(int bookId) async {
     final queryResults = await _progressClient
@@ -60,13 +60,17 @@ class SupabaseProgressService {
       .withRetry(_log);
 
   static Future<Map<int, List<ProgressEvent>>> historyForLibraryBooks(
-      List<int> libraryBookIds) async {
+    List<int> libraryBookIds,
+  ) async {
     if (libraryBookIds.isEmpty) return {};
 
     final queryResults = await _progressClient
         .select()
-        .filter(_SupaProgress.libraryBookIdCol, 'in',
-            '(${libraryBookIds.join(',')})')
+        .filter(
+          _SupaProgress.libraryBookIdCol,
+          'in',
+          '(${libraryBookIds.join(',')})',
+        )
         .eq(_SupaProgress.userIdCol, SupabaseAuthService.loggedInUserId!)
         .order(_SupaProgress.endCol, ascending: true)
         .withRetry(_log);
@@ -82,18 +86,14 @@ class SupabaseProgressService {
   }
 }
 
-class _SupaProgress {
-  const _SupaProgress(this.rawData);
-
-  final PostgrestMap rawData;
-
+class const _SupaProgress(final PostgrestMap rawData) {
   ProgressEvent get toProgressEvent => ProgressEvent(
-        supaId: supaId,
-        formatId: formatId,
-        end: end,
-        progress: progress,
-        format: format,
-      );
+    supaId: supaId,
+    formatId: formatId,
+    end: end,
+    progress: progress,
+    format: format,
+  );
 
   int get supaId => rawData[supaIdCol];
   static const String supaIdCol = 'id';

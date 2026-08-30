@@ -1,28 +1,22 @@
 import 'package:book_track/ui/common/design.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:ethan_ui/ethan_ui.dart';
+import 'package:flutter/material.dart';
 
-class AppCard extends StatelessWidget {
-  const AppCard({required this.child, this.margin, this.padding});
-
-  final Widget child;
-  final EdgeInsetsGeometry? margin;
-  final EdgeInsetsGeometry? padding;
-
+class const AppCard({
+  required final Widget child,
+  final EdgeInsetsGeometry? margin,
+  final EdgeInsetsGeometry? padding,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: margin ??
+    return Padding(
+      padding:
+          margin ??
           const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
             vertical: AppSpacing.sm,
           ),
-      padding: padding,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.md),
-        boxShadow: const [AppShadows.card],
-      ),
-      child: child,
+      child: ESurface(kind: ESurfaceKind.panel, padding: padding, child: child),
     );
   }
 }

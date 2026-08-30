@@ -7,12 +7,10 @@ import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 
-class ProgressChartCard extends StatelessWidget {
-  const ProgressChartCard({required this.books, required this.period});
-
-  final List<LibraryBook> books;
-  final StatsPeriod period;
-
+class const ProgressChartCard({
+  required final List<LibraryBook> books,
+  required final StatsPeriod period,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
@@ -32,17 +30,11 @@ class ProgressChartCard extends StatelessWidget {
           ),
           _chartSection(
             'Rolling Average',
-            RollingAverageChart(
-              books: books,
-              periodCutoff: period.cutoffDate,
-            ),
+            RollingAverageChart(books: books, periodCutoff: period.cutoffDate),
           ),
           _chartSection(
             period.chartAggregation.name.capitalize,
-            ProgressPerMonthChart(
-              books: books,
-              period: period,
-            ),
+            ProgressPerMonthChart(books: books, period: period),
           ),
         ],
       ),
@@ -62,7 +54,7 @@ class ProgressChartCard extends StatelessWidget {
       ),
       padding: const EdgeInsets.only(top: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: AppColors.surfaceInset,
         borderRadius: BorderRadius.circular(AppRadii.md),
         border: Border.all(color: AppColors.divider),
       ),

@@ -8,11 +8,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'results_count.dart';
 
-class SearchResults extends ConsumerWidget {
+class const SearchResults() extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final BookSearchResults searchResult =
-        ref.watch(bookSearchResultsNotifierProvider);
+    final BookSearchResults searchResult = ref.watch(
+      bookSearchResultsProvider,
+    );
     if (searchResult.isLoading) {
       return const SizedBox(
         height: 400,
@@ -31,16 +32,18 @@ class SearchResults extends ConsumerWidget {
       );
     }
     return Expanded(
-      child: Column(children: [
-        ResultsCount(searchResult),
-        Expanded(
-          child: ListView(
-            children: searchResult.books.mapL(
-              (book) => _resultBook(book, ref),
+      child: Column(
+        children: [
+          ResultsCount(searchResult),
+          Expanded(
+            child: ListView(
+              children: searchResult.books.mapL(
+                (book) => _resultBook(book, ref),
+              ),
             ),
           ),
-        ),
-      ]),
+        ],
+      ),
     );
   }
 
@@ -49,11 +52,7 @@ class SearchResults extends ConsumerWidget {
       margin: const EdgeInsets.symmetric(vertical: 1),
       child: CupertinoListTile(
         leading: _coverArt(book),
-        title: Text(
-          book.title,
-          maxLines: 3,
-          style: AppTextStyles.h5,
-        ),
+        title: Text(book.title, maxLines: 3, style: AppTextStyles.h5),
         subtitle: Text(
           book.firstAuthor,
           style: AppTextStyles.bodySecondary.copyWith(
@@ -66,9 +65,6 @@ class SearchResults extends ConsumerWidget {
   }
 
   Widget _coverArt(OpenLibraryBook book) {
-    return SizedBox(
-      width: 50,
-      child: book.coverArtS.map(Image.memory),
-    );
+    return SizedBox(width: 50, child: book.coverArtS.map(Image.memory));
   }
 }

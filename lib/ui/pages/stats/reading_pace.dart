@@ -2,12 +2,10 @@ import 'dart:math' as math;
 
 import 'package:ethan_utils/ethan_utils.dart';
 
-class ReadingPacePoint {
-  const ReadingPacePoint({required this.day, required this.percentPerDay});
-
-  final DateTime day;
-  final double percentPerDay;
-}
+class const ReadingPacePoint({
+  required final DateTime day,
+  required final double percentPerDay,
+});
 
 /// Smoothed reading pace: the trailing [trailingWindowDays]-day average of
 /// daily percent-of-book read, then blurred into a readable trend line, with
@@ -24,13 +22,15 @@ class ReadingPacePoint {
 /// Callers pass raw per-event percent deltas (event day -> percent gained);
 /// day-bucketing, averaging, smoothing, and period-clipping all happen here,
 /// keeping this free of any UI, charting, or storage dependencies.
-class ReadingPaceSeries {
-  const ReadingPaceSeries({
-    required this.points,
-    required this.currentPace,
-    required this.maxPace,
-  });
+class const ReadingPaceSeries({
+  required final List<ReadingPacePoint> points,
 
+  /// Smoothed pace for the most recent day, percent-of-book per day.
+  required final double currentPace,
+
+  /// Largest pace among [points], floored at 1 so chart axes stay sane.
+  required final double maxPace,
+}) {
   /// Trailing window whose average defines the raw daily pace before smoothing.
   static const trailingWindowDays = 14;
 
@@ -48,15 +48,7 @@ class ReadingPaceSeries {
     maxPace: 0,
   );
 
-  final List<ReadingPacePoint> points;
-
-  /// Smoothed pace for the most recent day, percent-of-book per day.
-  final double currentPace;
-
-  /// Largest pace among [points], floored at 1 so chart axes stay sane.
-  final double maxPace;
-
-  factory ReadingPaceSeries.fromProgressDeltas(
+  factory fromProgressDeltas(
     Iterable<MapEntry<DateTime, double>> progressDeltas, {
     DateTime? periodCutoff,
     DateTime? now,
@@ -89,8 +81,8 @@ class ReadingPaceSeries {
     final displayedPoints = periodCutoff == null
         ? allPoints
         : allPoints
-            .where((point) => !point.day.isBefore(periodCutoff.startOfDay))
-            .toList();
+              .where((point) => !point.day.isBefore(periodCutoff.startOfDay))
+              .toList();
 
     if (displayedPoints.isEmpty) return empty;
 

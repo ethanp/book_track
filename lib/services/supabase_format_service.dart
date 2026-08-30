@@ -8,7 +8,7 @@ import 'supabase_service.dart';
 
 const _log = ELogger('SupabaseFormatService');
 
-class SupabaseFormatService {
+class SupabaseFormatService() {
   static final _client = supabase.from('library_book_formats');
 
   static Future<LibraryBookFormat> addFormat({
@@ -45,7 +45,8 @@ class SupabaseFormatService {
           .withRetry(_log);
 
   static Future<List<LibraryBookFormat>> formatsForBook(
-      int libraryBookId) async {
+    int libraryBookId,
+  ) async {
     final results = await _client
         .select()
         .eq(_SupaFormat.libraryBookIdCol, libraryBookId)
@@ -55,13 +56,17 @@ class SupabaseFormatService {
   }
 
   static Future<Map<int, List<LibraryBookFormat>>> formatsForLibraryBooks(
-      List<int> libraryBookIds) async {
+    List<int> libraryBookIds,
+  ) async {
     if (libraryBookIds.isEmpty) return {};
 
     final results = await _client
         .select()
         .filter(
-            _SupaFormat.libraryBookIdCol, 'in', '(${libraryBookIds.join(',')})')
+          _SupaFormat.libraryBookIdCol,
+          'in',
+          '(${libraryBookIds.join(',')})',
+        )
         .eq(_SupaFormat.userIdCol, SupabaseAuthService.loggedInUserId!)
         .order(_SupaFormat.formatCol, ascending: true)
         .withRetry(_log);
@@ -77,17 +82,13 @@ class SupabaseFormatService {
   }
 }
 
-class _SupaFormat {
-  const _SupaFormat(this.rawData);
-
-  final PostgrestMap rawData;
-
+class const _SupaFormat(final PostgrestMap rawData) {
   LibraryBookFormat get toLibraryBookFormat => LibraryBookFormat(
-        supaId: supaId,
-        libraryBookId: libraryBookId,
-        format: format,
-        length: length,
-      );
+    supaId: supaId,
+    libraryBookId: libraryBookId,
+    format: format,
+    length: length,
+  );
 
   int get supaId => rawData[supaIdCol];
   static const String supaIdCol = 'id';

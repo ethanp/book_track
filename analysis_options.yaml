@@ -2,6 +2,14 @@ include: package:flutter_lints/flutter.yaml
 
 linter:
   rules:
+    prefer_initializing_formals: true
+    use_primary_constructors: true
+    use_declaring_parameters: true
+    empty_container_bodies: true
+    initialize_in_field_declaration: true
+    unnecessary_const_in_enum_constructor: true
+    unnecessary_primary_constructor_body: true
+    unnecessary_type_name_in_constructor: true
     use_key_in_widget_constructors: false
 
 # This is used by riverpod's lints, see
@@ -12,5 +20,6 @@ analyzer:
     invalid_annotation_target: ignore # https://pub.dev/packages/freezed#how-to-use
     avoid_function_literals_in_foreach_calls: ignore
     curly_braces_in_flow_control_structures: ignore
-  plugins:
-    - custom_lint
+  exclude:
+    - build/**
+    - ios/**

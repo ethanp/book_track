@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'supabase_service.dart';
 
-class SupabaseAuthService {
+class SupabaseAuthService() {
   static final GoTrueClient _authClient = supabase.auth;
 
   static bool get isLoggedOut => _authClient.currentSession == null;
@@ -30,9 +30,10 @@ class SupabaseAuthService {
   static Future<void> signUp(String email, String password) =>
       _authClient.signUp(email: email, password: password);
 
-  static StreamSubscription<AuthState> onAuthStateChange(
-      {required void Function(AuthState) onEvent,
-      required void Function(Object) onError}) {
+  static StreamSubscription<AuthState> onAuthStateChange({
+    required void Function(AuthState) onEvent,
+    required void Function(Object) onError,
+  }) {
     return _authClient.onAuthStateChange.listen(onEvent, onError: onError);
   }
 

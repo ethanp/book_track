@@ -4,19 +4,18 @@ import 'package:book_track/ui/common/books_progress_chart/books_progress_chart.d
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ReadLinesCard extends ConsumerWidget {
-  const ReadLinesCard({required this.books, required this.periodCutoff});
-
-  final List<LibraryBook> books;
-  final DateTime? periodCutoff;
-
+class const ReadLinesCard({
+  required final List<LibraryBook> books,
+  required final DateTime? periodCutoff,
+}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool currentlyReadingOnly =
-        ref.watch(readLinesCurrentlyReadingOnlyProvider);
+    final bool currentlyReadingOnly = ref.watch(
+      readLinesCurrentlyReadingOnlyProvider,
+    );
 
     final List<LibraryBook> chartBooks = currentlyReadingOnly
         ? books.whereL((book) => book.isReading)
@@ -54,13 +53,12 @@ class ReadLinesCard extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text('Currently reading only', style: AppTextStyles.body),
-          CupertinoSwitch(
+          Text('Currently reading only', style: AppTextStyles.body),
+          Switch(
             value: currentlyReadingOnly,
-            activeTrackColor: AppColors.primary,
-            onChanged: (switchValue) => ref
-                .read(readLinesCurrentlyReadingOnlyProvider.notifier)
-                .state = switchValue,
+            onChanged: (switchValue) =>
+                ref.read(readLinesCurrentlyReadingOnlyProvider.notifier).state =
+                    switchValue,
           ),
         ],
       ),

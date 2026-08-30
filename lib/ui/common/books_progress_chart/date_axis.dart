@@ -4,11 +4,7 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
-class DateAxis {
-  const DateAxis(this.timespan);
-
-  final TimeSpan timespan;
-
+class const DateAxis(final TimeSpan timespan) {
   AxisTitles titles() {
     return AxisTitles(
       axisNameWidget: dateAxisName(),

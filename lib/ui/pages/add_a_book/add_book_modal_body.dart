@@ -2,7 +2,7 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'manual_book_form.dart';
@@ -10,14 +10,12 @@ import 'search_results.dart';
 
 const _log = ELogger('AddBookModalBody');
 
-class AddBookModalBody extends ConsumerStatefulWidget {
-  const AddBookModalBody();
-
+class const AddBookModalBody() extends ConsumerStatefulWidget {
   @override
   ConsumerState<AddBookModalBody> createState() => _AddBookModalBodyState();
 }
 
-class _AddBookModalBodyState extends ConsumerState<AddBookModalBody> {
+class _AddBookModalBodyState() extends ConsumerState<AddBookModalBody> {
   late final TextEditingController _controller;
   bool _showManualForm = false;
 
@@ -54,7 +52,8 @@ class _AddBookModalBodyState extends ConsumerState<AddBookModalBody> {
 
   Widget manualFormView() {
     return ManualBookForm(
-        onBackActivated: () => setState(() => _showManualForm = false));
+      onBackActivated: () => setState(() => _showManualForm = false),
+    );
   }
 
   Widget bookSearchTitle() {
@@ -67,12 +66,14 @@ class _AddBookModalBodyState extends ConsumerState<AddBookModalBody> {
   Widget searchBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 22),
-      child: CupertinoSearchTextField(
+      child: TextField(
         controller: _controller,
-        placeholder: 'Book title...',
+        decoration: const InputDecoration(
+          hintText: 'Book title...',
+          prefixIcon: Icon(Icons.search),
+        ),
         onSubmitted: search,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        style: const TextStyle(color: AppColors.textPrimary),
+        style: AppTextStyles.body,
       ),
     );
   }
@@ -80,8 +81,7 @@ class _AddBookModalBodyState extends ConsumerState<AddBookModalBody> {
   Widget manualAddButton() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: CupertinoButton(
-        padding: EdgeInsets.zero,
+      child: TextButton(
         onPressed: () => setState(() => _showManualForm = true),
         child: Text(
           "Can't find your book? Add it manually",
@@ -95,8 +95,9 @@ class _AddBookModalBodyState extends ConsumerState<AddBookModalBody> {
 
   void search(String text) {
     _log.log('searching for: $text');
-    final BookSearchResultsNotifier results =
-        ref.read(bookSearchResultsNotifierProvider.notifier);
+    final BookSearchResultsNotifier results = ref.read(
+      bookSearchResultsProvider.notifier,
+    );
     results.notify(BookSearchResults.loading);
     BookUniverseService.search(text, results);
   }

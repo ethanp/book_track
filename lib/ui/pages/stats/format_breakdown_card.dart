@@ -3,30 +3,24 @@ import 'dart:math' show max;
 import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
-class FormatBreakdownCard extends StatelessWidget {
-  const FormatBreakdownCard({required this.books, required this.periodCutoff});
-
-  final List<LibraryBook> books;
-  final DateTime? periodCutoff;
-
-  static const formatColors = <BookFormat, Color>{
-    BookFormat.audiobook: AppColors.audiobook,
-    BookFormat.eBook: AppColors.ebook,
-    BookFormat.paperback: AppColors.paperback,
-    BookFormat.hardcover: AppColors.hardcover,
-  };
-
+class const FormatBreakdownCard({
+  required final List<LibraryBook> books,
+  required final DateTime? periodCutoff,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cutoff = periodCutoff;
     final booksInPeriod = books
-        .where((book) =>
-            cutoff == null ||
-            book.progressHistory.any((event) => event.end.isAfter(cutoff)))
+        .where(
+          (book) =>
+              cutoff == null ||
+              book.progressHistory.any((event) => event.end.isAfter(cutoff)),
+        )
         .toList();
 
     return AppCard(
@@ -60,13 +54,13 @@ class FormatBreakdownCard extends StatelessWidget {
   }
 
   Widget _emptyState() {
-    return const Padding(
-      padding: EdgeInsets.all(20),
+    return Padding(
+      padding: const EdgeInsets.all(20),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(CupertinoIcons.book, size: 40, color: AppColors.shimmer),
-          SizedBox(height: AppSpacing.sm),
+          const Icon(Icons.menu_book, size: 40, color: AppColors.shimmer),
+          const SizedBox(height: AppSpacing.sm),
           Text('No books in this period', style: AppTextStyles.bodySecondary),
         ],
       ),
@@ -81,9 +75,7 @@ class FormatBreakdownCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Row(
         children: [
-          Expanded(
-            child: SizedBox(height: 150, child: _pieChart(data)),
-          ),
+          Expanded(child: SizedBox(height: 150, child: _pieChart(data))),
           _legend(data),
         ],
       ),
@@ -125,14 +117,10 @@ class FormatBreakdownCard extends StatelessWidget {
         sections: data.entries.mapL((entry) {
           final percentage = total > 0 ? (entry.value / total * 100) : 0.0;
           return PieChartSectionData(
-            color: formatColors[entry.key] ?? AppColors.shimmer,
+            color: entry.key.color,
             value: entry.value,
             title: '${percentage.round()}%',
-            titleStyle: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: CupertinoColors.white,
-            ),
+            titleStyle: EText.label.small.white.copyWith(fontSize: 11),
             radius: 45,
           );
         }),
@@ -150,6 +138,8 @@ class FormatBreakdownCard extends StatelessWidget {
 
   Widget _legendItem(BookFormat format, Map<BookFormat, double> data) {
     final formatValue = data[format] ?? 0;
+    final total = data.values.sum;
+    final share = total > 0 ? (formatValue / total * 100) : 0.0;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
@@ -159,13 +149,13 @@ class FormatBreakdownCard extends StatelessWidget {
             width: 12,
             height: 12,
             decoration: BoxDecoration(
-              color: formatColors[format] ?? AppColors.shimmer,
+              color: format.color,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
           Text(
-            '${format.nameAsCapitalizedWords} (${formatValue.round()}%)',
+            '${format.nameAsCapitalizedWords} (${share.round()}%)',
             style: AppTextStyles.caption,
           ),
         ],

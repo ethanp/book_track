@@ -1,25 +1,17 @@
 import 'dart:math' show max;
+
 import 'package:ethan_utils/ethan_utils.dart';
 
 import 'package:book_track/data_model.dart';
 
 /// Data class for reading activity statistics.
-class ReadingActivityData {
-  const ReadingActivityData({
-    required this.activityByDay,
-    required this.currentStreak,
-    required this.longestStreak,
-  });
-
-  final Map<DateTime, int> activityByDay;
-  final int currentStreak;
-  final int longestStreak;
-
+class const ReadingActivityData({
+  required final Map<DateTime, int> activityByDay,
+  required final int currentStreak,
+  required final int longestStreak,
+}) {
   /// Calculate reading activity based on progress percentage made per day.
-  factory ReadingActivityData.fromProgress(
-    List<LibraryBook> books, {
-    DateTime? periodCutoff,
-  }) {
+  factory fromProgress(List<LibraryBook> books, {DateTime? periodCutoff}) {
     final activityByDay = <DateTime, int>{};
     final cutoffDate = periodCutoff.map((d) => d.startOfDay);
 
@@ -50,7 +42,8 @@ class ReadingActivityData {
   }
 
   static (int current, int longest) _calculateStreaks(
-      List<DateTime> activeDays) {
+    List<DateTime> activeDays,
+  ) {
     if (activeDays.isEmpty) return (0, 0);
 
     final sorted = activeDays.toList()..sort();

@@ -1,33 +1,24 @@
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-class TextAndButton extends StatelessWidget {
-  const TextAndButton({
-    required this.title,
-    required this.buttonText,
-    required this.onActivated,
-  });
-
-  final String title;
-  final String buttonText;
-  final void Function() onActivated;
-
+class const TextAndButton({
+  required final String title,
+  required final String buttonText,
+  required final void Function() onActivated,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 30, top: 20),
-      child: RichText(
-        text: TextSpan(
+      child: Text.rich(
+        TextSpan(
           text: title,
-          style: const TextStyle(color: Colors.black, fontSize: 16),
+          style: EText.body.medium.secondary,
           children: [
             TextSpan(
               text: buttonText,
-              style: TextStyle(
-                color: Colors.blue[900],
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: EText.body.medium.semibold.accent,
               recognizer: TapGestureRecognizer()..onTap = onActivated,
             ),
           ],

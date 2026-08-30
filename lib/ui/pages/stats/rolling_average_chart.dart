@@ -3,15 +3,13 @@ import 'package:book_track/helpers.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/reading_pace.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class RollingAverageChart extends StatelessWidget {
-  const RollingAverageChart({required this.books, this.periodCutoff});
-
-  final List<LibraryBook> books;
-  final DateTime? periodCutoff;
-
+class const RollingAverageChart({
+  required final List<LibraryBook> books,
+  final DateTime? periodCutoff,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final series = ReadingPaceSeries.fromProgressDeltas(
@@ -34,14 +32,16 @@ class RollingAverageChart extends StatelessWidget {
   }
 
   Widget _emptyState() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(CupertinoIcons.graph_square, size: 40, color: AppColors.shimmer),
-          SizedBox(height: AppSpacing.sm),
-          Text('Start reading to see your pace!',
-              style: AppTextStyles.bodySecondary),
+          const Icon(Icons.show_chart, size: 40, color: AppColors.shimmer),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Start reading to see your pace!',
+            style: AppTextStyles.bodySecondary,
+          ),
         ],
       ),
     );
@@ -49,10 +49,12 @@ class RollingAverageChart extends StatelessWidget {
 
   Widget _lineChart(ReadingPaceSeries series) {
     final spots = series.points
-        .map((point) => FlSpot(
-              point.day.millisecondsSinceEpoch.toDouble(),
-              point.percentPerDay,
-            ))
+        .map(
+          (point) => FlSpot(
+            point.day.millisecondsSinceEpoch.toDouble(),
+            point.percentPerDay,
+          ),
+        )
         .toList();
     final minX = spots.first.x;
     final maxX = spots.last.x;
@@ -60,8 +62,8 @@ class RollingAverageChart extends StatelessWidget {
     final axisInterval = spanDays <= 14
         ? const Duration(days: 2).inMilliseconds.toDouble()
         : spanDays <= 60
-            ? const Duration(days: 7).inMilliseconds.toDouble()
-            : const Duration(days: 30).inMilliseconds.toDouble();
+        ? const Duration(days: 7).inMilliseconds.toDouble()
+        : const Duration(days: 30).inMilliseconds.toDouble();
     final yInterval = _niceAxisInterval(series.maxPace);
 
     return LineChart(
@@ -99,10 +101,12 @@ class RollingAverageChart extends StatelessWidget {
               ),
             ),
           ),
-          rightTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -156,7 +160,7 @@ class RollingAverageChart extends StatelessWidget {
               return LineTooltipItem(
                 '$dateStr\n${_formatDailyPercent(spot.y)}/day',
                 const TextStyle(
-                  color: CupertinoColors.white,
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -187,7 +191,7 @@ class RollingAverageChart extends StatelessWidget {
       padding: const EdgeInsets.only(top: 8),
       child: Text(
         'Reading pace: ${_formatDailyPercent(series.currentPace)}/day',
-        style: const TextStyle(fontWeight: FontWeight.w600),
+        style: AppTextStyles.h5,
       ),
     );
   }

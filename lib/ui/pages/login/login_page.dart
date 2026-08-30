@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:book_track/main.dart';
 import 'package:book_track/services/supabase_auth_service.dart';
-import 'package:book_track/ui/common/app_bars.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'login_form.dart';
@@ -14,14 +14,12 @@ import 'text_and_button.dart';
 
 const _log = ELogger('LoginPage');
 
-class LoginPage extends StatefulWidget {
-  const LoginPage();
-
+class const LoginPage() extends StatefulWidget {
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState() extends State<LoginPage> {
   final formKey = GlobalKey<FormState>();
 
   final LoginFormControllers loginFormC = LoginFormControllers();
@@ -60,11 +58,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: AppNavigationBar(
-        middle: Text(signUpText()),
-      ),
-      child: SafeArea(
+    return EScaffoldShell(
+      contentMaxWidth: double.infinity,
+      appBar: EAppHeader(title: signUpText()),
+      body: SafeArea(
         child: Form(
           key: formKey,
           autovalidateMode: AutovalidateMode.always,
@@ -75,15 +72,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
             children: [
               const SizedBox(height: AppSpacing.xxl),
-              Center(
-                child: Text(
-                  'Book Track',
-                  style: AppTextStyles.h1.copyWith(
-                    color: AppColors.burgundy,
-                    fontSize: 32,
-                  ),
-                ),
-              ),
+              Center(child: Text('Book Track', style: AppTextStyles.h1)),
               const SizedBox(height: AppSpacing.xs),
               Center(
                 child: Text(
@@ -111,10 +100,9 @@ class _LoginPageState extends State<LoginPage> {
       padding: const EdgeInsets.only(left: AppSpacing.xl, top: AppSpacing.sm),
       child: Text(
         _authError!,
-        style: const TextStyle(
+        style: AppTextStyles.caption.copyWith(
           color: AppColors.destructive,
           fontWeight: FontWeight.w600,
-          fontSize: 13,
         ),
       ),
     );
@@ -123,19 +111,15 @@ class _LoginPageState extends State<LoginPage> {
   Widget _signInButton() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-      child: CupertinoButton(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(AppRadii.md),
+      child: FilledButton(
         onPressed: _processingSignIn ? null : _doSignIn,
         child: _processingSignIn
-            ? const CupertinoActivityIndicator(color: CupertinoColors.white)
-            : Text(
-                signUpText(),
-                style: const TextStyle(
-                  color: CupertinoColors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Text(signUpText()),
       ),
     );
   }

@@ -3,22 +3,15 @@ import 'package:ethan_utils/ethan_utils.dart';
 
 /// Represents a specific format (edition) of a book in the user's library.
 /// A LibraryBook can have multiple formats (e.g., hardcover + audiobook).
-class LibraryBookFormat {
-  const LibraryBookFormat({
-    required this.supaId,
-    required this.libraryBookId,
-    required this.format,
-    this.length,
-  });
-
-  final int supaId;
-  final int libraryBookId;
-  final BookFormat format;
+class const LibraryBookFormat({
+  required final int supaId,
+  required final int libraryBookId,
+  required final BookFormat format,
 
   /// Length in pages (physical/ebook) or minutes (audiobook).
   /// Null if user hasn't set it yet.
-  final int? length;
-
+  final int? length,
+}) {
   bool get isAudiobook => format == BookFormat.audiobook;
 
   bool get hasLength => length != null && length! > 0;

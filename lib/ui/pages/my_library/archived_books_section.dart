@@ -4,16 +4,13 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/my_library/book_tile.dart';
 import 'package:flutter/cupertino.dart';
 
-class ArchivedBooksSection extends StatefulWidget {
-  const ArchivedBooksSection({required this.books});
-
-  final List<LibraryBook> books;
-
+class const ArchivedBooksSection({required final List<LibraryBook> books})
+    extends StatefulWidget {
   @override
   State<ArchivedBooksSection> createState() => _ArchivedBooksSectionState();
 }
 
-class _ArchivedBooksSectionState extends State<ArchivedBooksSection> {
+class _ArchivedBooksSectionState() extends State<ArchivedBooksSection> {
   bool _expanded = false;
   final _searchController = TextEditingController();
   String _query = '';
@@ -90,7 +87,7 @@ class _ArchivedBooksSectionState extends State<ArchivedBooksSection> {
       padding: const EdgeInsets.all(12),
       child: Text(
         'Archived ($count)',
-        style: AppTextStyles.h2.copyWith(color: AppColors.burgundy),
+        style: AppTextStyles.h2.copyWith(color: AppColors.textSecondary),
       ),
     );
   }

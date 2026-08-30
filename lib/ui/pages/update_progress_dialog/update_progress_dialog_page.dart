@@ -3,24 +3,20 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/data_model/library_book_format.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_progress_service.dart';
-import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/length_input.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'update_format_selector.dart';
 
 const _log = ELogger('UpdateProgressDialogPage');
 
-class UpdateProgressDialogPage extends ConsumerStatefulWidget {
-  const UpdateProgressDialogPage({
-    required this.book,
-    this.eventToUpdate,
-  });
-
-  final LibraryBook book;
-  final ProgressEvent? eventToUpdate;
-
+class const UpdateProgressDialogPage({
+  required final LibraryBook book,
+  final ProgressEvent? eventToUpdate,
+}) extends ConsumerStatefulWidget {
   LibraryBookFormat? get _initialFormat {
     if (eventToUpdate != null) {
       return book.formatById(eventToUpdate!.formatId);
@@ -44,11 +40,8 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
   @override
   ConsumerState createState() => _UpdateProgressDialogState();
 
-  static Future<bool> show(
-    WidgetRef ref,
-    LibraryBook book,
-  ) async {
-    final bool? updateConfirmed = await showCupertinoDialog(
+  static Future<bool> show(WidgetRef ref, LibraryBook book) async {
+    final bool? updateConfirmed = await showDialog<bool>(
       context: ref.context,
       builder: (context) => UpdateProgressDialogPage(book: book),
     );
@@ -61,7 +54,7 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
     LibraryBook libraryBook,
     ProgressEvent progressEvent,
   ) async {
-    final bool? updateConfirmed = await showCupertinoDialog(
+    final bool? updateConfirmed = await showDialog<bool>(
       context: ref.context,
       builder: (context) => UpdateProgressDialogPage(
         book: libraryBook,
@@ -72,15 +65,16 @@ class UpdateProgressDialogPage extends ConsumerStatefulWidget {
   }
 }
 
-class _UpdateProgressDialogState
+class _UpdateProgressDialogState()
     extends ConsumerState<UpdateProgressDialogPage> {
   late LibraryBookFormat? _selectedFormat = widget._initialFormat;
   late ProgressEventFormat _selectedProgressEventFormat =
       widget.initialProgressFormat;
   late DateTime _selectedUpdateTimestamp = widget.initialTimestamp;
 
-  late final _FieldControllers _fieldControllers =
-      _FieldControllers(widget.eventToUpdate);
+  late final _FieldControllers _fieldControllers = _FieldControllers(
+    widget.eventToUpdate,
+  );
 
   // Track the last format to detect switches
   LibraryBookFormat? _previousFormat;
@@ -104,32 +98,36 @@ class _UpdateProgressDialogState
   Widget build(BuildContext context) {
     // Ensure we have at least one format
     if (widget.book.formats.isEmpty) {
-      return CupertinoAlertDialog(
-        title: Text('Error'),
-        content: Text('This book has no formats. Please add a format first.'),
+      return AlertDialog(
+        title: const Text('Error'),
+        content: const Text(
+          'This book has no formats. Please add a format first.',
+        ),
         actions: [
-          CupertinoDialogAction(
+          TextButton(
             onPressed: () => context.pop(false),
-            child: Text('OK'),
+            child: const Text('OK'),
           ),
         ],
       );
     }
 
-    return CupertinoAlertDialog(
-      title: Text('Update Progress'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (_hasMultipleFormats) ...[
-            _formatPicker(),
-            if (_showContinueFromHint) _continueFromHint(),
+    return AlertDialog(
+      title: const Text('Update Progress'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_hasMultipleFormats) ...[
+              _formatPicker(),
+              if (_showContinueFromHint) _continueFromHint(),
+            ],
+            progressAmountForm(),
+            updateFormatSelector(),
+            const SizedBox(height: 15),
+            endTimePicker(),
           ],
-          progressAmountForm(),
-          updateFormatSelector(),
-          SizedBox(height: 15),
-          endTimePicker(),
-        ],
+        ),
       ),
       actions: submitAndCancelButtons(),
     );
@@ -150,38 +148,31 @@ class _UpdateProgressDialogState
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
         children: [
-          Text('Format:', style: TextStyle(fontSize: 12)),
-          SizedBox(height: 4),
-          CupertinoSlidingSegmentedControl<int>(
-            groupValue: currentFormatId,
-            children: {
+          Text('Format:', style: EText.label.small),
+          const SizedBox(height: 4),
+          SegmentedButton<int>(
+            showSelectedIcon: false,
+            selected: {currentFormatId},
+            segments: [
               for (final format in widget.book.formats)
-                format.supaId: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Text(
-                    format.format.name,
-                    style: TextStyle(fontSize: 12),
-                  ),
+                ButtonSegment(
+                  value: format.supaId,
+                  label: Text(format.format.name),
                 ),
-            },
-            onValueChanged: (formatId) {
-              if (formatId == null) return;
-              final newFormat = widget.book.formatById(formatId);
+            ],
+            onSelectionChanged: (selection) {
+              final newFormat = widget.book.formatById(selection.first);
               if (newFormat == null) {
-                _log.error('Format not found for ID: $formatId');
+                _log.error('Format not found for ID: ${selection.first}');
                 return;
               }
 
               setState(() {
                 _previousFormat = _selectedFormat;
                 _selectedFormat = newFormat;
-
-                // Update progress format based on new format
                 _selectedProgressEventFormat = newFormat.isAudiobook
                     ? ProgressEventFormat.minutes
                     : ProgressEventFormat.pageNum;
-
-                // Prefill with suggested position
                 _prefillSuggestedPosition(newFormat);
               });
             },
@@ -222,11 +213,7 @@ class _UpdateProgressDialogState
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         'You were at ${percent.toStringAsFixed(0)}% (~$positionStr$unit)',
-        style: TextStyle(
-          fontSize: 11,
-          color: CupertinoColors.systemGrey,
-          fontStyle: FontStyle.italic,
-        ),
+        style: EText.caption.copyWith(fontStyle: FontStyle.italic),
       ),
     );
   }
@@ -240,14 +227,12 @@ class _UpdateProgressDialogState
             ? 36
             : 28,
         height: 26,
-        child: CupertinoTextField(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            border: Border.all(color: AppColors.divider, width: 1),
-            borderRadius: BorderRadius.circular(5),
+        child: TextField(
+          decoration: const InputDecoration(
+            isDense: true,
+            contentPadding: EdgeInsets.fromLTRB(4, 5, 4, 5),
           ),
-          padding: EdgeInsets.only(top: 5, left: 4),
-          style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+          style: const TextStyle(fontSize: 14),
           autocorrect: false,
           enableSuggestions: false,
           autofocus: true,
@@ -262,24 +247,25 @@ class _UpdateProgressDialogState
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: switch (_selectedProgressEventFormat) {
-            ProgressEventFormat.minutes => [
-                inputField(ctrl.hoursController, ctrl.hoursFocus),
-                Text(':'),
-                inputField(ctrl.minutesController, ctrl.minutesFocus),
-                Text(' hh:mm'),
-              ],
-            ProgressEventFormat.pageNum => [
-                Text('Page number:'),
-                SizedBox(width: 6),
-                inputField(ctrl.pagesController, ctrl.pagesFocus),
-              ],
-            ProgressEventFormat.percent => [
-                inputField(ctrl.percentController, ctrl.percentFocus),
-                Text(' %'),
-              ],
-          }),
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: switch (_selectedProgressEventFormat) {
+          ProgressEventFormat.minutes => [
+            inputField(ctrl.hoursController, ctrl.hoursFocus),
+            Text(':'),
+            inputField(ctrl.minutesController, ctrl.minutesFocus),
+            Text(' hh:mm'),
+          ],
+          ProgressEventFormat.pageNum => [
+            Text('Page number:'),
+            SizedBox(width: 6),
+            inputField(ctrl.pagesController, ctrl.pagesFocus),
+          ],
+          ProgressEventFormat.percent => [
+            inputField(ctrl.percentController, ctrl.percentFocus),
+            Text(' %'),
+          ],
+        },
+      ),
     );
   }
 
@@ -297,29 +283,34 @@ class _UpdateProgressDialogState
   //  Or I'm sure there are countless alternatives.
   Widget endTimePicker() {
     final dateTimeNow = DateTime.now();
-    return Column(children: [
-      Text('Set progress update\'s timestamp:'),
-      Transform.scale(
-        // Flutter doesn't allow direct styling of CupertinoDatePicker text,
-        // but you can just scale the whole widget.
-        scale: 1,
-        child: SizedBox(
-          height: 110,
-          child: CupertinoDatePicker(
-            mode: CupertinoDatePickerMode.dateAndTime,
-            minimumDate: dateTimeNow.copyWith(year: dateTimeNow.year - 20),
-            maximumDate: dateTimeNow.shiftedByDays(12),
-            initialDateTime: widget.eventToUpdate?.dateTime ?? dateTimeNow,
-            onDateTimeChanged: (t) =>
-                setState(() => _selectedUpdateTimestamp = t),
+    return Column(
+      children: [
+        Text('Set progress update\'s timestamp:'),
+        Transform.scale(
+          // Flutter doesn't allow direct styling of CupertinoDatePicker text,
+          // but you can just scale the whole widget.
+          scale: 1,
+          child: SizedBox(
+            height: 110,
+            child: CupertinoDatePicker(
+              mode: CupertinoDatePickerMode.dateAndTime,
+              minimumDate: dateTimeNow.copyWith(year: dateTimeNow.year - 20),
+              maximumDate: dateTimeNow.shiftedByDays(12),
+              initialDateTime: widget.eventToUpdate?.dateTime ?? dateTimeNow,
+              onDateTimeChanged: (t) =>
+                  setState(() => _selectedUpdateTimestamp = t),
+            ),
           ),
         ),
-      ),
-    ]);
+      ],
+    );
   }
 
   List<Widget> submitAndCancelButtons() => _fieldControllers.dialogActions(
-      context, _selectedProgressEventFormat, _submit);
+    context,
+    _selectedProgressEventFormat,
+    _submit,
+  );
 
   /// Pop [true] iff UI needs to reload to see updated data.
   Future<void> _submit() async {
@@ -335,7 +326,8 @@ class _UpdateProgressDialogState
           ? ProgressEventFormat.minutes
           : ProgressEventFormat.pageNum;
       _log.log(
-          'Format was null, using first format: ${_selectedFormat!.format.name}');
+        'Format was null, using first format: ${_selectedFormat!.format.name}',
+      );
     }
 
     final int? newLen = _fieldControllers.value(_selectedProgressEventFormat);
@@ -346,7 +338,8 @@ class _UpdateProgressDialogState
     }
 
     _log.log(
-        'Submitting progress: formatId=${_selectedFormat!.supaId}, value=$newLen, format=${_selectedProgressEventFormat.name}');
+      'Submitting progress: formatId=${_selectedFormat!.supaId}, value=$newLen, format=${_selectedProgressEventFormat.name}',
+    );
     if (widget.eventToUpdate != null) {
       _log.log('updating progress to $newLen');
       await SupabaseProgressService.updateProgressEvent(
@@ -371,8 +364,8 @@ class _UpdateProgressDialogState
 
 /// Manages LengthInputController instances for each ProgressEventFormat mode.
 /// Uses shared LengthInputController for consistent behavior across the app.
-class _FieldControllers {
-  _FieldControllers(ProgressEvent? eventToUpdate) {
+class _FieldControllers(ProgressEvent? eventToUpdate) {
+  this {
     if (eventToUpdate == null) return;
     final progress = eventToUpdate.progress;
     switch (eventToUpdate.format) {
@@ -401,9 +394,11 @@ class _FieldControllers {
 
   int? value(ProgressEventFormat format) => forFormat(format).value;
 
-  List<Widget> dialogActions(BuildContext context, ProgressEventFormat format,
-          VoidCallback onLengthSubmitted) =>
-      forFormat(format).dialogActions(context, onLengthSubmitted);
+  List<Widget> dialogActions(
+    BuildContext context,
+    ProgressEventFormat format,
+    VoidCallback onLengthSubmitted,
+  ) => forFormat(format).dialogActions(context, onLengthSubmitted);
 
   void dispose() {
     _minutes.dispose();

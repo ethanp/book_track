@@ -1,31 +1,31 @@
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 /// Input mode for length/progress entry.
-enum LengthInputMode { audiobook, pages, percent }
+enum LengthInputMode() {
+  audiobook,
+  pages,
+  percent,
+}
 
 /// Controller for length/duration input that handles audiobook (hours:minutes),
 /// page-based, and percent input. Manages text controllers, focus nodes, and parsing.
-class LengthInputController {
-  LengthInputController({
-    required this.mode,
-    int? initialValue,
-  }) {
+class LengthInputController({
+  required final LengthInputMode mode,
+  int? initialValue,
+}) {
+  this {
     if (initialValue != null && initialValue > 0) {
       setMinutes(initialValue);
     }
   }
 
   /// Convenience constructor for simple audiobook/pages forms.
-  LengthInputController.fromAudiobook({
-    required bool isAudiobook,
-    int? initialValue,
-  }) : this(
-          mode: isAudiobook ? LengthInputMode.audiobook : LengthInputMode.pages,
-          initialValue: initialValue,
-        );
-
-  final LengthInputMode mode;
+  new fromAudiobook({required bool isAudiobook, int? initialValue})
+    : this(
+        mode: isAudiobook ? LengthInputMode.audiobook : LengthInputMode.pages,
+        initialValue: initialValue,
+      );
 
   bool get isAudiobook => mode == LengthInputMode.audiobook;
   bool get isPages => mode == LengthInputMode.pages;
@@ -110,17 +110,18 @@ class LengthInputController {
 
   /// Standard Cancel/Save dialog actions for length input forms.
   List<Widget> dialogActions(
-          BuildContext context, VoidCallback onLengthSubmitted) =>
-      [
-        CupertinoDialogAction(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        CupertinoDialogAction(
-          onPressed: () => fillOrSubmit(onLengthSubmitted),
-          child: Text(saveLabel),
-        ),
-      ];
+    BuildContext context,
+    VoidCallback onLengthSubmitted,
+  ) => [
+    TextButton(
+      onPressed: () => Navigator.pop(context),
+      child: const Text('Cancel'),
+    ),
+    TextButton(
+      onPressed: () => fillOrSubmit(onLengthSubmitted),
+      child: Text(saveLabel),
+    ),
+  ];
 
   void dispose() {
     _hoursController.dispose();
@@ -136,21 +137,13 @@ class LengthInputController {
 
 /// Widget that renders length/duration input based on controller's mode.
 /// Shows hours:minutes for audiobooks, pages field, or percent field.
-class LengthInput extends StatelessWidget {
-  const LengthInput({
-    required this.controller,
-    this.autofocus = false,
-    this.showLabel = true,
-    this.fieldWidth,
-    this.onChanged,
-  });
-
-  final LengthInputController controller;
-  final bool autofocus;
-  final bool showLabel;
-  final double? fieldWidth;
-  final VoidCallback? onChanged;
-
+class const LengthInput({
+  required final LengthInputController controller,
+  final bool autofocus = false,
+  final bool showLabel = true,
+  final double? fieldWidth,
+  final VoidCallback? onChanged,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (controller.mode) {
@@ -166,10 +159,10 @@ class LengthInput extends StatelessWidget {
       children: [
         SizedBox(
           width: fieldWidth ?? 50,
-          child: CupertinoTextField(
+          child: TextField(
             controller: controller.hoursController,
             focusNode: controller.hoursFocus,
-            placeholder: 'hrs',
+            decoration: const InputDecoration(hintText: 'hrs'),
             keyboardType: TextInputType.number,
             autofocus: autofocus,
             textAlign: TextAlign.center,
@@ -182,10 +175,10 @@ class LengthInput extends StatelessWidget {
         ),
         SizedBox(
           width: fieldWidth ?? 50,
-          child: CupertinoTextField(
+          child: TextField(
             controller: controller.minutesController,
             focusNode: controller.minutesFocus,
-            placeholder: 'min',
+            decoration: const InputDecoration(hintText: 'min'),
             keyboardType: TextInputType.number,
             textAlign: TextAlign.center,
             onChanged: (_) => onChanged?.call(),
@@ -201,20 +194,17 @@ class LengthInput extends StatelessWidget {
       children: [
         SizedBox(
           width: fieldWidth ?? 80,
-          child: CupertinoTextField(
+          child: TextField(
             controller: controller.pagesController,
             focusNode: controller.pagesFocus,
-            placeholder: 'Pages',
+            decoration: const InputDecoration(hintText: 'Pages'),
             keyboardType: TextInputType.number,
             autofocus: autofocus,
             textAlign: TextAlign.center,
             onChanged: (_) => onChanged?.call(),
           ),
         ),
-        if (showLabel) ...[
-          const SizedBox(width: 8),
-          const Text('pages'),
-        ],
+        if (showLabel) ...[const SizedBox(width: 8), const Text('pages')],
       ],
     );
   }
@@ -225,20 +215,17 @@ class LengthInput extends StatelessWidget {
       children: [
         SizedBox(
           width: fieldWidth ?? 60,
-          child: CupertinoTextField(
+          child: TextField(
             controller: controller.percentController,
             focusNode: controller.percentFocus,
-            placeholder: '%',
+            decoration: const InputDecoration(hintText: '%'),
             keyboardType: TextInputType.number,
             autofocus: autofocus,
             textAlign: TextAlign.center,
             onChanged: (_) => onChanged?.call(),
           ),
         ),
-        if (showLabel) ...[
-          const SizedBox(width: 8),
-          const Text('%'),
-        ],
+        if (showLabel) ...[const SizedBox(width: 8), const Text('%')],
       ],
     );
   }

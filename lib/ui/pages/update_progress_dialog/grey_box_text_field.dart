@@ -2,19 +2,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class GreyBoxTextField extends ConsumerStatefulWidget {
-  const GreyBoxTextField({required this.textChanged, this.initialValue});
-
-  final void Function(String) textChanged;
-  final String? initialValue;
-
+class const GreyBoxTextField({
+  required final void Function(String) textChanged,
+  final String? initialValue,
+}) extends ConsumerStatefulWidget {
   @override
   ConsumerState createState() => _GreyBoxTextFieldState();
 }
 
-class _GreyBoxTextFieldState extends ConsumerState<GreyBoxTextField> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.initialValue);
+class _GreyBoxTextFieldState() extends ConsumerState<GreyBoxTextField> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialValue,
+  );
   final FocusNode _focusNode = FocusNode();
 
   @override

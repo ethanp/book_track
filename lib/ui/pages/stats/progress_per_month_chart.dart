@@ -8,38 +8,27 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
-class ProgressPerMonthChart extends StatelessWidget {
-  ProgressPerMonthChart({
-    required this.books,
-    required this.period,
-  })  : totalByPeriod = _progressByPeriod(
-          books,
-          period,
-          'Total',
-          AppColors.teal,
-        ),
-        audiobookByPeriod = _progressByPeriod(
-          books.whereL((b) => b.isAudiobook),
-          period,
-          'Audio',
-          AppColors.primary,
-        ),
-        visualByPeriod = _progressByPeriod(
-          books.whereL((b) => !b.isAudiobook),
-          period,
-          'Visual',
-          AppColors.burgundy,
-        );
-
-  final List<LibraryBook> books;
-  final StatsPeriod period;
-
-  final ProgressLine totalByPeriod;
-  final ProgressLine audiobookByPeriod;
-  final ProgressLine visualByPeriod;
-
-  List<ProgressLine> get lines =>
-      [totalByPeriod, audiobookByPeriod, visualByPeriod];
+class const ProgressPerMonthChart({
+  required final List<LibraryBook> books,
+  required final StatsPeriod period,
+}) extends StatelessWidget {
+  _ProgressLines _progressLines() {
+    return _ProgressLines(
+      total: _progressByPeriod(books, period, 'Total', AppColors.teal),
+      audiobook: _progressByPeriod(
+        books.whereL((book) => book.isAudiobook),
+        period,
+        'Audio',
+        AppColors.primary,
+      ),
+      visual: _progressByPeriod(
+        books.whereL((book) => !book.isAudiobook),
+        period,
+        'Visual',
+        AppColors.burgundy,
+      ),
+    );
+  }
 
   static ProgressLine _progressByPeriod(
     List<LibraryBook> books,
@@ -69,10 +58,10 @@ class ProgressPerMonthChart extends StatelessWidget {
       }
     }
 
-    final sortedPoints = (byBucket.entries.toList()
-          ..sort((a, b) => a.key.compareTo(b.key)))
-        .map((entry) => ProgressDataPoint(entry.key, entry.value))
-        .toList();
+    final sortedPoints =
+        (byBucket.entries.toList()..sort((a, b) => a.key.compareTo(b.key)))
+            .map((entry) => ProgressDataPoint(entry.key, entry.value))
+            .toList();
     return ProgressLine(data: sortedPoints, name: name, color: color);
   }
 
@@ -90,34 +79,37 @@ class ProgressPerMonthChart extends StatelessWidget {
         ProgressAggregation.monthly => DateTime(date.year, date.month + 1),
       };
 
-  static const noAxisTitles =
-      AxisTitles(sideTitles: SideTitles(showTitles: false));
+  static const noAxisTitles = AxisTitles(
+    sideTitles: SideTitles(showTitles: false),
+  );
   static const double horizontalInterval = 100;
 
   @override
   Widget build(BuildContext context) {
-    if (totalByPeriod.data.isEmpty) {
+    final progressLines = _progressLines();
+    if (progressLines.total.data.isEmpty) {
       return const Center(child: Text('No reading data in this period'));
     }
     return Column(
       children: [
-        _legendRow(),
-        Expanded(child: lineChart()),
+        _legendRow(progressLines),
+        Expanded(child: _lineChart(progressLines)),
       ],
     );
   }
 
-  Widget lineChart() {
+  Widget _lineChart(_ProgressLines progressLines) {
     final timespan = () {
-      final pointTimes =
-          lines.expand((line) => line.data).mapL((point) => point.date);
+      final pointTimes = progressLines.lines
+          .expand((line) => line.data)
+          .mapL((point) => point.date);
       return TimeSpan(beginning: pointTimes.min, end: pointTimes.max);
     }();
 
     return LineChart(
       LineChartData(
         minY: 0,
-        maxY: lines
+        maxY: progressLines.lines
             .expand((line) => line.data)
             .mapL((point) => point.progress)
             .max,
@@ -128,20 +120,25 @@ class ProgressPerMonthChart extends StatelessWidget {
           drawVerticalLine: false,
         ),
         titlesData: _labelAxes(timespan),
-        lineTouchData: _touchData,
-        lineBarsData: lines.mapL(_buildLine),
+        lineTouchData: _touchData(progressLines),
+        lineBarsData: progressLines.lines.mapL(
+          (line) => _buildLine(line, progressLines),
+        ),
         borderData: FlBorderData(
-            show: true,
-            border: () {
-              const borderSide =
-                  BorderSide(color: AppColors.textSecondary, width: 1.5);
-              return const Border(left: borderSide, bottom: borderSide);
-            }()),
+          show: true,
+          border: () {
+            const borderSide = BorderSide(
+              color: AppColors.textSecondary,
+              width: 1.5,
+            );
+            return const Border(left: borderSide, bottom: borderSide);
+          }(),
+        ),
       ),
     );
   }
 
-  LineChartBarData _buildLine(ProgressLine line) {
+  LineChartBarData _buildLine(ProgressLine line, _ProgressLines progressLines) {
     final agg = period.chartAggregation;
     final now = DateTime.now();
     final currentBucket = _bucketStart(now, agg);
@@ -152,52 +149,54 @@ class ProgressPerMonthChart extends StatelessWidget {
         final progress = switch (agg) {
           ProgressAggregation.monthly when isCurrentBucket =>
             _scaleMonthEstimate(point.progress, now),
-          ProgressAggregation.weekly when isCurrentBucket =>
-            _scaleWeekEstimate(point.progress, now),
+          ProgressAggregation.weekly when isCurrentBucket => _scaleWeekEstimate(
+            point.progress,
+            now,
+          ),
           _ => point.progress,
         };
         return FlSpot(point.dateAsMillis, progress);
       }),
       isCurved: agg != ProgressAggregation.daily,
       curveSmoothness: .05,
-      belowBarData:
-          line == totalByPeriod ? _gradientFill() : BarAreaData(show: false),
+      belowBarData: line == progressLines.total
+          ? _gradientFill()
+          : BarAreaData(show: false),
       color: line.color.withValues(alpha: 0.7),
       dotData: const FlDotData(show: false),
     );
   }
 
-  LineTouchData get _touchData => LineTouchData(
-        touchTooltipData: LineTouchTooltipData(
-          getTooltipItems: (spots) {
-            if (spots.isEmpty) return [];
-            final date =
-                DateTime.fromMillisecondsSinceEpoch(spots.first.x.toInt());
-            final dateStr = _tooltipDateString(date);
-            return spots.asMap().entries.map((entry) {
-              final isFirst = entry.key == 0;
-              final spot = entry.value;
-              final line = lines[spot.barIndex];
-              final lineColor = line.color.lerpWith(CupertinoColors.white, 0.5);
-              final prefix = isFirst ? '$dateStr\n' : '';
-              return LineTooltipItem(
-                prefix,
-                const TextStyle(
-                  color: CupertinoColors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
-                ),
-                children: [
-                  TextSpan(
-                    text: '${line.name}: ${spot.y.round()}%',
-                    style: TextStyle(color: lineColor),
-                  ),
-                ],
-              );
-            }).toList();
-          },
-        ),
-      );
+  LineTouchData _touchData(_ProgressLines progressLines) => LineTouchData(
+    touchTooltipData: LineTouchTooltipData(
+      getTooltipItems: (spots) {
+        if (spots.isEmpty) return [];
+        final date = DateTime.fromMillisecondsSinceEpoch(spots.first.x.toInt());
+        final dateStr = _tooltipDateString(date);
+        return spots.asMap().entries.map((entry) {
+          final isFirst = entry.key == 0;
+          final spot = entry.value;
+          final line = progressLines.lines[spot.barIndex];
+          final lineColor = line.color.lerpWith(CupertinoColors.white, 0.5);
+          final prefix = isFirst ? '$dateStr\n' : '';
+          return LineTooltipItem(
+            prefix,
+            const TextStyle(
+              color: CupertinoColors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
+            children: [
+              TextSpan(
+                text: '${line.name}: ${spot.y.round()}%',
+                style: TextStyle(color: lineColor),
+              ),
+            ],
+          );
+        }).toList();
+      },
+    ),
+  );
 
   String _tooltipDateString(DateTime date) {
     return switch (period.chartAggregation) {
@@ -208,13 +207,15 @@ class ProgressPerMonthChart extends StatelessWidget {
     };
   }
 
-  Widget _legendRow() {
+  Widget _legendRow(_ProgressLines progressLines) {
     return Padding(
-      padding:
-          const EdgeInsets.only(right: AppSpacing.sm, bottom: AppSpacing.xs),
+      padding: const EdgeInsets.only(
+        right: AppSpacing.sm,
+        bottom: AppSpacing.xs,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
-        children: lines.mapL(
+        children: progressLines.lines.mapL(
           (line) => Padding(
             padding: const EdgeInsets.only(left: AppSpacing.md),
             child: _legendItem(line.color, line.name),
@@ -254,7 +255,8 @@ class ProgressPerMonthChart extends StatelessWidget {
   FlTitlesData _labelAxes(TimeSpan timespan) {
     return FlTitlesData(
       leftTitles: ProgressPerMonthChart.progressAxisTitles(
-          shiftTitle: const Offset(20, -10)),
+        shiftTitle: const Offset(20, -10),
+      ),
       rightTitles: noAxisTitles,
       bottomTitles: _PeriodAxis(timespan, period).titles(),
       topTitles: noAxisTitles,
@@ -302,42 +304,36 @@ class ProgressPerMonthChart extends StatelessWidget {
 
   static num _monthLength(int month, int year) => month == 2
       ? year % 4 == 0
-          ? 29
-          : 28
+            ? 29
+            : 28
       : {9, 4, 6, 11}.contains(month)
-          ? 30
-          : 31;
+      ? 30
+      : 31;
 }
 
-class ProgressLine {
-  const ProgressLine({
-    required this.data,
-    required this.name,
-    required this.color,
-  });
-
-  final List<ProgressDataPoint> data;
-  final String name;
-  final Color color;
+class _ProgressLines({
+  required final ProgressLine total,
+  required final ProgressLine audiobook,
+  required final ProgressLine visual,
+}) {
+  List<ProgressLine> get lines => [total, audiobook, visual];
 }
 
-class ProgressDataPoint {
-  const ProgressDataPoint(this.date, this.progress);
+class const ProgressLine({
+  required final List<ProgressDataPoint> data,
+  required final String name,
+  required final Color color,
+});
 
+class const ProgressDataPoint(
   /// Start of the aggregation bucket (day, week, or month).
-  final DateTime date;
-
-  final double progress;
-
+  final DateTime date,
+  final double progress,
+) {
   double get dateAsMillis => date.millisecondsSinceEpoch.toDouble();
 }
 
-class _PeriodAxis {
-  const _PeriodAxis(this.timespan, this.period);
-
-  final TimeSpan timespan;
-  final StatsPeriod period;
-
+class const _PeriodAxis(final TimeSpan timespan, final StatsPeriod period) {
   AxisTitles titles() {
     return AxisTitles(
       axisNameWidget: _axisName(),

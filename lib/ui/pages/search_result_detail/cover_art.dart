@@ -4,23 +4,21 @@ import 'package:book_track/services/book_universe_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CoverArt extends ConsumerStatefulWidget {
-  const CoverArt(this.book);
-
-  final OpenLibraryBook book;
-
+class const CoverArt(final OpenLibraryBook book)
+    extends ConsumerStatefulWidget {
   @override
   ConsumerState createState() => _CoverArtState();
 }
 
-class _CoverArtState extends ConsumerState<CoverArt> {
+class _CoverArtState() extends ConsumerState<CoverArt> {
   late final Future<Uint8List?> futureCoverArtMedSize;
 
   @override
   void initState() {
     super.initState();
-    futureCoverArtMedSize =
-        BookUniverseService.downloadMedSizeCover(widget.book);
+    futureCoverArtMedSize = BookUniverseService.downloadMedSizeCover(
+      widget.book,
+    );
   }
 
   @override

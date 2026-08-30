@@ -23,14 +23,12 @@ Future<void> main() async {
   runApp(ProviderScope(child: const TopLevelWidget()));
 }
 
-class TopLevelWidget extends ConsumerStatefulWidget {
-  const TopLevelWidget();
-
+class const TopLevelWidget() extends ConsumerStatefulWidget {
   @override
   ConsumerState<TopLevelWidget> createState() => _TopLevelWidgetState();
 }
 
-class _TopLevelWidgetState extends ConsumerState<TopLevelWidget> {
+class _TopLevelWidgetState() extends ConsumerState<TopLevelWidget> {
   late final StreamSubscription<AuthState> _authStateSubscription;
 
   @override

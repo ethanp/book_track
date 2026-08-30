@@ -1,144 +1,70 @@
-import 'package:flutter/cupertino.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:book_track/data_model.dart';
+import 'package:ethan_ui/ethan_ui.dart';
+import 'package:flutter/material.dart';
 
-class AppColors {
-  static const Color primary = Color(0xFFC8956C);
-  static const Color primaryLight = Color(0xFFE8C9A8);
-  static const Color surface = Color(0xFFFFF9F3);
-  static const Color background = Color(0xFFF5F0EA);
-  static const Color burgundy = Color(0xFF8B3A3A);
-  static const Color burgundyLight = Color(0xFFC27070);
-  static const Color teal = Color(0xFF2A7C76);
-  static const Color tealLight = Color(0xFF7BC4BF);
-  static const Color textPrimary = Color(0xFF2C1810);
-  static const Color textSecondary = Color(0xFF7A6B5D);
-  static const Color destructive = Color(0xFFB84040);
-  static const Color success = Color(0xFF4A8B5C);
-  static const Color successLight = Color(0xFFCDE7D4);
-  static const Color divider = Color(0xFFE5DDD4);
-  static const Color shimmer = Color(0xFFE8E0D6);
+abstract final class AppColors() {
+  static const Color primary = EColors.accent;
+  static const Color primaryLight = EColors.accentSoft;
+  static const Color surface = EColors.surface;
+  static const Color surfaceInset = EColors.surfaceInset;
+  static const Color background = EColors.background;
+  static const Color burgundy = EColors.danger;
+  static const Color burgundyLight = EColors.danger;
+  static const Color teal = EColors.success;
+  static const Color tealLight = EColors.success;
+  static const Color textPrimary = EColors.textPrimary;
+  static const Color textSecondary = EColors.textSecondary;
+  static const Color destructive = EColors.danger;
+  static const Color success = EColors.success;
+  static const Color successLight = EColors.successSoft;
+  static const Color divider = EColors.border;
+  static const Color shimmer = EColors.surfaceRaised;
 
-  static const Color navBarBackground = Color(0xF5F5F0EA);
-  static const Color tabBarActive = Color(0xFFC8956C);
-  static const Color tabBarInactive = Color(0xFF9A8B7D);
+  static const Color progressBarTrack = EColors.surfaceRaised;
 
-  static const Color progressBarTrack = Color(0xFFE8E0D6);
+  static const Color heatmapEmpty = EColors.surfaceInset;
+  static const Color heatmapLight = EColors.accentSoft;
+  static const Color heatmapMedium = EColors.accent;
+  static const Color heatmapDark = EColors.accentGlow;
+  static const Color heatmapFull = Color(0xFFC4C8FF);
 
-  static const Color heatmapEmpty = Color(0xFFEDE7DF);
-  static const Color heatmapLight = Color(0xFFE8C9A8);
-  static const Color heatmapMedium = Color(0xFFC8956C);
-  static const Color heatmapDark = Color(0xFFA86E4A);
-  static const Color heatmapFull = Color(0xFF8B3A3A);
-
-  static const Color audiobook = Color(0xFFC8956C);
-  static const Color ebook = Color(0xFF2A7C76);
-  static const Color paperback = Color(0xFF8B3A3A);
-  static const Color hardcover = Color(0xFF5B7A5E);
+  static const Color audiobook = EColors.warning;
+  static const Color ebook = Color(0xFF5EC8C2);
+  static const Color paperback = EColors.danger;
+  static const Color hardcover = EColors.success;
 }
 
-class AppTextStyles {
-  static TextStyle get h1 => GoogleFonts.merriweather(
-        fontSize: 24,
-        fontWeight: FontWeight.w700,
-        color: AppColors.textPrimary,
-      );
-
-  static TextStyle get h2 => GoogleFonts.merriweather(
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        color: AppColors.textPrimary,
-      );
-
-  static TextStyle get h3 => GoogleFonts.merriweather(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
-      );
-
-  static const TextStyle h4 = TextStyle(
-    fontSize: 17,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
-  );
-
-  static const TextStyle h5 = TextStyle(
-    fontSize: 15,
-    fontWeight: FontWeight.w500,
-    color: AppColors.textPrimary,
-  );
-
-  static const TextStyle body = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textPrimary,
-    letterSpacing: -0.3,
-  );
-
-  static const TextStyle bodySecondary = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textSecondary,
-    letterSpacing: -0.3,
-  );
-
-  static const TextStyle caption = TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textSecondary,
-  );
-
-  static const TextStyle label = TextStyle(
-    fontSize: 13,
-    fontWeight: FontWeight.w500,
-    color: AppColors.textSecondary,
-  );
-
-  static const TextStyle buttonText = TextStyle(
-    fontSize: 15,
-    fontWeight: FontWeight.w600,
-    color: AppColors.primary,
-  );
-
-  static const TextStyle value = TextStyle(
-    fontSize: 14,
-    color: AppColors.textPrimary,
-    fontWeight: FontWeight.w400,
-    letterSpacing: -0.5,
-  );
-
-  static const TextStyle valueButton = TextStyle(
-    fontSize: 14,
-    color: AppColors.primary,
-    fontWeight: FontWeight.w500,
-    letterSpacing: -0.5,
-  );
-
-  static const TextStyle bottomAxisLabel = TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
-  );
-
-  static TextStyle get sideAxisLabel =>
-      bottomAxisLabel.copyWith(fontSize: 16, color: AppColors.textSecondary);
-
-  static TextStyle get sideAxisLabelThin => sideAxisLabel.copyWith(
-        fontWeight: FontWeight.w300,
-        fontSize: 12.5,
-      );
-
-  /// Unified style for vertical (y) axis name labels across all charts.
-  static TextStyle get yAxisName => sideAxisLabel.copyWith(
-        fontWeight: FontWeight.w500,
-        fontSize: 14,
-      );
-
-  static TextStyle get h2Skinny => h2.copyWith(fontWeight: FontWeight.w300);
-
-  static TextStyle get h2Fat => h2.copyWith(fontWeight: FontWeight.w600);
+extension BookFormatColor on BookFormat {
+  Color get color => switch (this) {
+    BookFormat.audiobook => AppColors.audiobook,
+    BookFormat.eBook => AppColors.ebook,
+    BookFormat.paperback => AppColors.paperback,
+    BookFormat.hardcover => AppColors.hardcover,
+  };
 }
 
-class AppSpacing {
+abstract final class AppTextStyles() {
+  static TextStyle get h1 => EText.headline.medium;
+  static TextStyle get h2 => EText.headline.small;
+  static TextStyle get h3 => EText.section;
+  static TextStyle get h4 => EText.label.large;
+  static TextStyle get h5 => EText.label.medium;
+  static TextStyle get body => EText.body.medium;
+  static TextStyle get bodySecondary => EText.body.small.tertiary;
+  static TextStyle get caption => EText.caption;
+  static TextStyle get label => EText.label.small;
+  static TextStyle get buttonText => EText.section.accent;
+  static TextStyle get value => EText.body.small;
+  static TextStyle get valueButton => EText.body.small.accent;
+  static TextStyle get bottomAxisLabel => EText.label.large;
+  static TextStyle get sideAxisLabel => EText.label.medium.secondary;
+  static TextStyle get sideAxisLabelThin => EText.label.small;
+  static TextStyle get yAxisName => EText.label.medium;
+  static TextStyle get h2Skinny => EText.headline.small;
+  static TextStyle get h2Fat => EText.headline.small.semibold;
+}
+
+abstract final class AppSpacing() {
   static const double xs = 4;
   static const double sm = 8;
   static const double md = 12;
@@ -147,50 +73,22 @@ class AppSpacing {
   static const double xxl = 32;
 }
 
-class AppRadii {
-  static const double sm = 6;
-  static const double md = 10;
-  static const double lg = 16;
+abstract final class AppRadii() {
+  static const double sm = 10;
+  static const double md = 14;
+  static const double lg = 18;
 }
 
-class AppShadows {
+abstract final class AppShadows() {
   static const BoxShadow card = BoxShadow(
-    color: Color(0x1A8B7B6B),
-    spreadRadius: 0,
-    blurRadius: 8,
-    offset: Offset(0, 2),
-  );
-
-  static const BoxShadow cardHover = BoxShadow(
-    color: Color(0x268B7B6B),
-    spreadRadius: 1,
-    blurRadius: 12,
-    offset: Offset(0, 4),
+    color: Color(0x47000000),
+    blurRadius: 18,
+    offset: Offset(0, 8),
   );
 
   static const BoxShadow coverArt = BoxShadow(
-    color: Color(0x338B7B6B),
-    spreadRadius: 0,
+    color: Color(0x66000000),
     blurRadius: 6,
     offset: Offset(2, 3),
-  );
-}
-
-class AppGradients {
-  static const Color barEdge = Color(0xFFEADCC8);
-  static const Color barInner = Color(0xFFFAF4EC);
-
-  /// Darkens toward the top edge of the screen.
-  static const LinearGradient topBar = LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [barEdge, barInner],
-  );
-
-  /// Same colors, mirrored — darkens toward the bottom edge of the screen.
-  static const LinearGradient bottomBar = LinearGradient(
-    begin: Alignment.bottomCenter,
-    end: Alignment.topCenter,
-    colors: [barEdge, barInner],
   );
 }

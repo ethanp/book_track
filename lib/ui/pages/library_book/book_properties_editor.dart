@@ -9,11 +9,8 @@ import 'editable_book_property.dart';
 
 const _log = ELogger('BookPropertiesEditor');
 
-class BookPropertiesEditor extends ConsumerWidget {
-  const BookPropertiesEditor(this.libraryBook);
-
-  final LibraryBook libraryBook;
-
+class const BookPropertiesEditor(final LibraryBook libraryBook)
+    extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Re-build() whenever an inner widget (eg. the buttons) invalidate()s the
@@ -25,9 +22,7 @@ class BookPropertiesEditor extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
-        children: [
-          _author(ref),
-        ],
+        children: [_author(ref)],
       ),
     );
   }
@@ -37,10 +32,7 @@ class BookPropertiesEditor extends ConsumerWidget {
       title: 'Author',
       value: libraryBook.book.author ?? 'unknown',
       initialTextFieldValues: [
-        TextFieldValueAndSuffix(
-          libraryBook.book.author ?? 'unknown',
-          null,
-        )
+        TextFieldValueAndSuffix(libraryBook.book.author ?? 'unknown', null),
       ],
       onValuesCommitted: (List<String> text) async {
         _log.log('updating author to ${text[0]}');

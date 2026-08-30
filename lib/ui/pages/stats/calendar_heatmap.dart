@@ -5,24 +5,18 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
-class CalendarHeatmap extends StatefulWidget {
-  const CalendarHeatmap(
-      {required this.activityByDay,
-      required this.books,
-      this.weeksToShow = 26,
-      this.periodCutoff});
-
-  final Map<DateTime, int> activityByDay;
+class const CalendarHeatmap({
+  required final Map<DateTime, int> activityByDay,
 
   /// Books to show details for when a day is selected.
-  final List<LibraryBook> books;
+  required final List<LibraryBook> books,
 
   /// Number of weeks to display (default 26 = 6 months).
-  final int weeksToShow;
+  final int weeksToShow = 26,
 
   /// Only show dates after this cutoff (inclusive).
-  final DateTime? periodCutoff;
-
+  final DateTime? periodCutoff,
+}) extends StatefulWidget {
   static const colors = [
     AppColors.heatmapEmpty,
     AppColors.heatmapLight,
@@ -35,7 +29,7 @@ class CalendarHeatmap extends StatefulWidget {
   State<CalendarHeatmap> createState() => _CalendarHeatmapState();
 }
 
-class _CalendarHeatmapState extends State<CalendarHeatmap> {
+class _CalendarHeatmapState() extends State<CalendarHeatmap> {
   DateTime? selectedDate;
   final _scrollController = ScrollController();
 
@@ -83,10 +77,7 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
       physics: const BouncingScrollPhysics(),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _dayLabels(),
-          ...months,
-        ],
+        children: [_dayLabels(), ...months],
       ),
     );
   }
@@ -94,12 +85,13 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
   Widget _dayLabels() {
     const days = ['', 'M', '', 'W', '', 'F', ''];
     return Column(
-      children: days.mapL((day) => SizedBox(
-            height: 12,
-            width: 20,
-            child:
-                Text(day, style: AppTextStyles.caption.copyWith(fontSize: 9)),
-          )),
+      children: days.mapL(
+        (day) => SizedBox(
+          height: 12,
+          width: 20,
+          child: Text(day, style: AppTextStyles.caption.copyWith(fontSize: 9)),
+        ),
+      ),
     );
   }
 
@@ -132,8 +124,11 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
     }
 
     // Find the first day of the first month to show
-    var currentMonthStart =
-        DateTime(effectiveStartDate.year, effectiveStartDate.month, 1);
+    var currentMonthStart = DateTime(
+      effectiveStartDate.year,
+      effectiveStartDate.month,
+      1,
+    );
     final todayMonthStart = DateTime(today.year, today.month, 1);
 
     while (!currentMonthStart.isAfter(todayMonthStart)) {
@@ -146,8 +141,11 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
       if (currentMonthStart.month == 12) {
         currentMonthStart = DateTime(currentMonthStart.year + 1, 1, 1);
       } else {
-        currentMonthStart =
-            DateTime(currentMonthStart.year, currentMonthStart.month + 1, 1);
+        currentMonthStart = DateTime(
+          currentMonthStart.year,
+          currentMonthStart.month + 1,
+          1,
+        );
       }
     }
 
@@ -155,7 +153,10 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
   }
 
   Widget? _buildMonth(
-      DateTime monthStart, DateTime today, DateTime? cutoffDate) {
+    DateTime monthStart,
+    DateTime today,
+    DateTime? cutoffDate,
+  ) {
     final daysInMonth = DateTime(monthStart.year, monthStart.month + 1, 0).day;
     final firstDayOfMonth = DateTime(monthStart.year, monthStart.month, 1);
     final firstWeekday = firstDayOfMonth.weekday;
@@ -167,10 +168,16 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
     final weekColumns = <Widget>[];
     var currentWeekStart = weekStart;
 
-    while (currentWeekStart
-        .isBefore(DateTime(monthStart.year, monthStart.month + 1, 1))) {
+    while (currentWeekStart.isBefore(
+      DateTime(monthStart.year, monthStart.month + 1, 1),
+    )) {
       final weekColumn = _buildWeekColumn(
-          currentWeekStart, monthStart, daysInMonth, today, cutoffDate);
+        currentWeekStart,
+        monthStart,
+        daysInMonth,
+        today,
+        cutoffDate,
+      );
       if (weekColumn != null) {
         weekColumns.add(weekColumn);
       }
@@ -318,8 +325,7 @@ class _CalendarHeatmapState extends State<CalendarHeatmap> {
           Text(dateStr, style: AppTextStyles.h5),
           const SizedBox(height: AppSpacing.sm),
           if (tiles.isEmpty)
-            const Text('No reading activity',
-                style: AppTextStyles.bodySecondary)
+            Text('No reading activity', style: AppTextStyles.bodySecondary)
           else
             ...tiles,
         ],

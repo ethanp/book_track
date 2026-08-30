@@ -1,29 +1,25 @@
 import 'dart:math';
+
 import 'package:ethan_utils/ethan_utils.dart';
+
 import 'dart:typed_data';
 
 import 'package:book_track/data_model/library_book_format.dart';
 
-class LibraryBook {
-  LibraryBook(
-    this.supaId,
-    this.book,
-    List<ProgressEvent> progressHistory,
-    this.formats,
-    this.archived,
-    this.abandonedAt,
-  ) : progressHistory = List.unmodifiable(progressHistory);
-
-  final int supaId;
-  final Book book;
-  final List<ProgressEvent> progressHistory;
-  final DateTime? abandonedAt;
+class LibraryBook(
+  final int supaId,
+  final Book book,
+  List<ProgressEvent> progressHistory,
 
   /// All formats (editions) of this book the user owns.
   /// Sorted alphabetically by format name.
-  final List<LibraryBookFormat> formats;
-
-  final bool archived;
+  final List<LibraryBookFormat> formats,
+  final bool archived,
+  final DateTime? abandonedAt,
+) {
+  final List<ProgressEvent> progressHistory = List.unmodifiable(
+    progressHistory,
+  );
 
   /// Get format by ID.
   LibraryBookFormat? formatById(int formatId) =>
@@ -42,8 +38,8 @@ class LibraryBook {
   /// Default progress event format based on the primary book format.
   ProgressEventFormat get defaultProgressFormat =>
       primaryFormat?.isAudiobook == true
-          ? ProgressEventFormat.minutes
-          : ProgressEventFormat.pageNum;
+      ? ProgressEventFormat.minutes
+      : ProgressEventFormat.pageNum;
 
   /// Get the last-used format (from most recent progress event).
   LibraryBookFormat? get lastUsedFormat {
@@ -235,8 +231,9 @@ class LibraryBook {
     if (isReading) {
       final double remainingPercent = (100 - endPercent).clamp(0.0, 100.0);
       if (remainingPercent > 0) {
-        final double remainingUnits =
-            format.percentToProgress(remainingPercent).toDouble();
+        final double remainingUnits = format
+            .percentToProgress(remainingPercent)
+            .toDouble();
         final int daysRemaining = max(1, (remainingUnits / unitsPerDay).ceil());
         eta = DateTime.now().startOfDay.add(Duration(days: daysRemaining));
       }
@@ -252,17 +249,11 @@ class LibraryBook {
   String? get averagePaceDisplay => averageReadingPace?.display;
 }
 
-class AverageReadingPace {
-  const AverageReadingPace({
-    required this.unitsPerDay,
-    required this.isAudiobook,
-    this.eta,
-  });
-
-  final double unitsPerDay;
-  final bool isAudiobook;
-  final DateTime? eta;
-
+class const AverageReadingPace({
+  required final double unitsPerDay,
+  required final bool isAudiobook,
+  final DateTime? eta,
+}) {
   String get unitLabel => isAudiobook ? 'min' : 'pages';
 
   String get paceLabel {
@@ -272,53 +263,21 @@ class AverageReadingPace {
     return '$formatted $unitLabel/day';
   }
 
-  String get display {
-    if (eta == null) return paceLabel;
-    final bool sameYear = eta!.year == DateTime.now().year;
-    final String etaDate =
-        sameYear ? _monthDay(eta!) : '${_monthDay(eta!)}, ${eta!.year}';
-    return '$paceLabel · ETA $etaDate';
-  }
-
-  static String _monthDay(DateTime date) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${months[date.month - 1]} ${date.day}';
-  }
+  String get display =>
+      eta == null ? paceLabel : '$paceLabel · ETA ${eta!.monthDayCaption}';
 }
 
-class ProgressEvent {
-  const ProgressEvent({
-    required this.supaId,
-    required this.formatId,
-    required this.end,
-    required this.progress,
-    required this.format,
-  });
-
-  final int supaId;
+class const ProgressEvent({
+  required final int supaId,
 
   /// FK to LibraryBookFormat - identifies which format this progress was logged in.
-  final int formatId;
-
-  final int progress;
-  final DateTime end;
+  required final int formatId,
+  required final DateTime end,
+  required final int progress,
 
   /// How the progress value should be interpreted (pages, minutes, or percent).
-  final ProgressEventFormat format;
-
+  required final ProgressEventFormat format,
+}) {
   DateTime get dateTime => end;
 
   int get dateTimeMillis => dateTime.millisecondsSinceEpoch;
@@ -328,14 +287,14 @@ class ProgressEvent {
       '{progress: $progress, formatId: $formatId, end: $end, format: $format}';
 
   String get stringWSuffix => switch (format) {
-        ProgressEventFormat.pageNum => '$progress pgs',
-        ProgressEventFormat.percent => '$progress %',
-        ProgressEventFormat.minutes =>
-          '${progress.hours}:${progress.minutes} hh:mm',
-      };
+    ProgressEventFormat.pageNum => '$progress pgs',
+    ProgressEventFormat.percent => '$progress %',
+    ProgressEventFormat.minutes =>
+      '${progress.hours}:${progress.minutes} hh:mm',
+  };
 }
 
-enum ProgressEventFormat {
+enum ProgressEventFormat() {
   pageNum,
   percent,
   minutes;
@@ -343,32 +302,23 @@ enum ProgressEventFormat {
   static final map = {for (final v in ProgressEventFormat.values) v.name: v};
 }
 
-class Book {
-  const Book(
-    this.supaId,
-    this.title,
-    this.author,
-    this.yearFirstPublished,
-    this.openLibCoverId,
-    this.coverArtS,
-  );
+class const Book(
+  final int? supaId,
+  final String title,
+  final String? author,
+  final int? yearFirstPublished,
+  final int? openLibCoverId,
+  final Uint8List? coverArtS,
+);
 
-  final int? supaId;
-  final String title;
-  final String? author;
-  final int? yearFirstPublished;
-  final int? openLibCoverId;
-  final Uint8List? coverArtS;
-}
-
-enum BookFormat {
+enum BookFormat() {
   audiobook,
   eBook,
   paperback,
   hardcover,
 }
 
-enum ReadingStatus {
+enum ReadingStatus() {
   reading,
   abandoned,
   finished,

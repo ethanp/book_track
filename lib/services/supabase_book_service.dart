@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+
 import 'package:ethan_utils/ethan_utils.dart';
 
 import 'package:book_track/data_model.dart';
@@ -10,7 +11,7 @@ import 'supabase_service.dart';
 
 const _log = ELogger('SupabaseBookService');
 
-class SupabaseBookService {
+class SupabaseBookService() {
   static final _bucketClient = supabase.storage;
   static final _coverArtClient = _bucketClient.from('cover_art');
   static final _booksClient = supabase.from('books');
@@ -57,13 +58,16 @@ class SupabaseBookService {
     String? author,
   }) async {
     try {
-      var query =
-          _booksClient.select(_SupaBook.idCol).eq(_SupaBook.titleCol, title);
+      var query = _booksClient
+          .select(_SupaBook.idCol)
+          .eq(_SupaBook.titleCol, title);
       if (author != null && author.isNotEmpty) {
         query = query.eq(_SupaBook.authorCol, author);
       }
-      final PostgrestMap? existingBookMatch =
-          await query.limit(1).maybeSingle().withRetry(_log);
+      final PostgrestMap? existingBookMatch = await query
+          .limit(1)
+          .maybeSingle()
+          .withRetry(_log);
       return existingBookMatch.map(_SupaBook.new).map((book) => book.supaId);
     } on StorageException catch (error) {
       _log.log('pre-existing manual book query error $error');
@@ -95,7 +99,9 @@ class SupabaseBookService {
   }
 
   static Future<_SupaBook> _storeBook(
-      OpenLibraryBook book, String? coverKey) async {
+    OpenLibraryBook book,
+    String? coverKey,
+  ) async {
     final PostgrestMap result = await _booksClient
         .insert({
           _SupaBook.titleCol: book.title,
@@ -165,17 +171,14 @@ class SupabaseBookService {
     }
   }
 
-  static Future<void> updateAuthor(
-    Book book,
-    String updatedAuthor,
-  ) =>
+  static Future<void> updateAuthor(Book book, String updatedAuthor) =>
       _booksClient
           .update({_SupaBook.authorCol: updatedAuthor})
           .eq(_SupaBook.idCol, book.supaId!)
           .withRetry(_log);
 }
 
-class _SupaBook {
+class const _SupaBook(final PostgrestMap rawData) {
   int get supaId => rawData[idCol];
   static final String idCol = 'id';
 
@@ -196,8 +199,4 @@ class _SupaBook {
 
   String? get coverKey => rawData[coverKeyCol];
   static final String coverKeyCol = 'small_cover_key';
-
-  const _SupaBook(this.rawData);
-
-  final PostgrestMap rawData;
 }

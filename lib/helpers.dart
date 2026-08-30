@@ -4,7 +4,7 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
-class FlutterHelpers {
+class FlutterHelpers() {
   static Widget transform({
     Offset? shift,
     double? angleDegrees,
@@ -24,7 +24,7 @@ class FlutterHelpers {
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius));
 }
 
-class TimeHelpers {
+class TimeHelpers() {
   static final monthDayYear = DateFormat('MM/dd/yy').format;
   static final hourMinuteAmPm = DateFormat('h:mma').format;
   static final dateAndTime = DateFormat('MM/dd/yy h:mma').format;

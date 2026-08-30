@@ -1,23 +1,14 @@
 import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
 
-class BookDetailButton extends StatelessWidget {
-  const BookDetailButton({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.onActivated,
-    required this.backgroundColor,
-    required this.dense,
-  });
-
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final VoidCallback onActivated;
-  final Color backgroundColor;
-  final bool dense;
-
+class const BookDetailButton({
+  required final String title,
+  required final String subtitle,
+  required final IconData icon,
+  required final VoidCallback onActivated,
+  required final Color backgroundColor,
+  required final bool dense,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(

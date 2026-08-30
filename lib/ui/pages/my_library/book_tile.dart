@@ -4,17 +4,11 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
-class BookTile extends ConsumerWidget {
-  const BookTile(this.book, this.idx);
-
-  final LibraryBook book;
-  final int idx;
-
+class const BookTile(final LibraryBook book, final int idx)
+    extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Dismissible(
@@ -51,25 +45,19 @@ class BookTile extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(child: _title()),
-                      _progressPercentage()
+                      _progressPercentage(),
                     ],
                   ),
                   const SizedBox(height: 2),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [_author(), _pagesRead()],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _startedDate(),
-                      if (book.averagePaceDisplay != null)
-                        Text(
-                          book.averagePaceDisplay!,
-                          style: AppTextStyles.caption,
-                        ),
+                      Expanded(child: _author()),
+                      _pagesRead(),
                     ],
                   ),
+                  _startedDate(),
+                  if (book.averagePaceDisplay != null) _averagePace(),
                   const SizedBox(height: AppSpacing.sm),
                   _progressBar(),
                 ],
@@ -104,19 +92,24 @@ class BookTile extends ConsumerWidget {
     return Text(
       book.book.author ?? 'Author Unknown',
       style: AppTextStyles.bodySecondary,
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
     );
   }
 
   Widget _startedDate() {
-    final String formatted = DateFormat('MMM d, y').format(book.startTime);
-    return Text('Started $formatted', style: AppTextStyles.caption);
+    return Text(
+      'Started ${book.startTime.monthDayCaption}',
+      style: AppTextStyles.caption,
+    );
+  }
+
+  Widget _averagePace() {
+    return Text(book.averagePaceDisplay!, style: AppTextStyles.caption);
   }
 
   Widget _title() {
-    return Text(
-      book.book.title,
-      style: AppTextStyles.h5,
-    );
+    return Text(book.book.title, style: AppTextStyles.h5);
   }
 
   Widget _progressPercentage() {
@@ -140,11 +133,7 @@ class BookTile extends ConsumerWidget {
         color: AppColors.primaryLight.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(AppRadii.sm),
       ),
-      child: const Icon(
-        CupertinoIcons.book,
-        color: AppColors.primary,
-        size: 24,
-      ),
+      child: const Icon(Icons.menu_book, color: AppColors.primary, size: 24),
     );
 
     Widget bookArt = placeholder;
@@ -157,7 +146,7 @@ class BookTile extends ConsumerWidget {
           height: height,
           width: width,
           book.book.coverArtS!,
-          errorBuilder: (_, __, ___) => placeholder,
+          errorBuilder: (_, _, _) => placeholder,
         ),
       );
     }
@@ -181,12 +170,12 @@ class BookTile extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: const Row(
         children: [
-          Icon(CupertinoIcons.add, color: CupertinoColors.white, size: 18),
+          Icon(Icons.add, color: Colors.white, size: 18),
           SizedBox(width: AppSpacing.xs),
           Text(
             'Add progress',
             style: TextStyle(
-              color: CupertinoColors.white,
+              color: Colors.white,
               fontSize: 15,
               fontWeight: FontWeight.w600,
             ),

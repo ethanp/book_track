@@ -11,11 +11,10 @@ DateTime day(int dayOfMonth) => DateTime(2026, 1, dayOfMonth);
 List<MapEntry<DateTime, double>> steadyReading({
   required double percentPerDay,
   required int days,
-}) =>
-    [
-      for (var offset = 0; offset < days; offset++)
-        read(day(1 + offset), percentPerDay),
-    ];
+}) => [
+  for (var offset = 0; offset < days; offset++)
+    read(day(1 + offset), percentPerDay),
+];
 
 double paceOn(ReadingPaceSeries series, DateTime day) =>
     series.points.firstWhere((point) => point.day == day).percentPerDay;
@@ -69,10 +68,10 @@ void main() {
       // A single big read on day 20. The raw trailing average on day 19 is 0
       // (nothing read in the prior week), so any positive pace there can only
       // come from the centered (forward-looking) smoothing.
-      final series = ReadingPaceSeries.fromProgressDeltas(
-        [read(day(1), 3), read(day(20), 50)],
-        now: day(25),
-      );
+      final series = ReadingPaceSeries.fromProgressDeltas([
+        read(day(1), 3),
+        read(day(20), 50),
+      ], now: day(25));
 
       expect(paceOn(series, day(19)), greaterThan(0));
     });

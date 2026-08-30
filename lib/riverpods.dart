@@ -1,7 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/services/supabase_library_service.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'riverpods.g.dart';
@@ -16,7 +15,7 @@ part 'riverpods.g.dart';
 /// This class is both responsible for initializing the state
 /// (through the [build] method) and exposing ways to modify it (cf [update]).
 @riverpod
-class SelectedBottomBarIdx extends _$SelectedBottomBarIdx {
+class SelectedBottomBarIdx() extends _$SelectedBottomBarIdx {
   /// Classes annotated by `@riverpod` **must** define a [build] function,
   /// which returns the initial state.
   ///
@@ -30,31 +29,29 @@ class SelectedBottomBarIdx extends _$SelectedBottomBarIdx {
 }
 
 @riverpod
-class BookSearchResultsNotifier extends _$BookSearchResultsNotifier {
+class BookSearchResultsNotifier() extends _$BookSearchResultsNotifier {
   @override
   BookSearchResults build() => BookSearchResults.empty;
 
   void notify(BookSearchResults searchResult) => state = searchResult;
 }
 
-class BookSearchResults {
-  const BookSearchResults({
-    required this.books,
-    required this.fullResultCount,
-    this.isLoading = false,
-    this.failure,
-  });
+class const BookSearchResults({
+  required final List<OpenLibraryBook> books,
+  required final int fullResultCount,
+  final bool isLoading = false,
+  final Object? failure,
+}) {
+  static const BookSearchResults empty = BookSearchResults(
+    books: [],
+    fullResultCount: 0,
+  );
 
-  final bool isLoading;
-  final Object? failure;
-  final List<OpenLibraryBook> books;
-  final int fullResultCount;
-
-  static const BookSearchResults empty =
-      BookSearchResults(books: [], fullResultCount: 0);
-
-  static const BookSearchResults loading =
-      BookSearchResults(books: [], fullResultCount: 0, isLoading: true);
+  static const BookSearchResults loading = BookSearchResults(
+    books: [],
+    fullResultCount: 0,
+    isLoading: true,
+  );
 
   static BookSearchResults failed(Object? failure) =>
       BookSearchResults(books: [], fullResultCount: 0, failure: failure);

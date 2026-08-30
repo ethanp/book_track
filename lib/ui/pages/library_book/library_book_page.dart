@@ -1,9 +1,9 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/ui/common/app_bars.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/my_library/reading_progress_indicator.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:ethan_ui/ethan_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'book_detail_buttons.dart';
@@ -12,20 +12,20 @@ import 'event_timeline.dart';
 import 'formats_section.dart';
 import 'progress_chart/progress_chart.dart';
 
-class LibraryBookPage extends ConsumerWidget {
-  const LibraryBookPage(this.bookId);
-
-  final int bookId;
-
+class const LibraryBookPage(final int bookId) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final libraryAsync = ref.watch(userLibraryProvider);
     return libraryAsync.when(
-      loading: () => const CupertinoPageScaffold(
-        child: Center(child: CupertinoActivityIndicator()),
+      loading: () => const EScaffoldShell(
+        contentMaxWidth: double.infinity,
+        appBar: EAppHeader(title: 'Book'),
+        body: Center(child: CircularProgressIndicator()),
       ),
-      error: (error, _) => CupertinoPageScaffold(
-        child: Center(
+      error: (error, _) => EScaffoldShell(
+        contentMaxWidth: double.infinity,
+        appBar: const EAppHeader(title: 'Book'),
+        body: Center(
           child: Text(
             'Error: $error',
             style: AppTextStyles.body.copyWith(color: AppColors.destructive),
@@ -40,15 +40,20 @@ class LibraryBookPage extends ConsumerWidget {
           });
           return const SizedBox.shrink();
         }
-        return _buildPage(book);
+        return _bookPage(book);
       },
     );
   }
 
-  Widget _buildPage(LibraryBook book) {
-    return CupertinoPageScaffold(
-      navigationBar: _navBar(book),
-      child: SafeArea(
+  Widget _bookPage(LibraryBook book) {
+    return EScaffoldShell(
+      contentMaxWidth: double.infinity,
+      appBar: EAppHeader(
+        title: book.book.title,
+        subtitle: book.readingStatus.name,
+        actions: [ReadingProgressIndicator(book)],
+      ),
+      body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -61,32 +66,6 @@ class LibraryBookPage extends ConsumerWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  ObstructingPreferredSizeWidget _navBar(LibraryBook book) {
-    return AppNavigationBar(
-      middle: Row(
-        children: [
-          Expanded(
-            child: Text(
-              '${book.book.title} (${book.readingStatus.name})',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                inherit: false,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                height: 1.15,
-                color: AppColors.textPrimary,
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          ReadingProgressIndicator(book),
-        ],
       ),
     );
   }

@@ -1,63 +1,56 @@
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ConfirmationDialog extends ConsumerWidget {
-  const ConfirmationDialog({
-    required this.text,
-    required this.title,
-    required this.actionName,
-    required this.onConfirm,
-  });
-
-  final String text;
-  final String title;
-  final String actionName;
-  final Future<void> Function() onConfirm;
-
+class const ConfirmationDialog({
+  required final String text,
+  required final String title,
+  required final String actionName,
+  required final Future<void> Function() onConfirm,
+}) extends ConsumerWidget {
   static void show({
     required BuildContext context,
     required String text,
     required String title,
     required String actionName,
     required Future<void> Function() onConfirm,
-  }) =>
-      showCupertinoDialog(
-          context: context,
-          builder: (_) => ConfirmationDialog(
-              text: text,
-              title: title,
-              actionName: actionName,
-              onConfirm: onConfirm));
+  }) => showDialog<void>(
+    context: context,
+    builder: (_) => ConfirmationDialog(
+      text: text,
+      title: title,
+      actionName: actionName,
+      onConfirm: onConfirm,
+    ),
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return CupertinoAlertDialog(
+    return AlertDialog(
       title: Text(title),
       content: Text(text),
-      actions: [cancelButton(context), confirmButton(ref)],
+      actions: [_cancelButton(context), _confirmButton(ref)],
     );
   }
 
-  Widget confirmButton(WidgetRef ref) {
-    return CupertinoDialogAction(
+  Widget _confirmButton(WidgetRef ref) {
+    return TextButton(
       onPressed: () {
         Navigator.pop(ref.context);
         onConfirm();
       },
-      isDestructiveAction: true,
       child: Text(
         actionName.capitalize,
-        style: TextStyle(color: CupertinoColors.destructiveRed),
+        style: EText.section.copyWith(color: EColors.danger),
       ),
     );
   }
 
-  Widget cancelButton(BuildContext context) {
-    return CupertinoDialogAction(
+  Widget _cancelButton(BuildContext context) {
+    return TextButton(
       onPressed: () => Navigator.pop(context),
-      isDefaultAction: true,
-      child: Text('Cancel'),
+      child: const Text('Cancel'),
     );
   }
 }

@@ -1,41 +1,41 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/ui/common/app_bars.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/sign_out_button.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:book_track/ui/pages/my_library/archived_books_section.dart';
 import 'package:book_track/ui/pages/my_library/book_tile.dart';
+
 import 'dismissible_cupertino_bottom_sheet.dart';
 
 const _log = ELogger('MyLibraryPage');
 
-class MyLibraryPage extends ConsumerStatefulWidget {
-  const MyLibraryPage();
-
+class const MyLibraryPage() extends ConsumerStatefulWidget {
   @override
   ConsumerState createState() => _MyLibraryPageState();
 }
 
-class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
+class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
   _LibraryOrder _libraryOrder = _LibraryOrder.eta;
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: _navigationBar(context),
-      child: _pageBody(),
-    );
-  }
-
-  ObstructingPreferredSizeWidget _navigationBar(BuildContext context) {
-    return AppNavigationBar(
-      leading: _addABookButton(context),
-      middle: const Text('My Library'),
-      trailing: SignOutButton(),
+    return EScaffoldShell(
+      contentMaxWidth: double.infinity,
+      appBar: EAppHeader(
+        title: 'Library',
+        leading: IconButton(
+          tooltip: 'Add book',
+          onPressed: () => DismissibleCupertinoBottomSheet.show(context),
+          icon: const Icon(Icons.add),
+        ),
+        actions: [SignOutButton()],
+      ),
+      body: _pageBody(),
     );
   }
 
@@ -44,7 +44,9 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
       child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
-          child: ref.watch(userLibraryProvider).when(
+          child: ref
+              .watch(userLibraryProvider)
+              .when(
                 loading: _loadingScreen,
                 error: _errorScreen,
                 data: _libraryScreen,
@@ -74,19 +76,19 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Center(
-        child: CupertinoSlidingSegmentedControl<_LibraryOrder>(
-          groupValue: _libraryOrder,
-          children: {
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: [
             for (final orderValue in _LibraryOrder.values)
-              orderValue: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Text(
-                  orderValue.label,
-                  style: AppTextStyles.label,
-                ),
+              EFilterChip(
+                label: orderValue.label,
+                color: EColors.accentGlow,
+                selected: _libraryOrder == orderValue,
+                onActivated: () => setState(() => _libraryOrder = orderValue),
               ),
-          },
-          onValueChanged: (choice) => setState(() => _libraryOrder = choice!),
+          ],
         ),
       ),
     );
@@ -100,7 +102,7 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
         child: Column(
           children: [
             const Icon(
-              CupertinoIcons.exclamationmark_triangle,
+              Icons.warning_amber_rounded,
               color: AppColors.destructive,
               size: 40,
             ),
@@ -117,33 +119,16 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
   }
 
   Widget _loadingScreen() {
-    return const Center(
+    return Center(
       child: Padding(
-        padding: EdgeInsets.all(AppSpacing.xxl),
+        padding: const EdgeInsets.all(AppSpacing.xxl),
         child: Column(
           children: [
-            CupertinoActivityIndicator(radius: 14),
-            SizedBox(height: AppSpacing.md),
+            const CircularProgressIndicator(),
+            const SizedBox(height: AppSpacing.md),
             Text('Loading your library...', style: AppTextStyles.bodySecondary),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _addABookButton(BuildContext context) {
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      onPressed: () => DismissibleCupertinoBottomSheet.show(context),
-      child: const Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(CupertinoIcons.add, size: 20, color: AppColors.primary),
-          Text(
-            'Add book',
-            style: TextStyle(fontSize: 12, color: AppColors.primary),
-          ),
-        ],
       ),
     );
   }
@@ -153,8 +138,10 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: ReadingStatus.values.mapL(
-        (readingStatus) => _bookSection(readingStatus.name,
-            liveBooks.whereL((book) => book.readingStatus == readingStatus)),
+        (readingStatus) => _bookSection(
+          readingStatus.name,
+          liveBooks.whereL((book) => book.readingStatus == readingStatus),
+        ),
       ),
     );
   }
@@ -187,27 +174,21 @@ class _MyLibraryPageState extends ConsumerState<MyLibraryPage> {
       ),
       child: Text(
         '${name.capitalize} ($count)',
-        style: AppTextStyles.h2.copyWith(color: AppColors.burgundy),
+        style: AppTextStyles.h2.copyWith(color: AppColors.primary),
       ),
     );
   }
 }
 
-enum _LibraryOrder {
+enum _LibraryOrder(
+  final Comparable Function(LibraryBook) compareFn, {
+  required final bool descending,
+  final String? _label,
+}) {
   eta(bookEta, descending: false, label: 'ETA'),
   pace(bookPace, descending: true),
   progress(bookProgress, descending: true),
   startDate(bookStartTime, descending: true);
-
-  final Comparable Function(LibraryBook) compareFn;
-  final bool descending;
-  final String? _label;
-
-  const _LibraryOrder(
-    this.compareFn, {
-    required this.descending,
-    String? label,
-  }) : _label = label;
 
   String get label => _label ?? nameAsCapitalizedWords;
 

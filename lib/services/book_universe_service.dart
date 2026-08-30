@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 
 const _log = ELogger('OpenLibraryBookUniverseRepository');
 
-class BookUniverseService {
+class BookUniverseService() {
   static final _bookUniverseRepo = _OpenLibraryBookUniverseRepository();
 
   static Future<void> search(
@@ -41,22 +41,25 @@ class BookUniverseService {
 ///   * https://hardcover.app/account/api?referrer_id=15017
 ///   * Worth taking another look and maybe deleting this one from this list.
 ///
-class _OpenLibraryBookUniverseRepository {
+class _OpenLibraryBookUniverseRepository() {
   static final Uri apiUrl = Uri.parse('https://openlibrary.org/search.json');
 
   static Uri coverUrl(int coverId, String size) =>
       Uri.parse('https://covers.openlibrary.org/b/id/$coverId-$size.jpg');
 
   Future<BookSearchResults> search(String containing) async {
-    final Uri url = apiUrl.replace(queryParameters: {
-      'q': Uri.encodeQueryComponent(containing),
-      'limit': '10',
-    });
+    final Uri url = apiUrl.replace(
+      queryParameters: {
+        'q': Uri.encodeQueryComponent(containing),
+        'limit': '10',
+      },
+    );
     final http.Response response = await http.get(url);
     if (response.statusCode != 200) {
       // NB: Sometimes I get 500 Internal Server Error from here,
       // and a simple wait and retry fixes it.
-      final oops = 'search error: '
+      final oops =
+          'search error: '
           '${response.statusCode} ${response.reasonPhrase}.'
           ' Please try again.';
       _log.warn(oops);
@@ -68,19 +71,17 @@ class _OpenLibraryBookUniverseRepository {
       return BookSearchResults(
         fullResultCount: bodyJson['numFound'] ?? -777,
         books: await Future.wait(
-          results.map(
-            (dynamic /*Map<String, dynamic>*/ openLibBookDoc) async {
-              final List<dynamic>? authorNames = openLibBookDoc['author_name'];
-              return OpenLibraryBook(
-                openLibBookDoc['title'],
-                authorNames?.first ?? 'Unknown',
-                openLibBookDoc['first_publish_year'],
-                openLibBookDoc['number_of_pages_median'],
-                openLibBookDoc['cover_i'],
-                await _coverBytes(openLibBookDoc['cover_i'], 'S'),
-              );
-            },
-          ),
+          results.map((dynamic /*Map<String, dynamic>*/ openLibBookDoc) async {
+            final List<dynamic>? authorNames = openLibBookDoc['author_name'];
+            return OpenLibraryBook(
+              openLibBookDoc['title'],
+              authorNames?.first ?? 'Unknown',
+              openLibBookDoc['first_publish_year'],
+              openLibBookDoc['number_of_pages_median'],
+              openLibBookDoc['cover_i'],
+              await _coverBytes(openLibBookDoc['cover_i'], 'S'),
+            );
+          }),
         ),
       );
     } catch (e) {
@@ -96,20 +97,11 @@ class _OpenLibraryBookUniverseRepository {
   }
 }
 
-class OpenLibraryBook {
-  const OpenLibraryBook(
-    this.title,
-    this.firstAuthor,
-    this.yearFirstPublished,
-    this.numPagesMedian,
-    this.openLibCoverId,
-    this.coverArtS,
-  );
-
-  final String title;
-  final String firstAuthor;
-  final int? yearFirstPublished;
-  final int? numPagesMedian;
-  final int? openLibCoverId;
-  final Uint8List? coverArtS;
-}
+class const OpenLibraryBook(
+  final String title,
+  final String firstAuthor,
+  final int? yearFirstPublished,
+  final int? numPagesMedian,
+  final int? openLibCoverId,
+  final Uint8List? coverArtS,
+);

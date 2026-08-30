@@ -3,17 +3,11 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 
-class UpdateFormatSelector extends StatelessWidget {
-  const UpdateFormatSelector({
-    required this.currentlySelectedFormat,
-    required this.onSelected,
-    required this.book,
-  });
-
-  final ProgressEventFormat currentlySelectedFormat;
-  final void Function(ProgressEventFormat) onSelected;
-  final LibraryBook book;
-
+class const UpdateFormatSelector({
+  required final ProgressEventFormat currentlySelectedFormat,
+  required final void Function(ProgressEventFormat) onSelected,
+  required final LibraryBook book,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -22,10 +16,14 @@ class UpdateFormatSelector extends StatelessWidget {
         SegmentedButton<ProgressEventFormat>(
           showSelectedIcon: false,
           style: ButtonStyle(
-            backgroundColor:
-                ifSelected(AppColors.primary, otw: AppColors.divider),
-            foregroundColor:
-                ifSelected(Colors.white, otw: AppColors.textPrimary),
+            backgroundColor: ifSelected(
+              AppColors.primary,
+              otw: AppColors.divider,
+            ),
+            foregroundColor: ifSelected(
+              Colors.white,
+              otw: AppColors.textPrimary,
+            ),
             visualDensity: VisualDensity.comfortable,
           ),
           selected: {currentlySelectedFormat},
@@ -42,10 +40,9 @@ class UpdateFormatSelector extends StatelessWidget {
   static WidgetStateProperty<Color?> ifSelected(
     Color? selectedColor, {
     required Color? otw,
-  }) =>
-      WidgetStateProperty.resolveWith(
-        (states) => states.contains(WidgetState.selected) ? selectedColor : otw,
-      );
+  }) => WidgetStateProperty.resolveWith(
+    (states) => states.contains(WidgetState.selected) ? selectedColor : otw,
+  );
 
   List<ButtonSegment<ProgressEventFormat>> segments() {
     final Map<ProgressEventFormat, String> formatLabels = {
@@ -55,8 +52,11 @@ class UpdateFormatSelector extends StatelessWidget {
         ProgressEventFormat.pageNum: 'pages',
       ProgressEventFormat.percent: '%',
     };
-    return formatLabels.entries.mapL((format) => ButtonSegment(
+    return formatLabels.entries.mapL(
+      (format) => ButtonSegment(
         value: format.key,
-        label: Text(format.value, style: TextStyle(fontSize: 12))));
+        label: Text(format.value, style: TextStyle(fontSize: 12)),
+      ),
+    );
   }
 }

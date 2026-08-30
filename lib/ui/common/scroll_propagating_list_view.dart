@@ -3,22 +3,18 @@ import 'package:flutter/material.dart';
 /// A ListView that propagates overscroll to its parent scrollable.
 /// When the user scrolls past the edges, the scroll gesture is forwarded
 /// to the parent scroll view with momentum preserved.
-class ScrollPropagatingListView extends StatefulWidget {
-  const ScrollPropagatingListView(
-      {required this.itemCount,
-      required this.itemBuilder,
-      this.separatorBuilder});
-
-  final int itemCount;
-  final Widget Function(BuildContext, int) itemBuilder;
-  final Widget Function(BuildContext, int)? separatorBuilder;
-
+class const ScrollPropagatingListView({
+  required final int itemCount,
+  required final Widget Function(BuildContext, int) itemBuilder,
+  final Widget Function(BuildContext, int)? separatorBuilder,
+}) extends StatefulWidget {
   @override
   State<ScrollPropagatingListView> createState() =>
       _ScrollPropagatingListViewState();
 }
 
-class _ScrollPropagatingListViewState extends State<ScrollPropagatingListView> {
+class _ScrollPropagatingListViewState()
+    extends State<ScrollPropagatingListView> {
   final _scrollController = ScrollController();
 
   @override

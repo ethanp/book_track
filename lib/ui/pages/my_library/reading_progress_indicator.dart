@@ -4,11 +4,8 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ReadingProgressIndicator extends ConsumerWidget {
-  const ReadingProgressIndicator(this.book);
-
-  final LibraryBook book;
-
+class const ReadingProgressIndicator(final LibraryBook book)
+    extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(userLibraryProvider);

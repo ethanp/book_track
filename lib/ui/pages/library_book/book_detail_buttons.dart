@@ -11,36 +11,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'book_detail_button.dart';
 
-class BookDetailButtons extends ConsumerWidget {
-  BookDetailButtons(this.book) : dense = book.hasProgress;
-  final LibraryBook book;
-  final bool dense;
+class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
+  bool get dense => book.hasProgress;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(userLibraryProvider);
 
     final List<Widget> children = (book.isFinished || book.isAbandoned)
-        ? [
-            _archive(ref),
-            _remove(ref),
-          ]
-        : [
-            _updateProgress(ref),
-            _complete(ref),
-            _abandon(ref),
-            _remove(ref)
-          ];
+        ? [_archive(ref), _remove(ref)]
+        : [_updateProgress(ref), _complete(ref), _abandon(ref), _remove(ref)];
 
     return Flexible(
       child: dense
-          ? Center(
-              child: Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: children,
-              ),
-            )
+          ? Center(child: Wrap(spacing: 10, runSpacing: 10, children: children))
           : Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: children,
@@ -137,16 +121,16 @@ class BookDetailButtons extends ConsumerWidget {
     required WidgetRef ref,
     required String actionName,
     required Future<void> Function(LibraryBook) onConfirm,
-  }) =>
-      ConfirmationDialog.show(
-        context: ref.context,
-        text: 'Are you sure you want to $actionName '
-            '"${book.book.title}" from your library?',
-        title: '${actionName.capitalize} Book',
-        actionName: actionName,
-        onConfirm: () async {
-          onConfirm(book).then((_) => ref.invalidate(userLibraryProvider));
-          ref.context.pop();
-        },
-      );
+  }) => ConfirmationDialog.show(
+    context: ref.context,
+    text:
+        'Are you sure you want to $actionName '
+        '"${book.book.title}" from your library?',
+    title: '${actionName.capitalize} Book',
+    actionName: actionName,
+    onConfirm: () async {
+      onConfirm(book).then((_) => ref.invalidate(userLibraryProvider));
+      ref.context.pop();
+    },
+  );
 }

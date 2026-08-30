@@ -1,4 +1,5 @@
 import 'dart:math' show max;
+
 import 'package:ethan_utils/ethan_utils.dart';
 
 import 'package:book_track/data_model.dart';
@@ -7,31 +8,20 @@ import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:flutter/cupertino.dart';
 
 /// Progress made on a single book for a specific day.
-class DayProgressEntry {
-  const DayProgressEntry({
-    required this.book,
-    required this.percentDelta,
-    required this.unitsDelta,
-    required this.isAudiobook,
-    this.opened = false,
-    this.started = false,
-    this.finished = false,
-    this.abandoned = false,
-  });
-
-  final LibraryBook book;
-  final double percentDelta;
-  final double unitsDelta;
-  final bool isAudiobook;
+class const DayProgressEntry({
+  required final LibraryBook book,
+  required final double percentDelta,
+  required final double unitsDelta,
+  required final bool isAudiobook,
 
   /// Book was added to reading list on this day but no progress made.
-  final bool opened;
+  final bool opened = false,
 
   /// Book was started on this day (first progress made).
-  final bool started;
-  final bool finished;
-  final bool abandoned;
-
+  final bool started = false,
+  final bool finished = false,
+  final bool abandoned = false,
+}) {
   String get progressLabel {
     final unitsStr = isAudiobook
         ? unitsDelta.round().minsToHhMm
@@ -113,19 +103,20 @@ class DayProgressEntry {
         width: size * 0.75,
         height: size,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => placeholder,
+        errorBuilder: (_, _, _) => placeholder,
       ),
     );
   }
 
   /// Build tiles for all books with progress on a given date.
   static List<Widget> tilesForDate(
-          DateTime date, List<LibraryBook> books, BuildContext context) =>
-      books
-          .map((book) =>
-              DayProgressEntry.forBook(book, date)?.buildTile(context))
-          .nonNulls
-          .toList();
+    DateTime date,
+    List<LibraryBook> books,
+    BuildContext context,
+  ) => books
+      .map((book) => DayProgressEntry.forBook(book, date)?.buildTile(context))
+      .nonNulls
+      .toList();
 
   /// Calculate progress entry for a single book on a given date.
   /// Returns null if no activity on that day.
@@ -149,8 +140,9 @@ class DayProgressEntry {
 
       isAudiobook ??= format.isAudiobook;
       final currPercent = book.progressPercentAt(event) ?? 0;
-      final prevPercent =
-          i > 0 ? (book.progressPercentAt(sorted[i - 1]) ?? 0) : 0.0;
+      final prevPercent = i > 0
+          ? (book.progressPercentAt(sorted[i - 1]) ?? 0)
+          : 0.0;
       final percentDelta = max(0, currPercent - prevPercent);
 
       totalPercentDelta += percentDelta;

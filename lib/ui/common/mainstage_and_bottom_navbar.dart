@@ -5,17 +5,11 @@ import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MainTab {
-  const MainTab({
-    required this.icon,
-    required this.label,
-    required this.screen,
-  });
-
-  final IconData icon;
-  final String label;
-  final Widget screen;
-}
+class const MainTab({
+  required final IconData icon,
+  required final String label,
+  required final Widget screen,
+});
 
 const _mainTabs = <MainTab>[
   MainTab(
@@ -23,20 +17,16 @@ const _mainTabs = <MainTab>[
     label: 'Library',
     screen: MyLibraryPage(),
   ),
-  MainTab(
-    icon: Icons.bar_chart_outlined,
-    label: 'Stats',
-    screen: StatsPage(),
-  ),
+  MainTab(icon: Icons.bar_chart_outlined, label: 'Stats', screen: StatsPage()),
 ];
 
-class MainstageAndBottomNavbar extends ConsumerStatefulWidget {
+class const MainstageAndBottomNavbar() extends ConsumerStatefulWidget {
   @override
   ConsumerState<MainstageAndBottomNavbar> createState() =>
       _MainstageAndBottomNavbarState();
 }
 
-class _MainstageAndBottomNavbarState
+class _MainstageAndBottomNavbarState()
     extends ConsumerState<MainstageAndBottomNavbar> {
   final _navigatorKeys = List<GlobalKey<NavigatorState>>.generate(
     _mainTabs.length,
@@ -55,7 +45,9 @@ class _MainstageAndBottomNavbarState
         ],
         onSelected: (index) {
           if (index == selectedTabIndex) {
-            _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
+            _navigatorKeys[index].currentState?.popUntil(
+              (route) => route.isFirst,
+            );
             return;
           }
           ref.read(selectedBottomBarIdxProvider.notifier).update(index);

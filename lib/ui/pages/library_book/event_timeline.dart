@@ -9,36 +9,30 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class EventTimeline extends StatelessWidget {
-  const EventTimeline(this.libraryBook);
-
-  final LibraryBook libraryBook;
-
+class const EventTimeline(final LibraryBook libraryBook)
+    extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
-        children: libraryBook.progressHistory.reversed
-            .mapL((event) => _EventTimelineItem(libraryBook, event)),
+        children: libraryBook.progressHistory.reversed.mapL(
+          (event) => _EventTimelineItem(libraryBook, event),
+        ),
       ),
     );
   }
 }
 
-class _EventTimelineItem extends ConsumerWidget {
-  const _EventTimelineItem(this.libraryBook, this.progressEvent);
-
-  final LibraryBook libraryBook;
-  final ProgressEvent progressEvent;
-
+class const _EventTimelineItem(
+  final LibraryBook libraryBook,
+  final ProgressEvent progressEvent,
+) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Column(children: [
-      _pipe(onTop: true),
-      _card(ref),
-      _pipe(onTop: false),
-    ]);
+    return Column(
+      children: [_pipe(onTop: true), _card(ref), _pipe(onTop: false)],
+    );
   }
 
   Widget _card(WidgetRef ref) {
@@ -163,11 +157,7 @@ class _EventTimelineItem extends ConsumerWidget {
         gradient: LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
-          colors: [
-            AppColors.divider,
-            AppColors.shimmer,
-            AppColors.divider,
-          ],
+          colors: [AppColors.divider, AppColors.shimmer, AppColors.divider],
         ),
       ),
     );

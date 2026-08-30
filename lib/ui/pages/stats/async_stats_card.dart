@@ -1,23 +1,18 @@
 import 'package:book_track/ui/common/design.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:ethan_ui/ethan_ui.dart';
+import 'package:flutter/material.dart';
 
-class AsyncStatsCard<T> extends StatefulWidget {
-  const AsyncStatsCard(
-      {required this.cacheKey,
-      required this.compute,
-      required this.builder,
-      this.loadingHeight = 150});
-
-  final String cacheKey;
-  final T Function() compute;
-  final Widget Function(T data) builder;
-  final double loadingHeight;
-
+class const AsyncStatsCard<T>({
+  required final String cacheKey,
+  required final T Function() compute,
+  required final Widget Function(T data) builder,
+  final double loadingHeight = 150,
+}) extends StatefulWidget {
   @override
   State<AsyncStatsCard<T>> createState() => _AsyncStatsCardState<T>();
 }
 
-class _AsyncStatsCardState<T> extends State<AsyncStatsCard<T>> {
+class _AsyncStatsCardState<T>() extends State<AsyncStatsCard<T>> {
   T? _cachedData;
   String? _cachedKey;
   bool _isLoading = false;
@@ -73,51 +68,49 @@ class _AsyncStatsCardState<T> extends State<AsyncStatsCard<T>> {
   }
 
   Widget _loadingSkeleton() {
-    return Container(
-      height: widget.loadingHeight,
-      margin: const EdgeInsets.symmetric(
+    return Padding(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,
       ),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.md),
-        boxShadow: const [AppShadows.card],
+      child: SizedBox(
+        height: widget.loadingHeight,
+        child: const ESurface(
+          kind: ESurfaceKind.panel,
+          child: Center(child: CircularProgressIndicator()),
+        ),
       ),
-      child: const Center(child: CupertinoActivityIndicator()),
     );
   }
 
   Widget _errorWidget() {
-    return Container(
-      height: widget.loadingHeight,
-      margin: const EdgeInsets.symmetric(
+    return Padding(
+      padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,
       ),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.md),
-        border: Border.all(
-          color: AppColors.destructive.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              CupertinoIcons.exclamationmark_triangle,
-              color: AppColors.destructive,
+      child: SizedBox(
+        height: widget.loadingHeight,
+        child: ESurface(
+          kind: ESurfaceKind.panel,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  color: AppColors.destructive,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Error loading data',
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.destructive,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Error loading data',
-              style: AppTextStyles.caption.copyWith(
-                color: AppColors.destructive,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -5,16 +5,12 @@ import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_format_service.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/length_input.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:ethan_ui/ethan_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class FormatsSection extends ConsumerWidget {
-  const FormatsSection(
-    this.libraryBook,
-  );
-
-  final LibraryBook libraryBook;
-
+class const FormatsSection(final LibraryBook libraryBook)
+    extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formats = libraryBook.formats;
@@ -28,29 +24,28 @@ class FormatsSection extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Formats', style: AppTextStyles.h2),
-              CupertinoButton(
-                padding: EdgeInsets.zero,
+              IconButton(
+                tooltip: 'Add format',
                 onPressed: () => _showAddFormatSheet(context, ref),
-                child: const Icon(CupertinoIcons.add_circled),
+                icon: const Icon(Icons.add_circle_outline),
               ),
             ],
           ),
           const SizedBox(height: 8),
           if (formats.isEmpty)
-            const Text(
-              'No formats added',
-              style: AppTextStyles.bodySecondary,
-            )
+            Text('No formats added', style: AppTextStyles.bodySecondary)
           else
-            ...formats.mapL((format) => _FormatRow(
-                  format: format,
-                  libraryBook: libraryBook,
-                  onLengthEditActivated: () =>
-                      _showEditFormatSheet(context, ref, format),
-                  onDeleteActivated: formats.length > 1
-                      ? () => _confirmDeleteFormat(context, ref, format)
-                      : null,
-                )),
+            ...formats.mapL(
+              (format) => _FormatRow(
+                format: format,
+                libraryBook: libraryBook,
+                onLengthEditActivated: () =>
+                    _showEditFormatSheet(context, ref, format),
+                onDeleteActivated: formats.length > 1
+                    ? () => _confirmDeleteFormat(context, ref, format)
+                    : null,
+              ),
+            ),
         ],
       ),
     );
@@ -59,7 +54,7 @@ class FormatsSection extends ConsumerWidget {
   Future<void> _showAddFormatSheet(BuildContext context, WidgetRef ref) async {
     final existingTypes = libraryBook.formats.map((f) => f.format).toSet();
 
-    final result = await showCupertinoModalPopup<(BookFormat, int)?>(
+    final result = await showDialog<(BookFormat, int)?>(
       context: context,
       builder: (context) => _AddFormatSheet(existingTypes: existingTypes),
     );
@@ -79,7 +74,7 @@ class FormatsSection extends ConsumerWidget {
     WidgetRef ref,
     LibraryBookFormat format,
   ) async {
-    final result = await showCupertinoModalPopup<int?>(
+    final result = await showDialog<int?>(
       context: context,
       builder: (context) => _EditLengthSheet(format: format),
     );
@@ -99,40 +94,40 @@ class FormatsSection extends ConsumerWidget {
 
     if (hasEvents) {
       // Need to reassign events first
-      final otherFormats =
-          libraryBook.formats.whereL((f) => f.supaId != format.supaId);
+      final otherFormats = libraryBook.formats.whereL(
+        (f) => f.supaId != format.supaId,
+      );
       if (otherFormats.isEmpty) return; // Can't delete last format
 
-      final targetFormat = await showCupertinoModalPopup<LibraryBookFormat?>(
+      final targetFormat = await showDialog<LibraryBookFormat?>(
         context: context,
-        builder: (context) => _ReassignEventsSheet(
-          format: format,
-          otherFormats: otherFormats,
-        ),
+        builder: (context) =>
+            _ReassignEventsSheet(format: format, otherFormats: otherFormats),
       );
 
       if (targetFormat != null) {
         await SupabaseFormatService.reassignEvents(
-            format.supaId, targetFormat.supaId);
+          format.supaId,
+          targetFormat.supaId,
+        );
         await SupabaseFormatService.deleteFormat(format.supaId);
         ref.invalidate(userLibraryProvider);
       }
     } else {
       // No events, just confirm deletion
-      final confirmed = await showCupertinoDialog<bool>(
+      final confirmed = await showDialog<bool>(
         context: context,
-        builder: (context) => CupertinoAlertDialog(
+        builder: (context) => AlertDialog(
           title: const Text('Delete Format'),
           content: Text('Remove ${format.format.name} from this book?'),
           actions: [
-            CupertinoDialogAction(
+            TextButton(
               onPressed: () => Navigator.pop(context, false),
               child: const Text('Cancel'),
             ),
-            CupertinoDialogAction(
-              isDestructiveAction: true,
+            TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Delete'),
+              child: Text('Delete', style: EText.section.danger),
             ),
           ],
         ),
@@ -146,32 +141,20 @@ class FormatsSection extends ConsumerWidget {
   }
 }
 
-class _FormatRow extends StatelessWidget {
-  const _FormatRow({
-    required this.format,
-    required this.libraryBook,
-    required this.onLengthEditActivated,
-    this.onDeleteActivated,
-  });
-
-  final LibraryBookFormat format;
-  final LibraryBook libraryBook;
-  final VoidCallback onLengthEditActivated;
-  final VoidCallback? onDeleteActivated;
-
-  Color get _formatColor => switch (format.format) {
-        BookFormat.audiobook => AppColors.audiobook,
-        BookFormat.eBook => AppColors.ebook,
-        BookFormat.paperback => AppColors.paperback,
-        BookFormat.hardcover => AppColors.hardcover,
-      };
+class const _FormatRow({
+  required final LibraryBookFormat format,
+  required final LibraryBook libraryBook,
+  required final VoidCallback onLengthEditActivated,
+  final VoidCallback? onDeleteActivated,
+}) extends StatelessWidget {
+  Color get _formatColor => format.format.color;
 
   IconData get _formatIcon => switch (format.format) {
-        BookFormat.audiobook => CupertinoIcons.headphones,
-        BookFormat.eBook => CupertinoIcons.device_phone_portrait,
-        BookFormat.paperback => CupertinoIcons.book,
-        BookFormat.hardcover => CupertinoIcons.book_fill,
-      };
+    BookFormat.audiobook => Icons.headphones,
+    BookFormat.eBook => Icons.phone_iphone,
+    BookFormat.paperback => Icons.menu_book_outlined,
+    BookFormat.hardcover => Icons.menu_book,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -202,8 +185,8 @@ class _FormatRow extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       color: format.hasLength
-                          ? CupertinoColors.systemGrey
-                          : CupertinoColors.activeBlue,
+                          ? EColors.textMuted
+                          : EColors.accentGlow,
                     ),
                   ),
                 ),
@@ -211,13 +194,13 @@ class _FormatRow extends StatelessWidget {
             ),
           ),
           if (onDeleteActivated != null)
-            CupertinoButton(
-              padding: EdgeInsets.zero,
+            IconButton(
+              tooltip: 'Delete format',
               onPressed: onDeleteActivated,
-              child: const Icon(
-                CupertinoIcons.trash,
+              icon: const Icon(
+                Icons.delete_outline,
                 size: 18,
-                color: CupertinoColors.destructiveRed,
+                color: EColors.danger,
               ),
             ),
         ],
@@ -226,16 +209,13 @@ class _FormatRow extends StatelessWidget {
   }
 }
 
-class _AddFormatSheet extends StatefulWidget {
-  const _AddFormatSheet({required this.existingTypes});
-
-  final Set<BookFormat> existingTypes;
-
+class const _AddFormatSheet({required final Set<BookFormat> existingTypes})
+    extends StatefulWidget {
   @override
   State<_AddFormatSheet> createState() => _AddFormatSheetState();
 }
 
-class _AddFormatSheetState extends State<_AddFormatSheet> {
+class _AddFormatSheetState() extends State<_AddFormatSheet> {
   BookFormat? _selectedFormat;
   LengthInputController? _lengthController;
 
@@ -263,35 +243,27 @@ class _AddFormatSheetState extends State<_AddFormatSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoAlertDialog(
+    return AlertDialog(
       title: const Text('Add Format'),
       content: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
+            runSpacing: 8,
             children: BookFormat.values.mapL((format) {
               final isDisabled = widget.existingTypes.contains(format);
               final isSelected = _selectedFormat == format;
-              return CupertinoButton(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                color: isSelected
-                    ? CupertinoColors.activeBlue
-                    : (isDisabled
-                        ? CupertinoColors.systemGrey4
-                        : CupertinoColors.systemGrey5),
-                onPressed:
-                    isDisabled ? null : () => _prepareLengthInputForFormat(format),
-                child: Text(
-                  format.name,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDisabled
-                        ? CupertinoColors.systemGrey2
-                        : (isSelected
-                            ? CupertinoColors.white
-                            : CupertinoColors.label),
+              return IgnorePointer(
+                ignoring: isDisabled,
+                child: Opacity(
+                  opacity: isDisabled ? 0.45 : 1,
+                  child: EFilterChip(
+                    label: format.name,
+                    color: format.color,
+                    selected: isSelected,
+                    onActivated: () => _prepareLengthInputForFormat(format),
                   ),
                 ),
               );
@@ -306,21 +278,19 @@ class _AddFormatSheetState extends State<_AddFormatSheet> {
           ],
         ],
       ),
-      actions: _lengthController?.dialogActions(context, _submitAddedFormat) ?? [],
+      actions:
+          _lengthController?.dialogActions(context, _submitAddedFormat) ?? [],
     );
   }
 }
 
-class _EditLengthSheet extends StatefulWidget {
-  const _EditLengthSheet({required this.format});
-
-  final LibraryBookFormat format;
-
+class const _EditLengthSheet({required final LibraryBookFormat format})
+    extends StatefulWidget {
   @override
   State<_EditLengthSheet> createState() => _EditLengthSheetState();
 }
 
-class _EditLengthSheetState extends State<_EditLengthSheet> {
+class _EditLengthSheetState() extends State<_EditLengthSheet> {
   late final LengthInputController _controller;
 
   @override
@@ -347,7 +317,7 @@ class _EditLengthSheetState extends State<_EditLengthSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoAlertDialog(
+    return AlertDialog(
       title: Text('Edit ${widget.format.format.name} Length'),
       content: Padding(
         padding: const EdgeInsets.only(top: 16),
@@ -358,20 +328,15 @@ class _EditLengthSheetState extends State<_EditLengthSheet> {
   }
 }
 
-class _ReassignEventsSheet extends StatefulWidget {
-  const _ReassignEventsSheet({
-    required this.format,
-    required this.otherFormats,
-  });
-
-  final LibraryBookFormat format;
-  final List<LibraryBookFormat> otherFormats;
-
+class const _ReassignEventsSheet({
+  required final LibraryBookFormat format,
+  required final List<LibraryBookFormat> otherFormats,
+}) extends StatefulWidget {
   @override
   State<_ReassignEventsSheet> createState() => _ReassignEventsSheetState();
 }
 
-class _ReassignEventsSheetState extends State<_ReassignEventsSheet> {
+class _ReassignEventsSheetState() extends State<_ReassignEventsSheet> {
   LibraryBookFormat? _selectedTarget;
 
   @override
@@ -382,50 +347,43 @@ class _ReassignEventsSheetState extends State<_ReassignEventsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoActionSheet(
+    return AlertDialog(
       title: const Text('Reassign Progress Events'),
-      message: Column(
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             'This format has progress events. Move them to:',
-            style: TextStyle(fontSize: 13),
+            style: EText.body.small,
           ),
           const SizedBox(height: 12),
-          CupertinoSlidingSegmentedControl<int>(
-            groupValue: _selectedTarget?.supaId,
-            children: {
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
               for (final format in widget.otherFormats)
-                format.supaId: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child:
-                      Text(format.format.name, style: TextStyle(fontSize: 13)),
+                EFilterChip(
+                  label: format.format.name,
+                  color: format.format.color,
+                  selected: _selectedTarget?.supaId == format.supaId,
+                  onActivated: () => setState(() => _selectedTarget = format),
                 ),
-            },
-            onValueChanged: (id) {
-              if (id == null) return;
-              setState(() {
-                _selectedTarget =
-                    widget.otherFormats.firstWhere((f) => f.supaId == id);
-              });
-            },
+            ],
           ),
         ],
       ),
       actions: [
-        CupertinoActionSheetAction(
-          isDestructiveAction: true,
-          onPressed: () {
-            if (_selectedTarget != null) {
-              Navigator.pop(context, _selectedTarget);
-            }
-          },
-          child: const Text('Move & Delete'),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: _selectedTarget == null
+              ? null
+              : () => Navigator.pop(context, _selectedTarget),
+          child: Text('Move & Delete', style: EText.section.danger),
         ),
       ],
-      cancelButton: CupertinoActionSheetAction(
-        onPressed: () => Navigator.pop(context),
-        child: const Text('Cancel'),
-      ),
     );
   }
 }

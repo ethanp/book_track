@@ -3,36 +3,24 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class TextFieldValueAndSuffix {
-  const TextFieldValueAndSuffix(this.value, this.suffix);
+class const TextFieldValueAndSuffix(final String value, final String? suffix);
 
-  final String value;
-  final String? suffix;
-}
-
-class EditableBookProperty extends ConsumerStatefulWidget {
-  const EditableBookProperty({
-    required this.title,
-    required this.value,
-    required this.initialTextFieldValues,
-    required this.onValuesCommitted,
-  });
-
-  final String title;
-  final String value;
-  final void Function(List<String>) onValuesCommitted;
-  final List<TextFieldValueAndSuffix> initialTextFieldValues;
-
+class const EditableBookProperty({
+  required final String title,
+  required final String value,
+  required final List<TextFieldValueAndSuffix> initialTextFieldValues,
+  required final void Function(List<String>) onValuesCommitted,
+}) extends ConsumerStatefulWidget {
   @override
   ConsumerState createState() => _EditableBookPropertyState();
 }
 
-class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
+class _EditableBookPropertyState() extends ConsumerState<EditableBookProperty> {
   bool _editing = false;
 
   late final Map<TextEditingController, String?> textFields = {
     for (final v in widget.initialTextFieldValues)
-      TextEditingController(text: v.value): v.suffix
+      TextEditingController(text: v.value): v.suffix,
   };
 
   @override
@@ -53,14 +41,16 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
   }
 
   Widget titleAndValueLeft() {
-    return Row(children: [
-      Text('${widget.title}: ', style: AppTextStyles.label),
-      SizedBox(width: 10),
-      if (_editing)
-        textField()
-      else
-        Text(widget.value, style: AppTextStyles.value),
-    ]);
+    return Row(
+      children: [
+        Text('${widget.title}: ', style: AppTextStyles.label),
+        SizedBox(width: 10),
+        if (_editing)
+          textField()
+        else
+          Text(widget.value, style: AppTextStyles.value),
+      ],
+    );
   }
 
   Widget textField() {
@@ -74,8 +64,10 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
               child: CupertinoTextField(
                 decoration: BoxDecoration(
                   color: CupertinoColors.systemGrey.withValues(alpha: 0.1),
-                  border:
-                      Border.all(color: CupertinoColors.systemGrey, width: 1),
+                  border: Border.all(
+                    color: CupertinoColors.systemGrey,
+                    width: 1,
+                  ),
                   borderRadius: BorderRadius.circular(5),
                 ),
                 padding: EdgeInsets.only(top: 5, left: 4),
@@ -88,10 +80,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
             if (field.value != null)
               Padding(
                 padding: const EdgeInsets.only(left: 3, right: 4),
-                child: Text(
-                  field.value!,
-                  style: AppTextStyles.value,
-                ),
+                child: Text(field.value!, style: AppTextStyles.value),
               ),
           ],
         ),
@@ -107,11 +96,13 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
 
   Widget trailingButtonsRight() {
     return _editing
-        ? Row(children: [
-            submitButton(),
-            SizedBox(width: 8),
-            cancelEditingButton(),
-          ])
+        ? Row(
+            children: [
+              submitButton(),
+              SizedBox(width: 8),
+              cancelEditingButton(),
+            ],
+          )
         : updateButton();
   }
 
@@ -119,10 +110,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
     return buttonStyle(
       color: CupertinoColors.systemGreen,
       onPressed: _commitEditedValues,
-      child: Icon(
-        CupertinoIcons.check_mark,
-        color: CupertinoColors.white,
-      ),
+      child: Icon(CupertinoIcons.check_mark, color: CupertinoColors.white),
     );
   }
 
@@ -140,10 +128,7 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
     return buttonStyle(
       color: CupertinoColors.systemRed,
       onPressed: () => setEditing(false),
-      child: Icon(
-        CupertinoIcons.clear,
-        color: CupertinoColors.white,
-      ),
+      child: Icon(CupertinoIcons.clear, color: CupertinoColors.white),
     );
   }
 
@@ -151,11 +136,10 @@ class _EditableBookPropertyState extends ConsumerState<EditableBookProperty> {
     required void Function() onPressed,
     required Widget child,
     required Color color,
-  }) =>
-      CupertinoButton(
-        onPressed: onPressed,
-        color: color,
-        padding: EdgeInsets.zero,
-        child: child,
-      );
+  }) => CupertinoButton(
+    onPressed: onPressed,
+    color: color,
+    padding: EdgeInsets.zero,
+    child: child,
+  );
 }

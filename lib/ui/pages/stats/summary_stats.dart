@@ -7,25 +7,15 @@ import 'package:intl/intl.dart';
 ///
 /// Simple immutable data class with a single factory entry point.
 /// All computation complexity is hidden in [_StatsCalculator].
-class SummaryStats {
-  const SummaryStats._({
-    required this.statusCounts,
-    required this.totalPages,
-    required this.totalMinutes,
-    required this.currentStreak,
-    required this.longestStreak,
-    required this.longestStreakStart,
-    required this.longestStreakEnd,
-  });
-
-  final Map<ReadingStatus, int> statusCounts;
-  final int totalPages;
-  final int totalMinutes;
-  final int currentStreak;
-  final int longestStreak;
-  final DateTime? longestStreakStart;
-  final DateTime? longestStreakEnd;
-
+class const SummaryStats._({
+  required final Map<ReadingStatus, int> statusCounts,
+  required final int totalPages,
+  required final int totalMinutes,
+  required final int currentStreak,
+  required final int longestStreak,
+  required final DateTime? longestStreakStart,
+  required final DateTime? longestStreakEnd,
+}) {
   int get totalHours => totalMinutes ~/ 60;
 
   String get longestStreakDateRange {
@@ -40,20 +30,22 @@ class SummaryStats {
 
   /// Computes summary statistics for the given books within the period.
   static SummaryStats calculate(
-          List<LibraryBook> books, DateTime? periodCutoff) =>
-      _StatsCalculator(books, periodCutoff).compute();
+    List<LibraryBook> books,
+    DateTime? periodCutoff,
+  ) => _StatsCalculator(books, periodCutoff).compute();
 }
 
 /// Encapsulates all computation logic for [SummaryStats].
-class _StatsCalculator {
-  _StatsCalculator(List<LibraryBook> allBooks, this._periodCutoff)
-      : _books = _filterByPeriod(allBooks, _periodCutoff);
-
-  final DateTime? _periodCutoff;
-  final List<LibraryBook> _books;
+class _StatsCalculator(
+  List<LibraryBook> allBooks,
+  final DateTime? _periodCutoff,
+) {
+  final List<LibraryBook> _books = _filterByPeriod(allBooks, _periodCutoff);
 
   static List<LibraryBook> _filterByPeriod(
-      List<LibraryBook> books, DateTime? cutoff) {
+    List<LibraryBook> books,
+    DateTime? cutoff,
+  ) {
     if (cutoff == null) return books;
     return books
         .where((b) => b.progressHistory.any((e) => e.end.isAfter(cutoff)))
@@ -85,13 +77,11 @@ class _StatsCalculator {
 }
 
 /// Accumulates pages read and minutes listened within a period.
-class _ProgressTotals {
-  const _ProgressTotals._({required this.pages, required this.minutes});
-
-  final int pages;
-  final int minutes;
-
-  factory _ProgressTotals.from(List<LibraryBook> books, DateTime? cutoff) {
+class const _ProgressTotals._({
+  required final int pages,
+  required final int minutes,
+}) {
+  factory from(List<LibraryBook> books, DateTime? cutoff) {
     int pages = 0;
     int minutes = 0;
 
@@ -107,13 +97,10 @@ class _ProgressTotals {
 }
 
 /// Computes progress deltas for a single book within a period.
-class _BookProgressDeltas {
-  _BookProgressDeltas(this._book, this._cutoff) {
+class _BookProgressDeltas(final LibraryBook _book, final DateTime? _cutoff) {
+  this {
     _compute();
   }
-
-  final LibraryBook _book;
-  final DateTime? _cutoff;
 
   int pages = 0;
   int minutes = 0;
@@ -143,7 +130,10 @@ class _BookProgressDeltas {
   }
 
   int _previousProgress(
-      List<ProgressEvent> sorted, int index, LibraryBookFormat format) {
+    List<ProgressEvent> sorted,
+    int index,
+    LibraryBookFormat format,
+  ) {
     if (index == 0) return 0;
 
     final prevEvent = sorted[index - 1];
@@ -169,30 +159,29 @@ class _BookProgressDeltas {
 }
 
 /// Computes current and longest reading streaks with date ranges.
-class _StreakResult {
-  const _StreakResult._({
-    required this.current,
-    required this.longest,
-    required this.longestStart,
-    required this.longestEnd,
-  });
-
-  final int current;
-  final int longest;
-  final DateTime? longestStart;
-  final DateTime? longestEnd;
-
-  factory _StreakResult.from(List<LibraryBook> books, DateTime? cutoff) {
+class const _StreakResult._({
+  required final int current,
+  required final int longest,
+  required final DateTime? longestStart,
+  required final DateTime? longestEnd,
+}) {
+  factory from(List<LibraryBook> books, DateTime? cutoff) {
     final activeDays = _collectActiveDays(books, cutoff);
     if (activeDays.isEmpty) {
       return const _StreakResult._(
-          current: 0, longest: 0, longestStart: null, longestEnd: null);
+        current: 0,
+        longest: 0,
+        longestStart: null,
+        longestEnd: null,
+      );
     }
     return _StreakCalculator(activeDays).compute();
   }
 
   static Set<DateTime> _collectActiveDays(
-      List<LibraryBook> books, DateTime? cutoff) {
+    List<LibraryBook> books,
+    DateTime? cutoff,
+  ) {
     final days = <DateTime>{};
     for (final book in books) {
       for (final event in book.progressHistory) {
@@ -207,10 +196,8 @@ class _StreakResult {
 }
 
 /// Performs streak calculation on a set of active days.
-class _StreakCalculator {
-  _StreakCalculator(Set<DateTime> days) : _sorted = days.toList()..sort();
-
-  final List<DateTime> _sorted;
+class _StreakCalculator(Set<DateTime> days) {
+  final List<DateTime> _sorted = days.toList()..sort();
 
   _StreakResult compute() {
     final today = DateTime.now().startOfDay;

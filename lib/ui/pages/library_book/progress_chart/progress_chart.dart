@@ -5,11 +5,8 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ProgressChart extends ConsumerWidget {
-  const ProgressChart(this.initialBook);
-
-  final LibraryBook initialBook;
-
+class const ProgressChart(final LibraryBook initialBook)
+    extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ref.userLibrary((library) {
@@ -24,8 +21,8 @@ class ProgressChart extends ConsumerWidget {
         );
       }
       if (!latestBook.formats.any((format) => format.hasLength)) {
-        return const Padding(
-          padding: EdgeInsets.all(AppSpacing.lg),
+        return Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Text(
             "Set a length for at least one format to see progress chart.",
             style: AppTextStyles.bodySecondary,
@@ -53,15 +50,17 @@ class ProgressChart extends ConsumerWidget {
           horizontal: AppSpacing.sm,
           vertical: AppSpacing.xs,
         ),
-        child: Column(children: [
-          _header(latestBook),
-          !latestBook.hasProgress
-              ? const Text(
-                  'No progress updates yet',
-                  style: AppTextStyles.bodySecondary,
-                )
-              : SizedBox(height: 300, child: _chart(latestBook)),
-        ]),
+        child: Column(
+          children: [
+            _header(latestBook),
+            !latestBook.hasProgress
+                ? Text(
+                    'No progress updates yet',
+                    style: AppTextStyles.bodySecondary,
+                  )
+                : SizedBox(height: 300, child: _chart(latestBook)),
+          ],
+        ),
       ),
     );
   }
@@ -92,10 +91,10 @@ class ProgressChart extends ConsumerWidget {
   }
 
   Widget _chart(LibraryBook latestBook) => Padding(
-        padding: const EdgeInsets.only(right: 24, bottom: 12, left: 4, top: 8),
-        child: BooksProgressChart(
-          books: [latestBook],
-          colorByFormat: true, // Color-code by format on book detail page
-        ),
-      );
+    padding: const EdgeInsets.only(right: 24, bottom: 12, left: 4, top: 8),
+    child: BooksProgressChart(
+      books: [latestBook],
+      colorByFormat: true, // Color-code by format on book detail page
+    ),
+  );
 }

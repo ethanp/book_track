@@ -1,8 +1,9 @@
 import 'package:book_track/ui/pages/add_a_book/add_book_modal_body.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:ethan_ui/ethan_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DismissibleCupertinoBottomSheet extends ConsumerWidget {
+class const DismissibleCupertinoBottomSheet() extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ninetyPercent = .9;
@@ -11,25 +12,28 @@ class DismissibleCupertinoBottomSheet extends ConsumerWidget {
       child: Container(
         decoration: roundedTopCorners(),
         clipBehavior: Clip.antiAlias,
-        child: Column(children: [
-          dragHandle(),
-          Expanded(child: AddBookModalBody()),
-        ]),
+        child: Column(
+          children: [
+            dragHandle(),
+            Expanded(child: AddBookModalBody()),
+          ],
+        ),
       ),
     );
   }
 
   static void show(BuildContext context) {
-    showCupertinoModalPopup(
+    showModalBottomSheet<void>(
       context: context,
-      barrierDismissible: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) => DismissibleCupertinoBottomSheet(),
     );
   }
 
   Decoration roundedTopCorners() {
     return BoxDecoration(
-      color: CupertinoColors.systemBackground,
+      color: EColors.surface,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
     );
   }
@@ -41,7 +45,7 @@ class DismissibleCupertinoBottomSheet extends ConsumerWidget {
         width: 40,
         height: 5,
         decoration: BoxDecoration(
-          color: CupertinoColors.systemGrey,
+          color: EColors.borderStrong,
           borderRadius: BorderRadius.circular(2.5),
         ),
       ),

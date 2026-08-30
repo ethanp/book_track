@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:ethan_utils/ethan_utils.dart';
 
 import 'package:book_track/data_model.dart';
@@ -13,41 +14,34 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class BooksProgressChart extends StatefulWidget {
-  const BooksProgressChart(
-      {required this.books, this.periodCutoff, this.colorByFormat = false});
-
-  final List<LibraryBook> books;
+class const BooksProgressChart({
+  required final List<LibraryBook> books,
 
   /// If provided, only show events after this date.
-  final DateTime? periodCutoff;
+  final DateTime? periodCutoff,
 
   /// If true, color dots by which format was used for each event.
-  final bool colorByFormat;
-
+  final bool colorByFormat = false,
+}) extends StatefulWidget {
   @override
   State<BooksProgressChart> createState() => _BooksProgressChartState();
 }
 
-class _BooksProgressChartState extends State<BooksProgressChart> {
+class _BooksProgressChartState() extends State<BooksProgressChart> {
   /// Holds selected event info: (book, event, percent)
   (LibraryBook, ProgressEvent, double)? _selectedEvent;
 
   /// Holds selected spot indices for highlighting: (barIndex, spotIndex)
   (int, int)? _selectedSpotIndices;
 
-  static const noAxisTitles =
-      AxisTitles(sideTitles: SideTitles(showTitles: false));
+  static const noAxisTitles = AxisTitles(
+    sideTitles: SideTitles(showTitles: false),
+  );
   static final double horizontalInterval = 25;
 
   /// Get color for a format type (as decided in the plan).
-  static Color colorForFormat(BookFormat? format) => switch (format) {
-        BookFormat.audiobook => AppColors.audiobook,
-        BookFormat.eBook => AppColors.ebook,
-        BookFormat.paperback => AppColors.paperback,
-        BookFormat.hardcover => AppColors.hardcover,
-        null => AppColors.shimmer,
-      };
+  static Color colorForFormat(BookFormat? format) =>
+      format?.color ?? AppColors.shimmer;
 
   @override
   Widget build(BuildContext context) {
@@ -55,27 +49,28 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
     final filteredBooks = widget.periodCutoff == null
         ? widget.books
         : widget.books
-            .where((b) => b.progressHistory
-                .any((e) => e.end.isAfter(widget.periodCutoff!)))
-            .toList();
+              .where(
+                (b) => b.progressHistory.any(
+                  (e) => e.end.isAfter(widget.periodCutoff!),
+                ),
+              )
+              .toList();
 
-    if (filteredBooks.isEmpty ||
-        filteredBooks.every((b) => !b.hasProgress)) {
-      return const Center(
-        child: Text('No reading data in this period'),
-      );
+    if (filteredBooks.isEmpty || filteredBooks.every((b) => !b.hasProgress)) {
+      return const Center(child: Text('No reading data in this period'));
     }
 
     final List<DateTime> eventTimes = filteredBooks
         .expand((b) => b.progressHistory)
-        .where((e) =>
-            widget.periodCutoff == null || e.end.isAfter(widget.periodCutoff!))
+        .where(
+          (e) =>
+              widget.periodCutoff == null ||
+              e.end.isAfter(widget.periodCutoff!),
+        )
         .mapL((e) => e.end);
 
     if (eventTimes.isEmpty) {
-      return const Center(
-        child: Text('No reading data in this period'),
-      );
+      return const Center(child: Text('No reading data in this period'));
     }
 
     final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
@@ -104,14 +99,18 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
                 ),
                 touchCallback:
                     (FlTouchEvent event, LineTouchResponse? response) {
-                  if (event is FlTapUpEvent &&
-                      response != null &&
-                      response.lineBarSpots != null &&
-                      response.lineBarSpots!.isNotEmpty) {
-                    _selectProgressEventAtSpot(
-                        filteredBooks, response, event.localPosition, timespan);
-                  }
-                },
+                      if (event is FlTapUpEvent &&
+                          response != null &&
+                          response.lineBarSpots != null &&
+                          response.lineBarSpots!.isNotEmpty) {
+                        _selectProgressEventAtSpot(
+                          filteredBooks,
+                          response,
+                          event.localPosition,
+                          timespan,
+                        );
+                      }
+                    },
               ),
             ),
           ),
@@ -122,8 +121,12 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
     );
   }
 
-  void _selectProgressEventAtSpot(List<LibraryBook> filteredBooks,
-      LineTouchResponse response, Offset? touchPos, TimeSpan timespan) {
+  void _selectProgressEventAtSpot(
+    List<LibraryBook> filteredBooks,
+    LineTouchResponse response,
+    Offset? touchPos,
+    TimeSpan timespan,
+  ) {
     // Find the closest spot to the touch position
     final spots = response.lineBarSpots!;
     LineBarSpot closestSpot = spots.first;
@@ -153,13 +156,17 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
 
     final book = filteredBooks[barIndex];
     final bookEvents = book.progressHistory
-        .where((e) =>
-            widget.periodCutoff == null || e.end.isAfter(widget.periodCutoff!))
+        .where(
+          (e) =>
+              widget.periodCutoff == null ||
+              e.end.isAfter(widget.periodCutoff!),
+        )
         .toList();
 
-    final filteredEvents = _filterToLastEventPerDay(book, bookEvents)
-        .where((ev) => book.progressPercentAt(ev) != null)
-        .toList();
+    final filteredEvents = _filterToLastEventPerDay(
+      book,
+      bookEvents,
+    ).where((ev) => book.progressPercentAt(ev) != null).toList();
 
     if (spotIndex < 0 || spotIndex >= filteredEvents.length) return;
 
@@ -231,8 +238,11 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
     final placeholder = SizedBox(
       height: height,
       width: width,
-      child: const Icon(CupertinoIcons.book,
-          size: 30, color: CupertinoColors.systemGrey),
+      child: const Icon(
+        CupertinoIcons.book,
+        size: 30,
+        color: CupertinoColors.systemGrey,
+      ),
     );
 
     Widget bookArt = placeholder;
@@ -246,7 +256,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
           child: Image.memory(
             fit: BoxFit.cover,
             book.book.coverArtS!,
-            errorBuilder: (_, __, ___) => placeholder,
+            errorBuilder: (_, _, _) => placeholder,
           ),
         ),
       );
@@ -271,44 +281,42 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
   }
 
   bool _hasMultipleFormats(List<LibraryBook> books) {
-    final allFormats =
-        books.expand((b) => b.formats).map((f) => f.format).toSet();
+    final allFormats = books
+        .expand((b) => b.formats)
+        .map((f) => f.format)
+        .toSet();
     return allFormats.length > 1;
   }
 
   Widget _formatLegend(List<LibraryBook> books) {
-    final allFormats = books
-        .expand((b) => b.formats)
-        .map((f) => f.format)
-        .toSet()
-        .toList()
-      ..sortOn((e) => e.name);
+    final allFormats =
+        books.expand((b) => b.formats).map((f) => f.format).toSet().toList()
+          ..sortOn((e) => e.name);
 
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: allFormats.mapL((format) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: colorForFormat(format),
-                      shape: BoxShape.circle,
-                    ),
+        children: allFormats.mapL(
+          (format) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: colorForFormat(format),
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    format.name,
-                    style: const TextStyle(fontSize: 11),
-                  ),
-                ],
-              ),
-            )),
+                ),
+                const SizedBox(width: 4),
+                Text(format.name, style: const TextStyle(fontSize: 11)),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -340,8 +348,11 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
   List<LineChartBarData> _plotLines(List<LibraryBook> filteredBooks) {
     final allProgressEvents = filteredBooks
         .expand((b) => b.progressHistory)
-        .where((e) =>
-            widget.periodCutoff == null || e.end.isAfter(widget.periodCutoff!))
+        .where(
+          (e) =>
+              widget.periodCutoff == null ||
+              e.end.isAfter(widget.periodCutoff!),
+        )
         .toList();
 
     if (allProgressEvents.isEmpty) return [];
@@ -359,56 +370,67 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
     for (int barIndex = 0; barIndex < filteredBooks.length; barIndex++) {
       final book = filteredBooks[barIndex];
       final bookEvents = book.progressHistory
-          .where((e) =>
-              widget.periodCutoff == null ||
-              e.end.isAfter(widget.periodCutoff!))
+          .where(
+            (e) =>
+                widget.periodCutoff == null ||
+                e.end.isAfter(widget.periodCutoff!),
+          )
           .toList();
 
       // Filter to show only the last event per day to avoid vertical blips
       final filteredEvents = _filterToLastEventPerDay(book, bookEvents);
 
-      result.add(LineChartBarData(
-        spots: filteredEvents
-            .where((ev) => book.progressPercentAt(ev) != null)
-            .mapL((curr) => eventToSpot(book, curr)),
-        isCurved: true,
-        curveSmoothness: .05,
-        belowBarData: gradientFill(),
-        color: AppColors.textSecondary.withValues(alpha: 0.7),
-        dotData: FlDotData(
-          show: true,
-          getDotPainter: (spot, xPercentage, bar, spotIndex) {
-            // Check if this is the selected spot
-            final isSelected = _selectedSpotIndices != null &&
-                _selectedSpotIndices!.$1 == barIndex &&
-                _selectedSpotIndices!.$2 == spotIndex;
+      result.add(
+        LineChartBarData(
+          spots: filteredEvents
+              .where((ev) => book.progressPercentAt(ev) != null)
+              .mapL((curr) => eventToSpot(book, curr)),
+          isCurved: true,
+          curveSmoothness: .05,
+          belowBarData: gradientFill(),
+          color: AppColors.textSecondary.withValues(alpha: 0.7),
+          dotData: FlDotData(
+            show: true,
+            getDotPainter: (spot, xPercentage, bar, spotIndex) {
+              // Check if this is the selected spot
+              final isSelected =
+                  _selectedSpotIndices != null &&
+                  _selectedSpotIndices!.$1 == barIndex &&
+                  _selectedSpotIndices!.$2 == spotIndex;
 
-            // Get the event at this index to determine format
-            final event = filteredEvents[spotIndex];
-            final format = book.formatById(event.formatId);
+              // Get the event at this index to determine format
+              final event = filteredEvents[spotIndex];
+              final format = book.formatById(event.formatId);
 
-            // Calculate proper x percentage
-            xPercentage = xRange > 0 ? (spot.x - firstDate) / xRange * 100 : 50;
-            final double baseRadius = xPercentage / 100 / 1.2 + 2;
-            final double radius = isSelected ? baseRadius + 3 : baseRadius;
+              // Calculate proper x percentage
+              xPercentage = xRange > 0
+                  ? (spot.x - firstDate) / xRange * 100
+                  : 50;
+              final double baseRadius = xPercentage / 100 / 1.2 + 2;
+              final double radius = isSelected ? baseRadius + 3 : baseRadius;
 
-            // Use format-based color if enabled
-            final Color dotColor = widget.colorByFormat
-                ? colorForFormat(format?.format)
-                : AppColors.teal.withValues(alpha: 0.7).lerpWith(
-                    AppColors.primary.withValues(alpha: 0.8),
-                    xPercentage / 100);
+              // Use format-based color if enabled
+              final Color dotColor = widget.colorByFormat
+                  ? colorForFormat(format?.format)
+                  : AppColors.teal
+                        .withValues(alpha: 0.7)
+                        .lerpWith(
+                          AppColors.primary.withValues(alpha: 0.8),
+                          xPercentage / 100,
+                        );
 
-            return FlDotCirclePainter(
-              radius: radius,
-              color: isSelected ? AppColors.burgundy : dotColor,
-              strokeColor:
-                  isSelected ? CupertinoColors.white : AppColors.textPrimary,
-              strokeWidth: isSelected ? 2 : 0,
-            );
-          },
+              return FlDotCirclePainter(
+                radius: radius,
+                color: isSelected ? AppColors.burgundy : dotColor,
+                strokeColor: isSelected
+                    ? CupertinoColors.white
+                    : AppColors.textPrimary,
+                strokeWidth: isSelected ? 2 : 0,
+              );
+            },
+          ),
         ),
-      ));
+      );
     }
     return result;
   }
@@ -432,10 +454,7 @@ class _BooksProgressChartState extends State<BooksProgressChart> {
     return AxisTitles(
       axisNameWidget: FlutterHelpers.transform(
         shift: shiftTitle,
-        child: Text(
-          'Percentage',
-          style: AppTextStyles.yAxisName,
-        ),
+        child: Text('Percentage', style: AppTextStyles.yAxisName),
       ),
       sideTitles: SideTitles(
         interval: horizontalInterval,

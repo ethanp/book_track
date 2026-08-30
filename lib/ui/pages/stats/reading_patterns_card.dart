@@ -5,12 +5,10 @@ import 'package:book_track/ui/pages/stats/async_stats_card.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 
-class ReadingPatternsCard extends StatelessWidget {
-  const ReadingPatternsCard({required this.books, required this.periodCutoff});
-
-  final List<LibraryBook> books;
-  final DateTime? periodCutoff;
-
+class const ReadingPatternsCard({
+  required final List<LibraryBook> books,
+  required final DateTime? periodCutoff,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AsyncStatsCard<_ReadingPatternsData>(
@@ -47,8 +45,8 @@ class ReadingPatternsCard extends StatelessWidget {
   }
 
   Widget _emptyState() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 20),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
       child: Center(
         child: Text(
           'No reading activity in this period',
@@ -78,25 +76,21 @@ class ReadingPatternsCard extends StatelessWidget {
   }
 }
 
-class _ReadingPatternsData {
-  const _ReadingPatternsData({required this.activityByDayOfWeek});
+class const _ReadingPatternsData({
+  required final Map<int, double> activityByDayOfWeek,
+});
 
-  final Map<int, double> activityByDayOfWeek;
-}
-
-class _DayOfWeekChart extends StatelessWidget {
-  const _DayOfWeekChart({required this.activityByDay});
-
-  final Map<int, double> activityByDay;
-
+class const _DayOfWeekChart({required final Map<int, double> activityByDay})
+    extends StatelessWidget {
   static const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   static const double barWidth = 30.0;
   static const double maxBarHeight = 120.0;
 
   @override
   Widget build(BuildContext context) {
-    final maxValue =
-        activityByDay.values.isEmpty ? 1.0 : activityByDay.values.max;
+    final maxValue = activityByDay.values.isEmpty
+        ? 1.0
+        : activityByDay.values.max;
 
     return SizedBox(
       height: maxBarHeight + 40,

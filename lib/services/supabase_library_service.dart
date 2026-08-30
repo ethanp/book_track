@@ -12,7 +12,7 @@ import 'supabase_service.dart';
 
 const _log = ELogger('SupabaseLibraryService');
 
-class SupabaseLibraryService {
+class SupabaseLibraryService() {
   static final _libraryClient = supabase.from('library');
 
   static Future<List<LibraryBook>> myBooks() async {
@@ -21,8 +21,9 @@ class SupabaseLibraryService {
 
     final allProgressEvents =
         await SupabaseProgressService.historyForLibraryBooks(libraryBookIds);
-    final allFormats =
-        await SupabaseFormatService.formatsForLibraryBooks(libraryBookIds);
+    final allFormats = await SupabaseFormatService.formatsForLibraryBooks(
+      libraryBookIds,
+    );
 
     final libraryBooks = library.map(
       (supaBook) => supaBook.toLibraryBook(
@@ -97,8 +98,10 @@ class SupabaseLibraryService {
       .withRetry(_log);
 
   /// Set or clear the abandoned status for a book.
-  static Future<void> setAbandoned(LibraryBook book,
-      {required bool abandoned}) {
+  static Future<void> setAbandoned(
+    LibraryBook book, {
+    required bool abandoned,
+  }) {
     final value = abandoned ? DateTime.now().toIso8601String() : null;
     return _libraryClient
         .update({_SupaLibrary.abandonedAtCol: value})
@@ -142,19 +145,18 @@ class SupabaseLibraryService {
   }
 }
 
-class _SupaLibrary {
+class const _SupaLibrary(final PostgrestMap rawData) {
   Future<LibraryBook> toLibraryBook(
     List<ProgressEvent> progressHistory,
     List<LibraryBookFormat> formats,
-  ) async =>
-      LibraryBook(
-        supaId,
-        await SupabaseBookService.getBookById(bookId),
-        progressHistory,
-        formats,
-        archived,
-        abandonedAt,
-      );
+  ) async => LibraryBook(
+    supaId,
+    await SupabaseBookService.getBookById(bookId),
+    progressHistory,
+    formats,
+    archived,
+    abandonedAt,
+  );
 
   int get supaId => rawData[supaIdCol];
   static final String supaIdCol = 'id';
@@ -174,8 +176,4 @@ class _SupaLibrary {
   DateTime? get abandonedAt =>
       (rawData[abandonedAtCol] as String?).map(DateTime.parse);
   static final String abandonedAtCol = 'abandoned_at';
-
-  const _SupaLibrary(this.rawData);
-
-  final PostgrestMap rawData;
 }

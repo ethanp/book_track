@@ -6,12 +6,10 @@ import 'package:book_track/ui/pages/stats/summary_stats.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/cupertino.dart';
 
-class SummaryStatsCard extends StatelessWidget {
-  const SummaryStatsCard({required this.books, required this.periodCutoff});
-
-  final List<LibraryBook> books;
-  final DateTime? periodCutoff;
-
+class const SummaryStatsCard({
+  required final List<LibraryBook> books,
+  required final DateTime? periodCutoff,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AsyncStatsCard<SummaryStats>(
@@ -81,8 +79,11 @@ class SummaryStatsCard extends StatelessWidget {
           _statTile(stats.totalPages.asCompactCount, 'pages read'),
           _statTile('${stats.totalHours}h', 'listened'),
           _streakTile('Current Streak', stats.currentStreak, null),
-          _streakTile('Longest Streak', stats.longestStreak,
-              stats.longestStreakDateRange),
+          _streakTile(
+            'Longest Streak',
+            stats.longestStreak,
+            stats.longestStreakDateRange,
+          ),
         ],
       ),
     );
@@ -101,10 +102,7 @@ class SummaryStatsCard extends StatelessWidget {
         ),
         Text(label, style: AppTextStyles.caption),
         if (dateRange != null && dateRange.isNotEmpty)
-          Text(
-            dateRange,
-            style: AppTextStyles.caption.copyWith(fontSize: 10),
-          ),
+          Text(dateRange, style: AppTextStyles.caption.copyWith(fontSize: 10)),
       ],
     );
   }
@@ -117,7 +115,7 @@ class SummaryStatsCard extends StatelessWidget {
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: AppColors.burgundy,
+            color: AppColors.primary,
           ),
         ),
         const SizedBox(height: AppSpacing.xs),

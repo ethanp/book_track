@@ -2,43 +2,37 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/services/supabase_library_service.dart';
-import 'package:book_track/ui/common/app_bars.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/length_input.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'cover_art.dart';
 
 const _log = ELogger('SearchResultDetailPage');
 
-class SearchResultDetailPage extends ConsumerStatefulWidget {
-  const SearchResultDetailPage(this.book);
-
-  final OpenLibraryBook book;
-
+class const SearchResultDetailPage(final OpenLibraryBook book)
+    extends ConsumerStatefulWidget {
   @override
   ConsumerState createState() => _SearchResultDetailPage();
 }
 
-class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
+class _SearchResultDetailPage() extends ConsumerState<SearchResultDetailPage> {
   bool _saving = false;
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: AppNavigationBar(
-        middle: Text(widget.book.title),
-      ),
-      child: SafeArea(
+    return EScaffoldShell(
+      contentMaxWidth: double.infinity,
+      appBar: EAppHeader(title: widget.book.title),
+      body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(children: [
-            CoverArt(widget.book),
-            bookMetadata(),
-            formatButtons(),
-          ]),
+          child: Column(
+            children: [CoverArt(widget.book), bookMetadata(), formatButtons()],
+          ),
         ),
       ),
     );
@@ -53,10 +47,11 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: _saving
-                ? const CupertinoActivityIndicator()
+                ? const CircularProgressIndicator()
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: BookFormat.values.mapL(typeButton)),
+                    children: BookFormat.values.mapL(typeButton),
+                  ),
           ),
         ],
       ),
@@ -66,23 +61,10 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
   Widget typeButton(BookFormat bookType) {
     return Padding(
       padding: const EdgeInsets.all(6),
-      child: CupertinoButton(
+      child: FilledButton(
         onPressed: () => _promptForLength(bookType),
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        color: switch (bookType) {
-          BookFormat.audiobook => AppColors.audiobook,
-          BookFormat.eBook => AppColors.ebook,
-          BookFormat.paperback => AppColors.paperback,
-          BookFormat.hardcover => AppColors.hardcover,
-        },
-        child: Text(
-          bookType.name,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: CupertinoColors.white,
-          ),
-        ),
+        style: FilledButton.styleFrom(backgroundColor: bookType.color),
+        child: Text(bookType.name, style: EText.label.small.white),
       ),
     );
   }
@@ -91,7 +73,7 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
     final isAudiobook = bookType == BookFormat.audiobook;
     final initialLength = widget.book.numPagesMedian;
 
-    final result = await showCupertinoDialog<int>(
+    final result = await showDialog<int>(
       context: context,
       builder: (context) => _LengthInputDialog(
         isAudiobook: isAudiobook,
@@ -120,13 +102,18 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
   }
 
   Widget bookMetadata() {
-    return Column(children: [
-      keyValueText('Title: ', widget.book.title),
-      keyValueText('Author: ', widget.book.firstAuthor),
-      keyValueText('First Pub\'d: ', widget.book.yearFirstPublished.toString()),
-      if (widget.book.numPagesMedian != null)
-        keyValueText('Pages (est): ', widget.book.numPagesMedian!.toString()),
-    ]);
+    return Column(
+      children: [
+        keyValueText('Title: ', widget.book.title),
+        keyValueText('Author: ', widget.book.firstAuthor),
+        keyValueText(
+          'First Pub\'d: ',
+          widget.book.yearFirstPublished.toString(),
+        ),
+        if (widget.book.numPagesMedian != null)
+          keyValueText('Pages (est): ', widget.book.numPagesMedian!.toString()),
+      ],
+    );
   }
 
   Widget keyValueText(String key, String value) {
@@ -143,39 +130,24 @@ class _SearchResultDetailPage extends ConsumerState<SearchResultDetailPage> {
     );
     final Widget valueWidget = SizedBox(
       width: 200,
-      child: Text(
-        value,
-        style: metadataValue,
-        maxLines: 3,
-      ),
+      child: Text(value, style: metadataValue, maxLines: 3),
     );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          keyWidget,
-          SizedBox(width: 16),
-          valueWidget,
-        ],
-      ),
+      child: Row(children: [keyWidget, SizedBox(width: 16), valueWidget]),
     );
   }
 }
 
-class _LengthInputDialog extends StatefulWidget {
-  const _LengthInputDialog({
-    required this.isAudiobook,
-    this.initialValue,
-  });
-
-  final bool isAudiobook;
-  final int? initialValue;
-
+class const _LengthInputDialog({
+  required final bool isAudiobook,
+  final int? initialValue,
+}) extends StatefulWidget {
   @override
   State<_LengthInputDialog> createState() => _LengthInputDialogState();
 }
 
-class _LengthInputDialogState extends State<_LengthInputDialog> {
+class _LengthInputDialogState() extends State<_LengthInputDialog> {
   late final LengthInputController _controller;
 
   @override
@@ -200,15 +172,18 @@ class _LengthInputDialogState extends State<_LengthInputDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoAlertDialog(
+    return AlertDialog(
       title: Text(widget.isAudiobook ? 'Audiobook Length' : 'Book Length'),
       content: Padding(
         padding: const EdgeInsets.only(top: 16),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(widget.isAudiobook
-                ? 'How long is the audiobook?'
-                : 'How many pages?'),
+            Text(
+              widget.isAudiobook
+                  ? 'How long is the audiobook?'
+                  : 'How many pages?',
+            ),
             const SizedBox(height: 8),
             LengthInput(
               controller: _controller,
