@@ -4,7 +4,7 @@ import 'package:ethan_utils/ethan_utils.dart';
 
 import 'package:book_track/data_model.dart';
 import 'package:intl/intl.dart';
-import 'package:book_track/helpers.dart';
+import 'package:book_track/ui/common/books_progress_chart/chart_axis_label.dart';
 import 'package:book_track/ui/common/books_progress_chart/date_axis.dart';
 import 'package:book_track/ui/common/books_progress_chart/timespan.dart';
 import 'package:book_track/ui/common/cover_art_bytes.dart';
@@ -38,10 +38,6 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     sideTitles: SideTitles(showTitles: false),
   );
   static final double horizontalInterval = 25;
-
-  /// Get color for a format type (as decided in the plan).
-  static Color colorForFormat(BookFormat? format) =>
-      format?.color ?? AppColors.shimmer;
 
   @override
   Widget build(BuildContext context) {
@@ -84,10 +80,10 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
               maxY: 100,
               minX: timespan.beginning.millisSinceEpoch,
               maxX: timespan.end.millisSinceEpoch,
-              gridData: grid(),
-              titlesData: labelAxes(timespan),
-              lineBarsData: _plotLines(filteredBooks),
-              borderData: border(),
+              gridData: _horizontalPercentGrid(),
+              titlesData: _progressPercentAndDateAxes(timespan),
+              lineBarsData: _progressLinesHighestPerDay(filteredBooks),
+              borderData: _leftAndBottomAxes(),
               lineTouchData: LineTouchData(
                 handleBuiltInTouches: false, // We handle selection ourselves
                 touchSpotThreshold: 20,
@@ -103,7 +99,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
                           response != null &&
                           response.lineBarSpots != null &&
                           response.lineBarSpots!.isNotEmpty) {
-                        _selectProgressEventAtSpot(
+                        _selectClosestEventByProgressPercent(
                           filteredBooks,
                           response,
                           event.localPosition,
@@ -121,7 +117,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     );
   }
 
-  void _selectProgressEventAtSpot(
+  void _selectClosestEventByProgressPercent(
     List<LibraryBook> filteredBooks,
     LineTouchResponse response,
     Offset? touchPos,
@@ -163,7 +159,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
         )
         .toList();
 
-    final filteredEvents = _filterToLastEventPerDay(
+    final filteredEvents = _highestProgressPerDay(
       book,
       bookEvents,
     ).where((ev) => book.progressPercentAt(ev) != null).toList();
@@ -307,7 +303,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
                   width: 10,
                   height: 10,
                   decoration: BoxDecoration(
-                    color: colorForFormat(format),
+                    color: format.color,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -321,7 +317,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     );
   }
 
-  FlBorderData border() {
+  FlBorderData _leftAndBottomAxes() {
     const borderSide = BorderSide(color: AppColors.textSecondary, width: 1.5);
     return FlBorderData(
       show: true,
@@ -329,14 +325,14 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     );
   }
 
-  FlGridData grid() {
+  FlGridData _horizontalPercentGrid() {
     return FlGridData(
       horizontalInterval: horizontalInterval,
       drawVerticalLine: false,
     );
   }
 
-  FlTitlesData labelAxes(TimeSpan timespan) {
+  FlTitlesData _progressPercentAndDateAxes(TimeSpan timespan) {
     return FlTitlesData(
       leftTitles: percentageAxisTitles(shiftTitle: Offset(20, -10)),
       rightTitles: noAxisTitles,
@@ -345,7 +341,9 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     );
   }
 
-  List<LineChartBarData> _plotLines(List<LibraryBook> filteredBooks) {
+  List<LineChartBarData> _progressLinesHighestPerDay(
+    List<LibraryBook> filteredBooks,
+  ) {
     final allProgressEvents = filteredBooks
         .expand((b) => b.progressHistory)
         .where(
@@ -377,8 +375,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
           )
           .toList();
 
-      // Filter to show only the last event per day to avoid vertical blips
-      final filteredEvents = _filterToLastEventPerDay(book, bookEvents);
+      final filteredEvents = _highestProgressPerDay(book, bookEvents);
 
       result.add(
         LineChartBarData(
@@ -387,7 +384,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
               .mapL((curr) => eventToSpot(book, curr)),
           isCurved: true,
           curveSmoothness: .05,
-          belowBarData: gradientFill(),
+          belowBarData: _fadeTealUnderProgress(),
           color: AppColors.textSecondary.withValues(alpha: 0.7),
           dotData: FlDotData(
             show: true,
@@ -411,7 +408,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
 
               // Use format-based color if enabled
               final Color dotColor = widget.colorByFormat
-                  ? colorForFormat(format?.format)
+                  ? (format?.format.color ?? AppColors.shimmer)
                   : AppColors.teal
                         .withValues(alpha: 0.7)
                         .lerpWith(
@@ -435,7 +432,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     return result;
   }
 
-  static BarAreaData gradientFill() {
+  static BarAreaData _fadeTealUnderProgress() {
     return BarAreaData(
       show: true,
       gradient: LinearGradient(
@@ -452,9 +449,9 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
 
   static AxisTitles percentageAxisTitles({required Offset shiftTitle}) {
     return AxisTitles(
-      axisNameWidget: FlutterHelpers.transform(
+      axisNameWidget: ChartAxisLabel.nudgedIntoPlot(
+        Text('Percentage', style: AppTextStyles.yAxisName),
         shift: shiftTitle,
-        child: Text('Percentage', style: AppTextStyles.yAxisName),
       ),
       sideTitles: SideTitles(
         interval: horizontalInterval,
@@ -467,9 +464,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     );
   }
 
-  /// Filter events to show only the last event per day (by date, not time).
-  /// This prevents vertical blips when multiple updates occur on the same day.
-  List<ProgressEvent> _filterToLastEventPerDay(
+  List<ProgressEvent> _highestProgressPerDay(
     LibraryBook book,
     List<ProgressEvent> events,
   ) {

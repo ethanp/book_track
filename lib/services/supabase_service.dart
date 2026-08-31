@@ -1,6 +1,6 @@
 import 'package:book_track/extensions.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:book_track/helpers.dart';
+import 'package:book_track/network_retry.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Connects this app to its Supabase BaaS.

@@ -1,6 +1,7 @@
-import 'package:book_track/helpers.dart';
+import 'package:book_track/ui/common/books_progress_chart/chart_axis_label.dart';
 import 'package:book_track/ui/common/books_progress_chart/timespan.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:book_track/ui/common/progress_event_date_caption.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
@@ -14,21 +15,21 @@ class const DateAxis(final TimeSpan timespan) {
   }
 
   Widget dateAxisName() {
-    return FlutterHelpers.transform(
-      shift: Offset(20, 0),
-      child: Row(
+    return ChartAxisLabel.nudgedIntoPlot(
+      Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text('Date', style: AppTextStyles.sideAxisLabel),
           Padding(
             padding: const EdgeInsets.only(top: 1, left: 10),
             child: Text(
-              'Starting ${TimeHelpers.monthDayYear(timespan.beginning)}',
+              'Starting ${timespan.beginning.slashMonthDayYear}',
               style: AppTextStyles.sideAxisLabelThin,
             ),
           ),
         ],
       ),
+      shift: Offset(20, 0),
     );
   }
 
@@ -36,18 +37,18 @@ class const DateAxis(final TimeSpan timespan) {
     return SideTitles(
       showTitles: true,
       reservedSize: 36,
-      interval: verticalInterval.inMilliseconds.toDouble(),
+      interval: dateTickSpacing.inMilliseconds.toDouble(),
       getTitlesWidget: (double value, TitleMeta _) {
-        return FlutterHelpers.transform(
+        return ChartAxisLabel.tiltedToClearNeighbors(
+          dateText(value),
           shift: Offset(8, 0),
           angleDegrees: 35,
-          child: dateText(value),
         );
       },
     );
   }
 
-  Duration get verticalInterval {
+  Duration get dateTickSpacing {
     if (timespan.duration < Duration(hours: 10))
       return Duration(minutes: 30);
     else if (timespan.duration < Duration(days: 1))
@@ -61,12 +62,12 @@ class const DateAxis(final TimeSpan timespan) {
   }
 
   Widget dateText(double value) {
-    final formatter = verticalInterval >= Duration(days: 1)
-        ? TimeHelpers.monthDayYear
-        : TimeHelpers.hourMinuteAmPm;
     final dateTime = DateTime.fromMillisecondsSinceEpoch(value.floor());
+    final caption = dateTickSpacing >= Duration(days: 1)
+        ? dateTime.slashMonthDayYear
+        : dateTime.hourMinuteAmPm;
     return Text(
-      formatter(dateTime),
+      caption,
       style: TextStyle(letterSpacing: -.4, fontSize: 10),
     );
   }

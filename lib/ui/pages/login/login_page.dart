@@ -143,10 +143,10 @@ class _LoginPageState() extends State<LoginPage> {
   Future<void> _sendPasswordResetLink(BuildContext context) async {
     try {
       await SupabaseAuthService.sentPasswordResetLink(loginFormC.emailInput);
-      if (context.mounted) context.showSnackBar('Reset email sent');
+      if (context.mounted) context.showInfoOrErrorAlert('Reset email sent');
     } catch (error) {
       if (context.mounted) {
-        context.showSnackBar('error: $error', isError: true);
+        context.showInfoOrErrorAlert('error: $error', isError: true);
       }
     }
   }
@@ -158,7 +158,7 @@ class _LoginPageState() extends State<LoginPage> {
           ? SupabaseAuthService.signUp
           : SupabaseAuthService.signIn;
       await serviceFunc(loginFormC.emailInput, loginFormC.passwordInput);
-      if (mounted) context.showSnackBar('Success');
+      if (mounted) context.showInfoOrErrorAlert('Success');
     } on AuthException catch (error) {
       _authError = error.message;
     } catch (error) {

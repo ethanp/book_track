@@ -49,7 +49,6 @@ class _CalendarHeatmapState() extends State<CalendarHeatmap> {
     super.dispose();
   }
 
-  /// Max activity value for relative color scaling
   int get _maxActivity {
     if (widget.activityByDay.isEmpty) return 1;
     final max = widget.activityByDay.values.max;
@@ -269,7 +268,7 @@ class _CalendarHeatmapState() extends State<CalendarHeatmap> {
   }
 
   Widget _dayCell(int activity, DateTime date) {
-    final colorIndex = _activityToColorIndex(activity);
+    final colorIndex = _quartileOfMaxActivity(activity);
     final isSelected = selectedDate?.sameDayAs(date) == true;
 
     return GestureDetector(
@@ -297,9 +296,8 @@ class _CalendarHeatmapState() extends State<CalendarHeatmap> {
     );
   }
 
-  int _activityToColorIndex(int activity) {
+  int _quartileOfMaxActivity(int activity) {
     if (activity == 0) return 0;
-    // Use relative scale: divide into 4 buckets based on max value
     final ratio = activity / _maxActivity;
     if (ratio <= 0.25) return 1;
     if (ratio <= 0.50) return 2;

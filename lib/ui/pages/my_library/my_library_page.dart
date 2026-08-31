@@ -10,7 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:book_track/ui/pages/my_library/archived_books_section.dart';
 import 'package:book_track/ui/pages/my_library/book_tile.dart';
 
-import 'dismissible_cupertino_bottom_sheet.dart';
+import 'add_book_sheet.dart';
 
 const _log = ELogger('MyLibraryPage');
 
@@ -30,7 +30,7 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
         title: 'Library',
         leading: IconButton(
           tooltip: 'Add book',
-          onPressed: () => DismissibleCupertinoBottomSheet.show(context),
+          onPressed: () => AddBookSheet.show(context),
           icon: const Icon(Icons.add),
         ),
         actions: [SignOutButton()],

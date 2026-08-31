@@ -1,7 +1,7 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:book_track/ui/pages/stats/progress_per_month_chart.dart';
+import 'package:book_track/ui/pages/stats/progress_by_period_chart.dart';
 import 'package:book_track/ui/pages/stats/rolling_average_chart.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:ethan_utils/ethan_utils.dart';
@@ -28,23 +28,20 @@ class const ProgressChartCard({
               child: Text('Reading Progress', style: AppTextStyles.h3),
             ),
           ),
-          _chartSection(
+          _chartAndCaptionPanel(
             'Rolling Average',
             RollingAverageChart(books: books, periodCutoff: period.cutoffDate),
           ),
-          _chartSection(
+          _chartAndCaptionPanel(
             period.chartAggregation.name.capitalize,
-            ProgressPerMonthChart(books: books, period: period),
+            ProgressByPeriodChart(books: books, period: period),
           ),
         ],
       ),
     );
   }
 
-  /// Each chart lives in its own bounding panel so a chart and its caption
-  /// (e.g. the rolling average's "Reading pace" line) read as one unit,
-  /// clearly separated from the chart below it.
-  Widget _chartSection(String label, Widget chart) {
+  Widget _chartAndCaptionPanel(String label, Widget chart) {
     return Container(
       margin: const EdgeInsets.fromLTRB(
         AppSpacing.md,

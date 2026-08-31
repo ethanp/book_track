@@ -15,7 +15,7 @@ class const BookTile(final LibraryBook book, final int idx)
       key: Key(book.book.supaId.toString()),
       direction: DismissDirection.startToEnd,
       confirmDismiss: (direction) => UpdateProgressDialogPage.show(ref, book),
-      background: _dragBackground(),
+      background: _addProgressReveal(),
       child: _bookListTile(context),
     );
   }
@@ -160,7 +160,7 @@ class const BookTile(final LibraryBook book, final int idx)
     );
   }
 
-  Widget _dragBackground() {
+  Widget _addProgressReveal() {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.success,

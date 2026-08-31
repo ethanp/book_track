@@ -1,7 +1,7 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/helpers.dart';
+import 'package:book_track/ui/common/books_progress_chart/chart_axis_label.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:book_track/ui/pages/stats/reading_pace.dart';
+import 'package:book_track/ui/pages/stats/smoothed_reading_pace.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -12,21 +12,21 @@ class const RollingAverageChart({
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final series = ReadingPaceSeries.fromProgressDeltas(
+    final smoothedPace = SmoothedReadingPace.fromProgressDeltas(
       books
           .where((book) => book.formats.isNotEmpty)
           .expand((book) => book.progressDiffs),
       periodCutoff: periodCutoff,
     );
 
-    if (series.points.isEmpty) {
+    if (smoothedPace.points.isEmpty) {
       return _emptyState();
     }
 
     return Column(
       children: [
-        _currentPace(series),
-        Expanded(child: _lineChart(series)),
+        _currentPace(smoothedPace),
+        Expanded(child: _paceTrend(smoothedPace)),
       ],
     );
   }
@@ -47,8 +47,8 @@ class const RollingAverageChart({
     );
   }
 
-  Widget _lineChart(ReadingPaceSeries series) {
-    final spots = series.points
+  Widget _paceTrend(SmoothedReadingPace smoothedPace) {
+    final spots = smoothedPace.points
         .map(
           (point) => FlSpot(
             point.day.millisecondsSinceEpoch.toDouble(),
@@ -64,12 +64,12 @@ class const RollingAverageChart({
         : spanDays <= 60
         ? const Duration(days: 7).inMilliseconds.toDouble()
         : const Duration(days: 30).inMilliseconds.toDouble();
-    final yInterval = _niceAxisInterval(series.maxPace);
+    final yInterval = _percentTickOnSimpleNumbers(smoothedPace.maxPace);
 
     return LineChart(
       LineChartData(
         minY: 0,
-        maxY: series.maxPace * 1.1,
+        maxY: smoothedPace.maxPace * 1.1,
         minX: minX,
         maxX: maxX,
         gridData: FlGridData(
@@ -79,9 +79,9 @@ class const RollingAverageChart({
         titlesData: FlTitlesData(
           leftTitles: AxisTitles(
             axisNameSize: 20,
-            axisNameWidget: FlutterHelpers.transform(
+            axisNameWidget: ChartAxisLabel.nudgedIntoPlot(
+              Text('% / day', style: AppTextStyles.yAxisName),
               shift: const Offset(20, -10),
-              child: Text('% / day', style: AppTextStyles.yAxisName),
             ),
             sideTitles: SideTitles(
               showTitles: true,
@@ -115,10 +115,10 @@ class const RollingAverageChart({
               interval: axisInterval,
               getTitlesWidget: (value, meta) {
                 final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-                return FlutterHelpers.transform(
+                return ChartAxisLabel.tiltedToClearNeighbors(
+                  _monthTickLabelingJanuaryWithYear(date),
                   shift: const Offset(2, 2),
                   angleDegrees: 40,
-                  child: _dateLabel(date),
                 );
               },
             ),
@@ -158,7 +158,7 @@ class const RollingAverageChart({
               final date = DateTime.fromMillisecondsSinceEpoch(spot.x.toInt());
               final dateStr = DateFormat('MMM d, yyyy').format(date);
               return LineTooltipItem(
-                '$dateStr\n${_formatDailyPercent(spot.y)}/day',
+                '$dateStr\n${_paceKeepingTenthsBelowTen(spot.y)}/day',
                 const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -172,9 +172,7 @@ class const RollingAverageChart({
     );
   }
 
-  /// Angled axis label; January carries a two-digit year suffix (e.g.
-  /// "Jan 26") to mark the year boundary, matching the monthly chart.
-  Widget _dateLabel(DateTime date) {
+  Widget _monthTickLabelingJanuaryWithYear(DateTime date) {
     final format = date.month == 1 ? 'MMM yy' : 'MMM';
     return Text(
       DateFormat(format).format(date),
@@ -186,25 +184,21 @@ class const RollingAverageChart({
     );
   }
 
-  Widget _currentPace(ReadingPaceSeries series) {
+  Widget _currentPace(SmoothedReadingPace smoothedPace) {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Text(
-        'Reading pace: ${_formatDailyPercent(series.currentPace)}/day',
+        'Reading pace: ${_paceKeepingTenthsBelowTen(smoothedPace.currentPace)}/day',
         style: AppTextStyles.h5,
       ),
     );
   }
 }
 
-/// Formats a percent-per-day value. Small paces keep one decimal so a
-/// "2.4%/day" reader isn't flattened to "2%/day".
-String _formatDailyPercent(double value) =>
+String _paceKeepingTenthsBelowTen(double value) =>
     value >= 10 ? '${value.round()}%' : '${value.toStringAsFixed(1)}%';
 
-/// Rounds an axis step up to a friendly value (…, 2, 5, 10, 20, 25, …) so the
-/// y-axis lands on simple numbers like "5%" rather than "6.1%".
-double _niceAxisInterval(double maxValue) {
+double _percentTickOnSimpleNumbers(double maxValue) {
   const steps = [1.0, 2.0, 5.0, 10.0, 20.0, 25.0, 50.0, 100.0];
   final target = maxValue / 5;
   return steps.firstWhere((step) => step >= target, orElse: () => steps.last);

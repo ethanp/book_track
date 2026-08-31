@@ -57,7 +57,7 @@ class _TopLevelWidgetState() extends ConsumerState<TopLevelWidget> {
     return MaterialApp(
       title: 'Book Track',
       debugShowCheckedModeBanner: false,
-      theme: ETheme.build(),
+      theme: ETheme.material3Dark,
       home: _buildHome(),
     );
   }

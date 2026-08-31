@@ -7,42 +7,18 @@ class const ReadingPacePoint({
   required final double percentPerDay,
 });
 
-/// Smoothed reading pace: the trailing [trailingWindowDays]-day average of
-/// daily percent-of-book read, then blurred into a readable trend line, with
-/// one point per calendar day from the first reading day through today.
-///
-/// Two stages:
-/// 1. Trailing average turns bursty per-event progress into a "percent per
-///    day" rate; rest days count as zero, so the pace reflects consistency.
-/// 2. A centered moving average, applied [_smoothingPasses] times, erases the
-///    day-to-day ripples a boxcar window leaves when a reading day enters or
-///    exits it — the same approach as the workout load chart, tuned more
-///    aggressively because percent-of-book spikes are sharper than Z2 load.
-///
-/// Callers pass raw per-event percent deltas (event day -> percent gained);
-/// day-bucketing, averaging, smoothing, and period-clipping all happen here,
-/// keeping this free of any UI, charting, or storage dependencies.
-class const ReadingPaceSeries({
+class const SmoothedReadingPace({
   required final List<ReadingPacePoint> points,
-
-  /// Smoothed pace for the most recent day, percent-of-book per day.
   required final double currentPace,
-
-  /// Largest pace among [points], floored at 1 so chart axes stay sane.
   required final double maxPace,
 }) {
-  /// Trailing window whose average defines the raw daily pace before smoothing.
   static const trailingWindowDays = 14;
 
-  /// Days on each side included in each smoothing pass — fourteen plus the
-  /// point itself is a centered 29-day (~month) window.
   static const _smoothingHalfWindow = 14;
 
-  /// Repeated centered averaging approximates a Gaussian blur; more passes
-  /// widen the blur and erase the bursty spikes left by big reading days.
   static const _smoothingPasses = 5;
 
-  static const empty = ReadingPaceSeries(
+  static const empty = SmoothedReadingPace(
     points: [],
     currentPace: 0,
     maxPace: 0,
@@ -53,7 +29,7 @@ class const ReadingPaceSeries({
     DateTime? periodCutoff,
     DateTime? now,
   }) {
-    final dailyPercentByDay = _dailyPercentByDay(progressDeltas);
+    final dailyPercentByDay = _positivePercentGainedByDay(progressDeltas);
     if (dailyPercentByDay.isEmpty) return empty;
 
     final earliestDay = dailyPercentByDay.keys.minBy<num>(
@@ -62,8 +38,6 @@ class const ReadingPaceSeries({
     final today = (now ?? DateTime.now()).startOfDay;
     final daysToShow = today.difference(earliestDay).inDays;
 
-    // Build and smooth across the full history so the trailing average and the
-    // centered blur are both correct at the left edge of the shown window.
     final days = [
       for (var dayOffset = 0; dayOffset <= daysToShow; dayOffset++)
         earliestDay.shiftedByDays(dayOffset),
@@ -71,7 +45,7 @@ class const ReadingPaceSeries({
     final rawPace = [
       for (final day in days) _trailingAverage(day, dailyPercentByDay),
     ];
-    final smoothedPace = _smoothed(rawPace);
+    final smoothedPace = _blurWithFiveCenteredPasses(rawPace);
 
     final allPoints = [
       for (var index = 0; index < days.length; index++)
@@ -90,16 +64,14 @@ class const ReadingPaceSeries({
         .map((point) => point.percentPerDay)
         .reduce((a, b) => a > b ? a : b);
 
-    return ReadingPaceSeries(
+    return SmoothedReadingPace(
       points: displayedPoints,
       currentPace: displayedPoints.last.percentPerDay,
       maxPace: maxPace > 0 ? maxPace : 1,
     );
   }
 
-  /// Sums positive percent deltas per calendar day. Non-positive deltas (no
-  /// progress, or a correction backwards) never lift the pace.
-  static Map<DateTime, double> _dailyPercentByDay(
+  static Map<DateTime, double> _positivePercentGainedByDay(
     Iterable<MapEntry<DateTime, double>> progressDeltas,
   ) {
     final dailyPercentByDay = <DateTime, double>{};
@@ -122,7 +94,7 @@ class const ReadingPaceSeries({
     return windowTotal / trailingWindowDays;
   }
 
-  static List<double> _smoothed(List<double> values) {
+  static List<double> _blurWithFiveCenteredPasses(List<double> values) {
     var smoothed = values;
     for (var pass = 0; pass < _smoothingPasses; pass++) {
       smoothed = _centeredMovingAverage(smoothed);
@@ -131,9 +103,12 @@ class const ReadingPaceSeries({
   }
 
   static List<double> _centeredMovingAverage(List<double> values) =>
-      List.generate(values.length, (index) => _windowAverage(values, index));
+      List.generate(
+        values.length,
+        (index) => _averageAcrossCenteredMonth(values, index),
+      );
 
-  static double _windowAverage(List<double> values, int index) {
+  static double _averageAcrossCenteredMonth(List<double> values, int index) {
     final firstIndex = math.max(0, index - _smoothingHalfWindow);
     final lastIndex = math.min(values.length - 1, index + _smoothingHalfWindow);
     var total = 0.0;

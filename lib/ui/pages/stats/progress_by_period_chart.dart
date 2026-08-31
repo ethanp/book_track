@@ -1,14 +1,15 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/helpers.dart';
+import 'package:book_track/ui/common/books_progress_chart/chart_axis_label.dart';
 import 'package:book_track/ui/common/books_progress_chart/timespan.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:book_track/ui/common/progress_event_date_caption.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 
-class const ProgressPerMonthChart({
+class const ProgressByPeriodChart({
   required final List<LibraryBook> books,
   required final StatsPeriod period,
 }) extends StatelessWidget {
@@ -93,12 +94,12 @@ class const ProgressPerMonthChart({
     return Column(
       children: [
         _legendRow(progressLines),
-        Expanded(child: _lineChart(progressLines)),
+        Expanded(child: _progressByPeriodLines(progressLines)),
       ],
     );
   }
 
-  Widget _lineChart(_ProgressLines progressLines) {
+  Widget _progressByPeriodLines(_ProgressLines progressLines) {
     final timespan = () {
       final pointTimes = progressLines.lines
           .expand((line) => line.data)
@@ -119,10 +120,10 @@ class const ProgressPerMonthChart({
           horizontalInterval: horizontalInterval,
           drawVerticalLine: false,
         ),
-        titlesData: _labelAxes(timespan),
+        titlesData: _progressPercentAndDateAxes(timespan),
         lineTouchData: _touchData(progressLines),
         lineBarsData: progressLines.lines.mapL(
-          (line) => _buildLine(line, progressLines),
+          (line) => _progressLineExtrapolatingCurrentBucket(line, progressLines),
         ),
         borderData: FlBorderData(
           show: true,
@@ -138,7 +139,10 @@ class const ProgressPerMonthChart({
     );
   }
 
-  LineChartBarData _buildLine(ProgressLine line, _ProgressLines progressLines) {
+  LineChartBarData _progressLineExtrapolatingCurrentBucket(
+    ProgressLine line,
+    _ProgressLines progressLines,
+  ) {
     final agg = period.chartAggregation;
     final now = DateTime.now();
     final currentBucket = _bucketStart(now, agg);
@@ -148,11 +152,9 @@ class const ProgressPerMonthChart({
         final isCurrentBucket = point.date == currentBucket;
         final progress = switch (agg) {
           ProgressAggregation.monthly when isCurrentBucket =>
-            _scaleMonthEstimate(point.progress, now),
-          ProgressAggregation.weekly when isCurrentBucket => _scaleWeekEstimate(
-            point.progress,
-            now,
-          ),
+            _projectCurrentMonthToFullLength(point.progress, now),
+          ProgressAggregation.weekly when isCurrentBucket =>
+            _projectCurrentWeekToFullLength(point.progress, now),
           _ => point.progress,
         };
         return FlSpot(point.dateAsMillis, progress);
@@ -160,7 +162,7 @@ class const ProgressPerMonthChart({
       isCurved: agg != ProgressAggregation.daily,
       curveSmoothness: .05,
       belowBarData: line == progressLines.total
-          ? _gradientFill()
+          ? _fadeTealUnderProgress()
           : BarAreaData(show: false),
       color: line.color.withValues(alpha: 0.7),
       dotData: const FlDotData(show: false),
@@ -246,15 +248,15 @@ class const ProgressPerMonthChart({
     );
   }
 
-  double _scaleMonthEstimate(double progress, DateTime now) =>
+  double _projectCurrentMonthToFullLength(double progress, DateTime now) =>
       progress / now.day * _monthLength(now.month, now.year);
 
-  double _scaleWeekEstimate(double progress, DateTime now) =>
+  double _projectCurrentWeekToFullLength(double progress, DateTime now) =>
       progress / now.weekday * 7;
 
-  FlTitlesData _labelAxes(TimeSpan timespan) {
+  FlTitlesData _progressPercentAndDateAxes(TimeSpan timespan) {
     return FlTitlesData(
-      leftTitles: ProgressPerMonthChart.progressAxisTitles(
+      leftTitles: ProgressByPeriodChart.progressAxisTitles(
         shiftTitle: const Offset(20, -10),
       ),
       rightTitles: noAxisTitles,
@@ -263,7 +265,7 @@ class const ProgressPerMonthChart({
     );
   }
 
-  static BarAreaData _gradientFill() {
+  static BarAreaData _fadeTealUnderProgress() {
     return BarAreaData(
       show: true,
       gradient: LinearGradient(
@@ -281,9 +283,9 @@ class const ProgressPerMonthChart({
   static AxisTitles progressAxisTitles({required Offset shiftTitle}) {
     return AxisTitles(
       axisNameSize: 20,
-      axisNameWidget: Transform.translate(
-        offset: shiftTitle,
-        child: Text('Progress %', style: AppTextStyles.yAxisName),
+      axisNameWidget: ChartAxisLabel.nudgedIntoPlot(
+        Text('Progress %', style: AppTextStyles.yAxisName),
+        shift: shiftTitle,
       ),
       sideTitles: SideTitles(
         interval: horizontalInterval,
@@ -336,50 +338,50 @@ class const ProgressDataPoint(
 class const _PeriodAxis(final TimeSpan timespan, final StatsPeriod period) {
   AxisTitles titles() {
     return AxisTitles(
-      axisNameWidget: _axisName(),
-      sideTitles: _textLabels(),
+      axisNameWidget: _startingDateCaption(),
+      sideTitles: _dateTickLabels(),
       axisNameSize: 24,
     );
   }
 
-  Widget _axisName() {
-    return FlutterHelpers.transform(
-      shift: const Offset(20, 0),
-      child: Row(
+  Widget _startingDateCaption() {
+    return ChartAxisLabel.nudgedIntoPlot(
+      Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 1),
             child: Text(
-              'Starting ${TimeHelpers.monthDayYear(timespan.beginning)}',
+              'Starting ${timespan.beginning.slashMonthDayYear}',
               style: AppTextStyles.sideAxisLabelThin,
             ),
           ),
         ],
       ),
+      shift: const Offset(20, 0),
     );
   }
 
-  SideTitles _textLabels() {
+  SideTitles _dateTickLabels() {
     return SideTitles(
       showTitles: true,
       minIncluded: false,
       maxIncluded: true,
       reservedSize: 26,
-      interval: _tickIntervalMillis,
+      interval: _dateTickSpacingMillis,
       getTitlesWidget: (double value, TitleMeta meta) {
         final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-        if (!_shouldRenderLabel(date)) return const SizedBox.shrink();
-        return FlutterHelpers.transform(
+        if (!_isMonthStartInYearView(date)) return const SizedBox.shrink();
+        return ChartAxisLabel.tiltedToClearNeighbors(
+          _bucketTickLabelingJanuaryWithYear(date),
           shift: const Offset(2, 2),
           angleDegrees: 40,
-          child: _labelText(date),
         );
       },
     );
   }
 
-  double get _tickIntervalMillis {
+  double get _dateTickSpacingMillis {
     const oneDayMillis = 86400000.0;
     return switch (period) {
       StatsPeriod.week => oneDayMillis,
@@ -390,15 +392,14 @@ class const _PeriodAxis(final TimeSpan timespan, final StatsPeriod period) {
     };
   }
 
-  bool _shouldRenderLabel(DateTime date) {
-    // Monthly mode: fire every day, only render on the 1st.
+  bool _isMonthStartInYearView(DateTime date) {
     if (period == StatsPeriod.year || period == StatsPeriod.allTime) {
       return date.day == 1;
     }
     return true;
   }
 
-  Widget _labelText(DateTime date) {
+  Widget _bucketTickLabelingJanuaryWithYear(DateTime date) {
     final agg = period.chartAggregation;
     if (agg == ProgressAggregation.monthly) {
       if (date.month == 1) {

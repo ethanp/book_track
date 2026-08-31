@@ -32,7 +32,9 @@ class const ReadingActivityData({
       }
     }
 
-    final (current, longest) = _calculateStreaks(activityByDay.keys.toList());
+    final (current, longest) = _streaksIfReadTodayOrYesterday(
+      activityByDay.keys.toList(),
+    );
 
     return ReadingActivityData(
       activityByDay: activityByDay,
@@ -41,7 +43,7 @@ class const ReadingActivityData({
     );
   }
 
-  static (int current, int longest) _calculateStreaks(
+  static (int current, int longest) _streaksIfReadTodayOrYesterday(
     List<DateTime> activeDays,
   ) {
     if (activeDays.isEmpty) return (0, 0);

@@ -1,5 +1,5 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/helpers.dart';
+import 'package:book_track/ui/common/progress_event_date_caption.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_progress_service.dart';
 import 'package:book_track/ui/common/confirmation_dialog.dart';
@@ -31,7 +31,11 @@ class const _EventTimelineItem(
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
-      children: [_pipe(onTop: true), _card(ref), _pipe(onTop: false)],
+      children: [
+        _timelineStem(onTop: true),
+        _card(ref),
+        _timelineStem(onTop: false),
+      ],
     );
   }
 
@@ -63,7 +67,7 @@ class const _EventTimelineItem(
       TextSpan(
         children: [
           TextSpan(
-            text: TimeHelpers.dateAndTime(progressEvent.dateTime),
+            text: progressEvent.dateTime.slashMonthDayYearAtTime,
             style: AppTextStyles.caption,
           ),
           TextSpan(text: '  ·  ', style: AppTextStyles.caption),
@@ -145,7 +149,7 @@ class const _EventTimelineItem(
     );
   }
 
-  Widget _pipe({required bool onTop}) {
+  Widget _timelineStem({required bool onTop}) {
     return Container(
       height: 6,
       width: 12,

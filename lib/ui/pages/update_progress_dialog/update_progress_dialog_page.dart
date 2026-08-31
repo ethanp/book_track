@@ -221,18 +221,23 @@ class _UpdateProgressDialogState()
   Widget progressAmountForm() {
     final ctrl = _fieldControllers.forFormat(_selectedProgressEventFormat);
 
-    Widget inputField(TextEditingController controller, FocusNode focusNode) {
+    Widget inputField({
+      required TextEditingController controller,
+      required FocusNode focusNode,
+      required double width,
+    }) {
       return SizedBox(
-        width: _selectedProgressEventFormat == ProgressEventFormat.pageNum
-            ? 36
-            : 28,
-        height: 26,
+        width: width,
         child: TextField(
-          decoration: const InputDecoration(
+          decoration: EInput.filled(
             isDense: true,
-            contentPadding: EdgeInsets.fromLTRB(4, 5, 4, 5),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 10,
+            ),
           ),
-          style: const TextStyle(fontSize: 14),
+          style: const TextStyle(fontSize: 16, height: 1.2),
+          textAlign: TextAlign.center,
           autocorrect: false,
           enableSuggestions: false,
           autofocus: true,
@@ -250,19 +255,35 @@ class _UpdateProgressDialogState()
         mainAxisAlignment: MainAxisAlignment.center,
         children: switch (_selectedProgressEventFormat) {
           ProgressEventFormat.minutes => [
-            inputField(ctrl.hoursController, ctrl.hoursFocus),
-            Text(':'),
-            inputField(ctrl.minutesController, ctrl.minutesFocus),
-            Text(' hh:mm'),
+            inputField(
+              controller: ctrl.hoursController,
+              focusNode: ctrl.hoursFocus,
+              width: 48,
+            ),
+            const Text(':'),
+            inputField(
+              controller: ctrl.minutesController,
+              focusNode: ctrl.minutesFocus,
+              width: 48,
+            ),
+            const Text(' hh:mm'),
           ],
           ProgressEventFormat.pageNum => [
-            Text('Page number:'),
-            SizedBox(width: 6),
-            inputField(ctrl.pagesController, ctrl.pagesFocus),
+            const Text('Page number:'),
+            const SizedBox(width: 8),
+            inputField(
+              controller: ctrl.pagesController,
+              focusNode: ctrl.pagesFocus,
+              width: 72,
+            ),
           ],
           ProgressEventFormat.percent => [
-            inputField(ctrl.percentController, ctrl.percentFocus),
-            Text(' %'),
+            inputField(
+              controller: ctrl.percentController,
+              focusNode: ctrl.percentFocus,
+              width: 56,
+            ),
+            const Text(' %'),
           ],
         },
       ),
