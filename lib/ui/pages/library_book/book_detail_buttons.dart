@@ -6,7 +6,7 @@ import 'package:book_track/ui/common/confirmation_dialog.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'book_detail_button.dart';
@@ -36,7 +36,7 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
     return BookDetailButton(
       title: 'Update progress',
       subtitle: 'Sync with reality',
-      icon: CupertinoIcons.list_bullet,
+      icon: Icons.format_list_bulleted,
       onActivated: () => UpdateProgressDialogPage.show(ref, book),
       backgroundColor: AppColors.primary.withValues(alpha: 0.25),
       dense: dense,
@@ -47,7 +47,7 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
     return BookDetailButton(
       title: 'Complete',
       subtitle: 'Mark book as finished',
-      icon: CupertinoIcons.checkmark_square,
+      icon: Icons.check_box_outlined,
       onActivated: () async {
         final format = book.lastUsedFormat ?? book.primaryFormat;
         if (format != null) {
@@ -69,7 +69,7 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
     return BookDetailButton(
       title: 'Remove',
       subtitle: 'Remove book from app',
-      icon: CupertinoIcons.trash,
+      icon: Icons.delete,
       onActivated: () => _showBookActionDialog(
         ref: ref,
         actionName: 'remove',
@@ -85,7 +85,7 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
     return BookDetailButton(
       title: actionName,
       subtitle: '${book.archived ? 'Show on' : 'Hide from'} home screen',
-      icon: CupertinoIcons.archivebox,
+      icon: Icons.archive,
       onActivated: () => _showBookActionDialog(
         ref: ref,
         actionName: actionName,
@@ -101,8 +101,8 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
       title: book.isAbandoned ? 'Resume' : 'Abandon',
       subtitle: '${book.isAbandoned ? 'Continue' : 'Stop'} reading',
       icon: book.isAbandoned
-          ? CupertinoIcons.play_circle
-          : CupertinoIcons.minus_circle,
+          ? Icons.play_circle_outline
+          : Icons.remove_circle_outline,
       onActivated: () async {
         await SupabaseLibraryService.setAbandoned(
           book,
@@ -111,8 +111,8 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
         ref.invalidate(userLibraryProvider);
       },
       backgroundColor: book.isAbandoned
-          ? AppColors.teal.withValues(alpha: 0.15)
-          : AppColors.primaryLight.withValues(alpha: 0.5),
+          ? AppColors.success.withValues(alpha: 0.25)
+          : AppColors.warning.withValues(alpha: 0.25),
       dense: dense,
     );
   }

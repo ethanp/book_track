@@ -1,5 +1,5 @@
 import 'package:book_track/ui/common/design.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class const BookDetailButton({
   required final String title,
@@ -15,15 +15,22 @@ class const BookDetailButton({
       width: 196,
       child: Padding(
         padding: EdgeInsets.only(top: dense ? 0 : 14),
-        child: CupertinoButton(
-          padding: EdgeInsets.symmetric(
-            horizontal: dense ? 10 : 20,
-            vertical: dense ? 0 : 10,
-          ),
+        child: FilledButton(
           onPressed: onActivated,
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(AppRadii.md),
-          child: _buttonBody(),
+          style: FilledButton.styleFrom(
+            backgroundColor: backgroundColor,
+            foregroundColor: AppColors.textPrimary,
+            padding: EdgeInsets.symmetric(
+              horizontal: dense ? 10 : 20,
+              vertical: dense ? 0 : 10,
+            ),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadii.md),
+            ),
+          ),
+          child: SizedBox(width: double.infinity, child: _buttonBody()),
         ),
       ),
     );

@@ -1,6 +1,6 @@
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class const ResultsCount(final BookSearchResults searchResult)
     extends StatelessWidget {

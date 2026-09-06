@@ -4,7 +4,7 @@ import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_library_service.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/length_input.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class const ManualBookForm({required final VoidCallback onBackActivated})
@@ -78,10 +78,9 @@ class _ManualBookFormState() extends ConsumerState<ManualBookForm> {
   Widget header() {
     return Row(
       children: [
-        CupertinoButton(
-          padding: EdgeInsets.zero,
+        IconButton(
           onPressed: widget.onBackActivated,
-          child: const Icon(CupertinoIcons.back),
+          icon: const Icon(Icons.arrow_back),
         ),
         Expanded(
           child: Text(
@@ -108,12 +107,20 @@ class _ManualBookFormState() extends ConsumerState<ManualBookForm> {
         children: [
           Text(label, style: AppTextStyles.h4),
           const SizedBox(height: 4),
-          CupertinoTextField(
+          TextField(
             controller: controller,
-            placeholder: placeholder,
             keyboardType: keyboardType,
-            padding: const EdgeInsets.all(12),
             onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              hintText: placeholder,
+              filled: true,
+              fillColor: AppColors.surfaceInset,
+              contentPadding: const EdgeInsets.all(12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+            ),
           ),
         ],
       ),
@@ -139,14 +146,19 @@ class _ManualBookFormState() extends ConsumerState<ManualBookForm> {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 2),
-        child: CupertinoButton(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          color: isSelected ? format.color : AppColors.shimmer,
+        child: FilledButton(
           onPressed: () => selectFormat(format),
+          style: FilledButton.styleFrom(
+            backgroundColor: isSelected ? format.color : AppColors.shimmer,
+            foregroundColor: isSelected ? Colors.white : AppColors.textPrimary,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
           child: Text(
             format.name,
             style: AppTextStyles.caption.copyWith(
-              color: isSelected ? CupertinoColors.white : AppColors.textPrimary,
+              color: isSelected ? Colors.white : AppColors.textPrimary,
             ),
           ),
         ),
@@ -179,7 +191,6 @@ class _ManualBookFormState() extends ConsumerState<ManualBookForm> {
           LengthInput(
             controller: _lengthController,
             showLabel: !isAudiobook,
-            fieldWidth: 80,
             onChanged: () => setState(() {}),
           ),
         ],
@@ -188,10 +199,17 @@ class _ManualBookFormState() extends ConsumerState<ManualBookForm> {
   }
 
   Widget saveButton() {
-    return CupertinoButton.filled(
+    return FilledButton(
       onPressed: canSave && !_saving ? save : null,
       child: _saving
-          ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            )
           : const Text('Add to Library'),
     );
   }

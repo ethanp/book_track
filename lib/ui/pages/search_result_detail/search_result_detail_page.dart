@@ -189,7 +189,6 @@ class _LengthInputDialogState() extends State<_LengthInputDialog> {
               controller: _controller,
               autofocus: true,
               showLabel: !widget.isAudiobook,
-              fieldWidth: 60,
               onChanged: () => setState(() {}),
             ),
           ],

@@ -6,7 +6,7 @@ import 'package:book_track/ui/common/progress_event_date_caption.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class const ProgressByPeriodChart({
@@ -123,7 +123,8 @@ class const ProgressByPeriodChart({
         titlesData: _progressPercentAndDateAxes(timespan),
         lineTouchData: _touchData(progressLines),
         lineBarsData: progressLines.lines.mapL(
-          (line) => _progressLineExtrapolatingCurrentBucket(line, progressLines),
+          (line) =>
+              _progressLineExtrapolatingCurrentBucket(line, progressLines),
         ),
         borderData: FlBorderData(
           show: true,
@@ -179,12 +180,12 @@ class const ProgressByPeriodChart({
           final isFirst = entry.key == 0;
           final spot = entry.value;
           final line = progressLines.lines[spot.barIndex];
-          final lineColor = line.color.lerpWith(CupertinoColors.white, 0.5);
+          final lineColor = line.color.lerpWith(Colors.white, 0.5);
           final prefix = isFirst ? '$dateStr\n' : '';
           return LineTooltipItem(
             prefix,
             const TextStyle(
-              color: CupertinoColors.white,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 11,
             ),

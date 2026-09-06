@@ -11,7 +11,6 @@ import 'package:book_track/ui/common/cover_art_bytes.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class const BooksProgressChart({
@@ -234,11 +233,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     final placeholder = SizedBox(
       height: height,
       width: width,
-      child: const Icon(
-        CupertinoIcons.book,
-        size: 30,
-        color: CupertinoColors.systemGrey,
-      ),
+      child: const Icon(Icons.book, size: 30, color: AppColors.textSecondary),
     );
 
     Widget bookArt = placeholder;
@@ -266,7 +261,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
-            color: CupertinoColors.black.withValues(alpha: 0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -419,9 +414,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
               return FlDotCirclePainter(
                 radius: radius,
                 color: isSelected ? AppColors.burgundy : dotColor,
-                strokeColor: isSelected
-                    ? CupertinoColors.white
-                    : AppColors.textPrimary,
+                strokeColor: isSelected ? Colors.white : AppColors.textPrimary,
                 strokeWidth: isSelected ? 2 : 0,
               );
             },

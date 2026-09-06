@@ -3,7 +3,7 @@ import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/search_result_detail/search_result_detail_page.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'results_count.dart';
@@ -15,7 +15,13 @@ class const SearchResults() extends ConsumerWidget {
     if (searchResult.isLoading) {
       return const SizedBox(
         height: 400,
-        child: Center(child: CupertinoActivityIndicator(radius: 14)),
+        child: Center(
+          child: SizedBox(
+            width: 28,
+            height: 28,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
       );
     }
     if (searchResult.failure != null) {
@@ -48,7 +54,7 @@ class const SearchResults() extends ConsumerWidget {
   Widget _resultBook(OpenLibraryBook book, WidgetRef ref) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 1),
-      child: CupertinoListTile(
+      child: ListTile(
         leading: _coverArt(book),
         title: Text(book.title, maxLines: 3, style: AppTextStyles.h5),
         subtitle: Text(

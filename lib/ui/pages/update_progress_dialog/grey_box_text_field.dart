@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -35,26 +35,35 @@ class _GreyBoxTextFieldState() extends ConsumerState<GreyBoxTextField> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: CupertinoTextField(
+      child: TextField(
         focusNode: _focusNode,
         enableSuggestions: false,
-        placeholder: 'Enter progress here',
         controller: _controller,
-        onChanged: (String newText) => widget.textChanged(newText),
-        decoration: styleSearchBox(),
+        onChanged: widget.textChanged,
+        decoration: InputDecoration(
+          hintText: 'Enter progress here',
+          filled: true,
+          fillColor: _focusNode.hasFocus
+              ? AppColors.shimmer
+              : AppColors.surfaceInset,
+          contentPadding: const EdgeInsets.all(12),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(
+              color: AppColors.textSecondary,
+              width: 1.5,
+            ),
+          ),
+        ),
       ),
-    );
-  }
-
-  BoxDecoration styleSearchBox() {
-    return BoxDecoration(
-      color: _focusNode.hasFocus
-          ? CupertinoColors.systemGrey4
-          : CupertinoColors.systemGrey5,
-      borderRadius: BorderRadius.circular(8),
-      border: _focusNode.hasFocus
-          ? Border.all(color: CupertinoColors.systemGrey, width: 1.5)
-          : Border.all(color: Colors.transparent, width: 0),
     );
   }
 }

@@ -4,7 +4,7 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/async_stats_card.dart';
 import 'package:book_track/ui/pages/stats/summary_stats.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class const SummaryStatsCard({
   required final List<LibraryBook> books,

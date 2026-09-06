@@ -15,6 +15,7 @@ abstract final class AppColors() {
   static const Color textPrimary = EColors.textPrimary;
   static const Color textSecondary = EColors.textSecondary;
   static const Color destructive = EColors.danger;
+  static const Color warning = EColors.warning;
   static const Color success = EColors.success;
   static const Color successLight = EColors.successSoft;
   static const Color divider = EColors.border;

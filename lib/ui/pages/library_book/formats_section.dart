@@ -9,6 +9,8 @@ import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'edit_format_length_dialog.dart';
+
 class const FormatsSection(final LibraryBook libraryBook)
     extends ConsumerWidget {
   @override
@@ -39,8 +41,11 @@ class const FormatsSection(final LibraryBook libraryBook)
               (format) => _FormatRow(
                 format: format,
                 libraryBook: libraryBook,
-                onLengthEditActivated: () =>
-                    _showEditFormatSheet(context, ref, format),
+                onLengthEditActivated: () => EditFormatLengthDialog.show(
+                  context: context,
+                  ref: ref,
+                  format: format,
+                ),
                 onDeleteActivated: formats.length > 1
                     ? () => _confirmDeleteFormat(context, ref, format)
                     : null,
@@ -65,22 +70,6 @@ class const FormatsSection(final LibraryBook libraryBook)
         format: result.$1,
         length: result.$2,
       );
-      ref.invalidate(userLibraryProvider);
-    }
-  }
-
-  Future<void> _showEditFormatSheet(
-    BuildContext context,
-    WidgetRef ref,
-    LibraryBookFormat format,
-  ) async {
-    final result = await showDialog<int?>(
-      context: context,
-      builder: (context) => _EditLengthSheet(format: format),
-    );
-
-    if (result != null) {
-      await SupabaseFormatService.updateLength(format.supaId, result);
       ref.invalidate(userLibraryProvider);
     }
   }
@@ -193,6 +182,11 @@ class const _FormatRow({
               ],
             ),
           ),
+          IconButton(
+            tooltip: 'Edit length',
+            onPressed: onLengthEditActivated,
+            icon: const Icon(Icons.edit_outlined, size: 18),
+          ),
           if (onDeleteActivated != null)
             IconButton(
               tooltip: 'Delete format',
@@ -280,50 +274,6 @@ class _AddFormatSheetState() extends State<_AddFormatSheet> {
       ),
       actions:
           _lengthController?.dialogActions(context, _submitAddedFormat) ?? [],
-    );
-  }
-}
-
-class const _EditLengthSheet({required final LibraryBookFormat format})
-    extends StatefulWidget {
-  @override
-  State<_EditLengthSheet> createState() => _EditLengthSheetState();
-}
-
-class _EditLengthSheetState() extends State<_EditLengthSheet> {
-  late final LengthInputController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = LengthInputController.fromAudiobook(
-      isAudiobook: widget.format.isAudiobook,
-      initialValue: widget.format.length,
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _submitEditedLength() {
-    final length = _controller.value;
-    if (length != null && length > 0) {
-      Navigator.pop(context, length);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Edit ${widget.format.format.name} Length'),
-      content: Padding(
-        padding: const EdgeInsets.only(top: 16),
-        child: LengthInput(controller: _controller),
-      ),
-      actions: _controller.dialogActions(context, _submitEditedLength),
     );
   }
 }

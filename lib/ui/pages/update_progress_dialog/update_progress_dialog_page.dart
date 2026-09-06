@@ -4,8 +4,8 @@ import 'package:book_track/data_model/library_book_format.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_progress_service.dart';
 import 'package:book_track/ui/common/length_input.dart';
+import 'package:book_track/ui/common/progress_event_date_caption.dart';
 import 'package:ethan_ui/ethan_ui.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -219,73 +219,12 @@ class _UpdateProgressDialogState()
   }
 
   Widget progressAmountForm() {
-    final ctrl = _fieldControllers.forFormat(_selectedProgressEventFormat);
-
-    Widget inputField({
-      required TextEditingController controller,
-      required FocusNode focusNode,
-      required double width,
-    }) {
-      return SizedBox(
-        width: width,
-        child: TextField(
-          decoration: EInput.filled(
-            isDense: true,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 10,
-            ),
-          ),
-          style: const TextStyle(fontSize: 16, height: 1.2),
-          textAlign: TextAlign.center,
-          autocorrect: false,
-          enableSuggestions: false,
-          autofocus: true,
-          focusNode: focusNode,
-          keyboardType: TextInputType.number,
-          controller: controller,
-          onChanged: (_) => setState(() {}),
-        ),
-      );
-    }
-
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: switch (_selectedProgressEventFormat) {
-          ProgressEventFormat.minutes => [
-            inputField(
-              controller: ctrl.hoursController,
-              focusNode: ctrl.hoursFocus,
-              width: 48,
-            ),
-            const Text(':'),
-            inputField(
-              controller: ctrl.minutesController,
-              focusNode: ctrl.minutesFocus,
-              width: 48,
-            ),
-            const Text(' hh:mm'),
-          ],
-          ProgressEventFormat.pageNum => [
-            const Text('Page number:'),
-            const SizedBox(width: 8),
-            inputField(
-              controller: ctrl.pagesController,
-              focusNode: ctrl.pagesFocus,
-              width: 72,
-            ),
-          ],
-          ProgressEventFormat.percent => [
-            inputField(
-              controller: ctrl.percentController,
-              focusNode: ctrl.percentFocus,
-              width: 56,
-            ),
-            const Text(' %'),
-          ],
-        },
+      child: LengthInput(
+        controller: _fieldControllers.forFormat(_selectedProgressEventFormat),
+        autofocus: true,
+        onChanged: () => setState(() {}),
       ),
     );
   }
@@ -299,32 +238,41 @@ class _UpdateProgressDialogState()
     );
   }
 
-  // TODO(ux) This looks bad and is cumbersome. Consider using eg.
-  //  https://github.com/Team-Picky/flutter_datetime_picker_plus instead.
-  //  Or I'm sure there are countless alternatives.
   Widget endTimePicker() {
-    final dateTimeNow = DateTime.now();
     return Column(
       children: [
-        Text('Set progress update\'s timestamp:'),
-        Transform.scale(
-          // Flutter doesn't allow direct styling of CupertinoDatePicker text,
-          // but you can just scale the whole widget.
-          scale: 1,
-          child: SizedBox(
-            height: 110,
-            child: CupertinoDatePicker(
-              mode: CupertinoDatePickerMode.dateAndTime,
-              minimumDate: dateTimeNow.copyWith(year: dateTimeNow.year - 20),
-              maximumDate: dateTimeNow.shiftedByDays(12),
-              initialDateTime: widget.eventToUpdate?.dateTime ?? dateTimeNow,
-              onDateTimeChanged: (t) =>
-                  setState(() => _selectedUpdateTimestamp = t),
-            ),
-          ),
+        const Text("Set progress update's timestamp:"),
+        TextButton(
+          onPressed: _pickUpdateTimestamp,
+          child: Text(_selectedUpdateTimestamp.slashMonthDayYearAtTime),
         ),
       ],
     );
+  }
+
+  Future<void> _pickUpdateTimestamp() async {
+    final dateTimeNow = DateTime.now();
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedUpdateTimestamp,
+      firstDate: dateTimeNow.copyWith(year: dateTimeNow.year - 20),
+      lastDate: dateTimeNow.shiftedByDays(12),
+    );
+    if (pickedDate == null || !mounted) return;
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_selectedUpdateTimestamp),
+    );
+    if (pickedTime == null || !mounted) return;
+    setState(() {
+      _selectedUpdateTimestamp = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        pickedTime.hour,
+        pickedTime.minute,
+      );
+    });
   }
 
   List<Widget> submitAndCancelButtons() => _fieldControllers.dialogActions(

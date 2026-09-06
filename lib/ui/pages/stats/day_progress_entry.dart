@@ -4,8 +4,9 @@ import 'package:ethan_utils/ethan_utils.dart';
 
 import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/cover_art_bytes.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 /// Progress made on a single book for a specific day.
 class const DayProgressEntry({
@@ -63,8 +64,8 @@ class const DayProgressEntry({
                       style: TextStyle(
                         fontSize: 11,
                         color: abandoned
-                            ? CupertinoColors.systemOrange
-                            : CupertinoColors.systemBlue,
+                            ? AppColors.audiobook
+                            : AppColors.primary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -75,7 +76,7 @@ class const DayProgressEntry({
               progressLabel,
               style: const TextStyle(
                 fontSize: 12,
-                color: CupertinoColors.systemGreen,
+                color: AppColors.success,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -90,7 +91,7 @@ class const DayProgressEntry({
     final placeholder = SizedBox(
       width: size * 0.75,
       height: size,
-      child: const Icon(CupertinoIcons.book, size: 16),
+      child: const Icon(Icons.book, size: 16),
     );
     final coverArt = book.book.coverArtS;
     if (coverArt == null || !coverArtLooksDecodable(coverArt)) {

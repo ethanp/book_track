@@ -2,7 +2,7 @@ import 'package:book_track/data_model.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/my_library/book_tile.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class const ArchivedBooksSection({required final List<LibraryBook> books})
     extends StatefulWidget {
@@ -40,8 +40,12 @@ class _ArchivedBooksSectionState() extends State<ArchivedBooksSection> {
       children: [
         _toggleButton(),
         if (_expanded) ...[
-          CupertinoSearchTextField(
+          TextField(
             controller: _searchController,
+            decoration: const InputDecoration(
+              hintText: 'Search',
+              prefixIcon: Icon(Icons.search),
+            ),
             onChanged: (query) => setState(() => _query = query),
           ),
           const SizedBox(height: 8),
@@ -52,12 +56,12 @@ class _ArchivedBooksSectionState() extends State<ArchivedBooksSection> {
   }
 
   Widget _toggleButton() {
-    return CupertinoButton(
+    return TextButton(
+      onPressed: () => setState(() => _expanded = !_expanded),
       child: Text(
         '${_expanded ? 'Hide' : 'See'} archived books...',
         style: AppTextStyles.h4.copyWith(color: AppColors.primary),
       ),
-      onPressed: () => setState(() => _expanded = !_expanded),
     );
   }
 

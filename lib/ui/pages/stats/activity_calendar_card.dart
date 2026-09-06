@@ -4,7 +4,7 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/async_stats_card.dart';
 import 'package:book_track/ui/pages/stats/calendar_heatmap.dart';
 import 'package:book_track/ui/pages/stats/reading_activity_data.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class const ActivityCalendarCard({
   required final List<LibraryBook> books,

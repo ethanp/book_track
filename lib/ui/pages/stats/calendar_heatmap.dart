@@ -2,7 +2,7 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/day_progress_entry.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class const CalendarHeatmap({

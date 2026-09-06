@@ -1,7 +1,6 @@
-import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ethan_utils/ethan_utils.dart';
+import 'package:flutter/material.dart';
 
 class const TextFieldValueAndSuffix(final String value, final String? suffix);
 
@@ -10,17 +9,17 @@ class const EditableBookProperty({
   required final String value,
   required final List<TextFieldValueAndSuffix> initialTextFieldValues,
   required final void Function(List<String>) onValuesCommitted,
-}) extends ConsumerStatefulWidget {
+}) extends StatefulWidget {
   @override
-  ConsumerState createState() => _EditableBookPropertyState();
+  State<EditableBookProperty> createState() => _EditableBookPropertyState();
 }
 
-class _EditableBookPropertyState() extends ConsumerState<EditableBookProperty> {
+class _EditableBookPropertyState() extends State<EditableBookProperty> {
   bool _editing = false;
 
   late final Map<TextEditingController, String?> textFields = {
-    for (final v in widget.initialTextFieldValues)
-      TextEditingController(text: v.value): v.suffix,
+    for (final field in widget.initialTextFieldValues)
+      TextEditingController(text: field.value): field.suffix,
   };
 
   @override
@@ -35,7 +34,10 @@ class _EditableBookPropertyState() extends ConsumerState<EditableBookProperty> {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [titleAndValueLeft(), trailingButtonsRight()],
+        children: [
+          Expanded(child: titleAndValueLeft()),
+          trailingButtonsRight(),
+        ],
       ),
     );
   }
@@ -44,11 +46,8 @@ class _EditableBookPropertyState() extends ConsumerState<EditableBookProperty> {
     return Row(
       children: [
         Text('${widget.title}: ', style: AppTextStyles.label),
-        SizedBox(width: 10),
-        if (_editing)
-          textField()
-        else
-          Text(widget.value, style: AppTextStyles.value),
+        const SizedBox(width: 10),
+        if (_editing) textField() else Text(widget.value, style: AppTextStyles.value),
       ],
     );
   }
@@ -59,19 +58,20 @@ class _EditableBookPropertyState() extends ConsumerState<EditableBookProperty> {
         (field) => Row(
           children: [
             SizedBox(
-              width: textFields.length == 2 ? 26 : 150,
+              width: textFields.length == 2 ? 44 : 150,
               height: 26,
-              child: CupertinoTextField(
-                decoration: BoxDecoration(
-                  color: CupertinoColors.systemGrey.withValues(alpha: 0.1),
-                  border: Border.all(
-                    color: CupertinoColors.systemGrey,
-                    width: 1,
+              child: TextField(
+                decoration: InputDecoration(
+                  isDense: true,
+                  filled: true,
+                  fillColor: AppColors.surfaceInset,
+                  contentPadding: const EdgeInsets.only(top: 5, left: 4),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5),
+                    borderSide: const BorderSide(color: AppColors.divider),
                   ),
-                  borderRadius: BorderRadius.circular(5),
                 ),
-                padding: EdgeInsets.only(top: 5, left: 4),
-                style: TextStyle(fontSize: 14, color: CupertinoColors.label),
+                style: AppTextStyles.value,
                 autocorrect: false,
                 controller: field.key,
                 onSubmitted: (_) => _commitEditedValues(),
@@ -90,8 +90,8 @@ class _EditableBookPropertyState() extends ConsumerState<EditableBookProperty> {
 
   void _commitEditedValues() {
     setEditing(false);
-    if (textFields.keys.any((e) => e.text.isEmpty)) return;
-    widget.onValuesCommitted(textFields.keys.mapL((e) => e.text));
+    if (textFields.keys.any((field) => field.text.isEmpty)) return;
+    widget.onValuesCommitted(textFields.keys.mapL((field) => field.text));
   }
 
   Widget trailingButtonsRight() {
@@ -99,7 +99,7 @@ class _EditableBookPropertyState() extends ConsumerState<EditableBookProperty> {
         ? Row(
             children: [
               submitButton(),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               cancelEditingButton(),
             ],
           )
@@ -107,39 +107,42 @@ class _EditableBookPropertyState() extends ConsumerState<EditableBookProperty> {
   }
 
   Widget submitButton() {
-    return buttonStyle(
-      color: CupertinoColors.systemGreen,
+    return _iconAction(
+      backgroundColor: AppColors.success,
       onPressed: _commitEditedValues,
-      child: Icon(CupertinoIcons.check_mark, color: CupertinoColors.white),
+      icon: Icons.check,
     );
   }
 
-  void setEditing(bool v) => setState(() => _editing = v);
+  void setEditing(bool editing) => setState(() => _editing = editing);
 
   Widget updateButton() {
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
+    return TextButton(
       onPressed: () => setEditing(true),
       child: Text('Update', style: AppTextStyles.valueButton),
     );
   }
 
   Widget cancelEditingButton() {
-    return buttonStyle(
-      color: CupertinoColors.systemRed,
+    return _iconAction(
+      backgroundColor: AppColors.destructive,
       onPressed: () => setEditing(false),
-      child: Icon(CupertinoIcons.clear, color: CupertinoColors.white),
+      icon: Icons.close,
     );
   }
 
-  Widget buttonStyle({
-    required void Function() onPressed,
-    required Widget child,
-    required Color color,
-  }) => CupertinoButton(
+  Widget _iconAction({
+    required VoidCallback onPressed,
+    required IconData icon,
+    required Color backgroundColor,
+  }) => IconButton.filled(
     onPressed: onPressed,
-    color: color,
-    padding: EdgeInsets.zero,
-    child: child,
+    style: IconButton.styleFrom(
+      backgroundColor: backgroundColor,
+      foregroundColor: Colors.white,
+      minimumSize: const Size(36, 36),
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    ),
+    icon: Icon(icon, size: 18),
   );
 }

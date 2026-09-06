@@ -1,3 +1,4 @@
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -141,9 +142,13 @@ class const LengthInput({
   required final LengthInputController controller,
   final bool autofocus = false,
   final bool showLabel = true,
-  final double? fieldWidth,
   final VoidCallback? onChanged,
 }) extends StatelessWidget {
+  static const _hoursDigits = 3;
+  static const _minutesDigits = 2;
+  static const _pagesDigits = 4;
+  static const _percentDigits = 3;
+
   @override
   Widget build(BuildContext context) {
     return switch (controller.mode) {
@@ -157,75 +162,68 @@ class const LengthInput({
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        SizedBox(
-          width: fieldWidth ?? 50,
-          child: TextField(
-            controller: controller.hoursController,
-            focusNode: controller.hoursFocus,
-            decoration: const InputDecoration(hintText: 'hrs'),
-            keyboardType: TextInputType.number,
-            autofocus: autofocus,
-            textAlign: TextAlign.center,
-            onChanged: (_) => onChanged?.call(),
-          ),
+        _digitField(
+          controller: controller.hoursController,
+          focusNode: controller.hoursFocus,
+          digitCount: _hoursDigits,
+          suffix: 'hrs',
+          autofocus: autofocus,
         ),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 8),
           child: Text(':'),
         ),
-        SizedBox(
-          width: fieldWidth ?? 50,
-          child: TextField(
-            controller: controller.minutesController,
-            focusNode: controller.minutesFocus,
-            decoration: const InputDecoration(hintText: 'min'),
-            keyboardType: TextInputType.number,
-            textAlign: TextAlign.center,
-            onChanged: (_) => onChanged?.call(),
-          ),
+        _digitField(
+          controller: controller.minutesController,
+          focusNode: controller.minutesFocus,
+          digitCount: _minutesDigits,
+          suffix: 'min',
         ),
       ],
     );
   }
 
   Widget _pagesInput() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          width: fieldWidth ?? 80,
-          child: TextField(
-            controller: controller.pagesController,
-            focusNode: controller.pagesFocus,
-            decoration: const InputDecoration(hintText: 'Pages'),
-            keyboardType: TextInputType.number,
-            autofocus: autofocus,
-            textAlign: TextAlign.center,
-            onChanged: (_) => onChanged?.call(),
-          ),
-        ),
-        if (showLabel) ...[const SizedBox(width: 8), const Text('pages')],
-      ],
+    return _digitField(
+      controller: controller.pagesController,
+      focusNode: controller.pagesFocus,
+      digitCount: _pagesDigits,
+      suffix: 'pages',
+      autofocus: autofocus,
+      showSuffix: showLabel,
     );
   }
 
   Widget _percentInput() {
+    return _digitField(
+      controller: controller.percentController,
+      focusNode: controller.percentFocus,
+      digitCount: _percentDigits,
+      suffix: '%',
+      autofocus: autofocus,
+      showSuffix: showLabel,
+    );
+  }
+
+  Widget _digitField({
+    required TextEditingController controller,
+    required FocusNode focusNode,
+    required int digitCount,
+    required String suffix,
+    bool autofocus = false,
+    bool showSuffix = true,
+  }) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
-          width: fieldWidth ?? 60,
-          child: TextField(
-            controller: controller.percentController,
-            focusNode: controller.percentFocus,
-            decoration: const InputDecoration(hintText: '%'),
-            keyboardType: TextInputType.number,
-            autofocus: autofocus,
-            textAlign: TextAlign.center,
-            onChanged: (_) => onChanged?.call(),
-          ),
+        ETextField.forDigits(
+          count: digitCount,
+          controller: controller,
+          focusNode: focusNode,
+          autofocus: autofocus,
+          onChanged: (_) => onChanged?.call(),
         ),
-        if (showLabel) ...[const SizedBox(width: 8), const Text('%')],
+        if (showSuffix) ...[const SizedBox(width: 8), Text(suffix)],
       ],
     );
   }
