@@ -3,7 +3,7 @@ import 'dart:math' show max;
 import 'package:ethan_utils/ethan_utils.dart';
 
 import 'package:book_track/data_model.dart';
-import 'package:book_track/ui/common/cover_art_bytes.dart';
+import 'package:book_track/ui/common/book_cover.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:flutter/material.dart';
@@ -87,25 +87,11 @@ class const DayProgressEntry({
   }
 
   Widget _bookCover() {
-    const double size = 30;
-    final placeholder = SizedBox(
-      width: size * 0.75,
-      height: size,
-      child: const Icon(Icons.book, size: 16),
-    );
-    final coverArt = book.book.coverArtS;
-    if (coverArt == null || !coverArtLooksDecodable(coverArt)) {
-      return placeholder;
-    }
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(3),
-      child: Image.memory(
-        coverArt,
-        width: size * 0.75,
-        height: size,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => placeholder,
-      ),
+    return BookCover(
+      width: 22.5,
+      height: 30,
+      bytes: book.book.coverArt,
+      borderRadius: 3,
     );
   }
 

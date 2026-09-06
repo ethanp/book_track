@@ -12,7 +12,7 @@ class const UpdateFormatSelector({
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text('Progress update format:'),
+        Text('Progress format:'),
         SegmentedButton<ProgressEventFormat>(
           showSelectedIcon: false,
           style: ButtonStyle(

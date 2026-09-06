@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'edit_format_length_dialog.dart';
+import 'library_book_detail_card.dart';
 
 class const FormatsSection(final LibraryBook libraryBook)
     extends ConsumerWidget {
@@ -147,41 +148,23 @@ class const _FormatRow({
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadii.md),
-        border: Border.all(color: AppColors.divider, width: 0.5),
-      ),
-      child: Row(
-        children: [
-          Icon(_formatIcon, color: _formatColor, size: 20),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  format.format.name,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                GestureDetector(
-                  onTap: onLengthEditActivated,
-                  child: Text(
-                    format.lengthDisplay,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: format.hasLength
-                          ? EColors.textMuted
-                          : EColors.accentGlow,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+    return LibraryBookDetailCard(
+      icon: _formatIcon,
+      iconColor: _formatColor,
+      title: format.format.name,
+      subtitle: GestureDetector(
+        onTap: onLengthEditActivated,
+        child: Text(
+          format.lengthDisplay,
+          style: TextStyle(
+            fontSize: 13,
+            color: format.hasLength ? EColors.textMuted : EColors.accentGlow,
           ),
+        ),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           IconButton(
             tooltip: 'Edit length',
             onPressed: onLengthEditActivated,

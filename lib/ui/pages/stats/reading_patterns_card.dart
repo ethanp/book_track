@@ -1,7 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:book_track/ui/pages/stats/async_stats_card.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -11,15 +10,10 @@ class const ReadingPatternsCard({
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return AsyncStatsCard<_ReadingPatternsData>(
-      cacheKey: '${books.length}-${periodCutoff?.millisecondsSinceEpoch ?? 0}',
-      compute: () => _calculateData(books, periodCutoff),
-      loadingHeight: 220,
-      builder: _buildCard,
-    );
+    return _card(_calculateData(books, periodCutoff));
   }
 
-  Widget _buildCard(_ReadingPatternsData data) {
+  Widget _card(_ReadingPatternsData data) {
     return AppCard(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),

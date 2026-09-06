@@ -55,10 +55,13 @@ class const ProgressChart(final LibraryBook initialBook)
             _header(latestBook),
             !latestBook.hasProgress
                 ? Text(
-                    'No progress updates yet',
+                    'No progress logged yet',
                     style: AppTextStyles.bodySecondary,
                   )
-                : SizedBox(height: 300, child: _chart(latestBook)),
+                : SizedBox(
+                    height: BooksProgressChart.plotHeight,
+                    child: _chart(latestBook),
+                  ),
           ],
         ),
       ),
@@ -94,7 +97,8 @@ class const ProgressChart(final LibraryBook initialBook)
     padding: const EdgeInsets.only(right: 24, bottom: 12, left: 4, top: 8),
     child: BooksProgressChart(
       books: [latestBook],
-      colorByFormat: true, // Color-code by format on book detail page
+      colorByFormat: true,
+      showSelectedBookCard: false,
     ),
   );
 }

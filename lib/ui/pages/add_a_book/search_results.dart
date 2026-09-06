@@ -1,5 +1,6 @@
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
+import 'package:book_track/ui/common/book_cover.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/search_result_detail/search_result_detail_page.dart';
 import 'package:ethan_utils/ethan_utils.dart';
@@ -69,6 +70,11 @@ class const SearchResults() extends ConsumerWidget {
   }
 
   Widget _coverArt(OpenLibraryBook book) {
-    return SizedBox(width: 50, child: book.coverArtS.map(Image.memory));
+    return BookCover(
+      width: 45,
+      height: 60,
+      bytes: book.coverArt,
+      borderRadius: AppRadii.sm,
+    );
   }
 }

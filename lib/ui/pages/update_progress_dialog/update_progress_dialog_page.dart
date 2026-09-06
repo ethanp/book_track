@@ -113,7 +113,7 @@ class _UpdateProgressDialogState()
     }
 
     return AlertDialog(
-      title: const Text('Update Progress'),
+      title: const Text('Log progress'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -241,7 +241,7 @@ class _UpdateProgressDialogState()
   Widget endTimePicker() {
     return Column(
       children: [
-        const Text("Set progress update's timestamp:"),
+        const Text('Set log timestamp:'),
         TextButton(
           onPressed: _pickUpdateTimestamp,
           child: Text(_selectedUpdateTimestamp.slashMonthDayYearAtTime),

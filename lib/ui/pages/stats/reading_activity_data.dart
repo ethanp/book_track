@@ -10,6 +10,8 @@ class const ReadingActivityData({
   required final int currentStreak,
   required final int longestStreak,
 }) {
+  int get maxDailyPercentDelta =>
+      activityByDay.isEmpty ? 0 : activityByDay.values.max;
   /// Calculate reading activity based on progress percentage made per day.
   factory fromProgress(List<LibraryBook> books, {DateTime? periodCutoff}) {
     final activityByDay = <DateTime, int>{};

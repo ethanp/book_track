@@ -59,9 +59,9 @@ class const LibraryBookPage(final int bookId) extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               BookPropertiesEditor(book),
+              FormatsSection(book),
               BookDetailButtons(book),
               ProgressChart(book),
-              FormatsSection(book),
               EventTimeline(book),
             ],
           ),

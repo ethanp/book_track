@@ -1,7 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:book_track/ui/pages/stats/async_stats_card.dart';
 import 'package:book_track/ui/pages/stats/summary_stats.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
@@ -12,15 +11,10 @@ class const SummaryStatsCard({
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return AsyncStatsCard<SummaryStats>(
-      cacheKey: '${books.length}-${periodCutoff?.millisecondsSinceEpoch ?? 0}',
-      compute: () => SummaryStats.calculate(books, periodCutoff),
-      loadingHeight: 180,
-      builder: (stats) => _buildCard(stats),
-    );
+    return _card(SummaryStats.calculate(books, periodCutoff));
   }
 
-  Widget _buildCard(SummaryStats stats) {
+  Widget _card(SummaryStats stats) {
     return AppCard(
       child: Column(
         mainAxisSize: MainAxisSize.min,

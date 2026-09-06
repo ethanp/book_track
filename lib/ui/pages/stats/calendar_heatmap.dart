@@ -1,6 +1,7 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/day_progress_entry.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -17,14 +18,6 @@ class const CalendarHeatmap({
   /// Only show dates after this cutoff (inclusive).
   final DateTime? periodCutoff,
 }) extends StatefulWidget {
-  static const colors = [
-    AppColors.heatmapEmpty,
-    AppColors.heatmapLight,
-    AppColors.heatmapMedium,
-    AppColors.heatmapDark,
-    AppColors.heatmapFull,
-  ];
-
   @override
   State<CalendarHeatmap> createState() => _CalendarHeatmapState();
 }
@@ -268,7 +261,7 @@ class _CalendarHeatmapState() extends State<CalendarHeatmap> {
   }
 
   Widget _dayCell(int activity, DateTime date) {
-    final colorIndex = _quartileOfMaxActivity(activity);
+    final level = _intensityOfMaxActivity(activity);
     final isSelected = selectedDate?.sameDayAs(date) == true;
 
     return GestureDetector(
@@ -286,23 +279,23 @@ class _CalendarHeatmapState() extends State<CalendarHeatmap> {
         height: 10,
         margin: const EdgeInsets.all(1),
         decoration: BoxDecoration(
-          color: CalendarHeatmap.colors[colorIndex],
+          color: level.color,
           borderRadius: BorderRadius.circular(2),
           border: isSelected
               ? Border.all(color: AppColors.burgundy, width: 1.5)
-              : null,
+              : Border.fromBorderSide(EHeatmapIntensity.cellHairline),
         ),
       ),
     );
   }
 
-  int _quartileOfMaxActivity(int activity) {
-    if (activity == 0) return 0;
+  EHeatmapIntensity _intensityOfMaxActivity(int activity) {
+    if (activity == 0) return EHeatmapIntensity.none;
     final ratio = activity / _maxActivity;
-    if (ratio <= 0.25) return 1;
-    if (ratio <= 0.50) return 2;
-    if (ratio <= 0.75) return 3;
-    return 4;
+    if (ratio <= 0.25) return EHeatmapIntensity.low;
+    if (ratio <= 0.50) return EHeatmapIntensity.mid;
+    if (ratio <= 0.75) return EHeatmapIntensity.high;
+    return EHeatmapIntensity.peak;
   }
 
   Widget _dayDetails(DateTime date) {

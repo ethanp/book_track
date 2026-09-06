@@ -1,113 +1,97 @@
-import 'dart:math' as math;
-
-import 'package:ethan_utils/ethan_utils.dart';
-
 import 'package:book_track/data_model.dart';
-import 'package:intl/intl.dart';
-import 'package:book_track/ui/common/books_progress_chart/chart_axis_label.dart';
-import 'package:book_track/ui/common/books_progress_chart/date_axis.dart';
+import 'package:book_track/ui/common/book_cover.dart';
 import 'package:book_track/ui/common/books_progress_chart/timespan.dart';
-import 'package:book_track/ui/common/cover_art_bytes.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:ethan_ui/ethan_ui.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class const BooksProgressChart({
   required final List<LibraryBook> books,
-
-  /// If provided, only show events after this date.
   final DateTime? periodCutoff,
-
-  /// If true, color dots by which format was used for each event.
   final bool colorByFormat = false,
+  final bool showSelectedBookCard = true,
 }) extends StatefulWidget {
+  static const selectionSlotHeight = 64.0;
+  static const plotHeight = 300.0;
+  static const height = selectionSlotHeight + plotHeight;
+
   @override
   State<BooksProgressChart> createState() => _BooksProgressChartState();
 }
 
+class _SelectedReadingEvent({
+  required final LibraryBook book,
+  required final ProgressEvent event,
+  required final double percent,
+  required final EChartSelectedPoint chartPoint,
+});
+
+class _BookProgressLine({
+  required final LibraryBook book,
+  required final List<ProgressEvent> events,
+  required final EChartLine line,
+});
+
 class _BooksProgressChartState() extends State<BooksProgressChart> {
-  /// Holds selected event info: (book, event, percent)
-  (LibraryBook, ProgressEvent, double)? _selectedEvent;
-
-  /// Holds selected spot indices for highlighting: (barIndex, spotIndex)
-  (int, int)? _selectedSpotIndices;
-
-  static const noAxisTitles = AxisTitles(
-    sideTitles: SideTitles(showTitles: false),
-  );
-  static final double horizontalInterval = 25;
+  _SelectedReadingEvent? _selectedEvent;
 
   @override
   Widget build(BuildContext context) {
-    // Filter books to those with events in the period
     final filteredBooks = widget.periodCutoff == null
         ? widget.books
         : widget.books
               .where(
-                (b) => b.progressHistory.any(
-                  (e) => e.end.isAfter(widget.periodCutoff!),
+                (book) => book.progressHistory.any(
+                  (event) => event.end.isAfter(widget.periodCutoff!),
                 ),
               )
               .toList();
 
-    if (filteredBooks.isEmpty || filteredBooks.every((b) => !b.hasProgress)) {
+    if (filteredBooks.isEmpty || filteredBooks.every((book) => !book.hasProgress)) {
       return const Center(child: Text('No reading data in this period'));
     }
 
-    final List<DateTime> eventTimes = filteredBooks
-        .expand((b) => b.progressHistory)
+    final eventTimes = filteredBooks
+        .expand((book) => book.progressHistory)
         .where(
-          (e) =>
+          (event) =>
               widget.periodCutoff == null ||
-              e.end.isAfter(widget.periodCutoff!),
+              event.end.isAfter(widget.periodCutoff!),
         )
-        .mapL((e) => e.end);
+        .mapL((event) => event.end);
 
     if (eventTimes.isEmpty) {
       return const Center(child: Text('No reading data in this period'));
     }
 
     final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
+    final progressLines = _progressLines(filteredBooks, timespan);
+
     return Column(
       children: [
-        _buildSelectedEventInfo(),
+        if (widget.showSelectedBookCard)
+          SizedBox(
+            height: BooksProgressChart.selectionSlotHeight,
+            child: _selectedEvent == null ? null : _selectedEventCard(),
+          ),
         Expanded(
-          child: LineChart(
-            LineChartData(
-              minY: 0,
-              maxY: 100,
-              minX: timespan.beginning.millisSinceEpoch,
-              maxX: timespan.end.millisSinceEpoch,
-              gridData: _horizontalPercentGrid(),
-              titlesData: _progressPercentAndDateAxes(timespan),
-              lineBarsData: _progressLinesHighestPerDay(filteredBooks),
-              borderData: _leftAndBottomAxes(),
-              lineTouchData: LineTouchData(
-                handleBuiltInTouches: false, // We handle selection ourselves
-                touchSpotThreshold: 20,
-                touchTooltipData: LineTouchTooltipData(
-                  getTooltipColor: (_) => Colors.transparent,
-                  tooltipPadding: EdgeInsets.zero,
-                  tooltipMargin: 0,
-                  getTooltipItems: (spots) => spots.mapL((_) => null),
-                ),
-                touchCallback:
-                    (FlTouchEvent event, LineTouchResponse? response) {
-                      if (event is FlTapUpEvent &&
-                          response != null &&
-                          response.lineBarSpots != null &&
-                          response.lineBarSpots!.isNotEmpty) {
-                        _selectClosestEventByProgressPercent(
-                          filteredBooks,
-                          response,
-                          event.localPosition,
-                          timespan,
-                        );
-                      }
-                    },
-              ),
+          child: EChart(
+            lines: [
+              for (final progressLine in progressLines) progressLine.line,
+            ],
+            valueScale: EChartValueScale.fixed(
+              min: 0,
+              max: 100,
+              ticks: const [0, 25, 50, 75, 100],
             ),
+            start: timespan.beginning,
+            end: timespan.end,
+            selectedPoint: _selectedEvent?.chartPoint,
+            onPointSelected: (selected) =>
+                _showReadingEvent(progressLines, selected),
           ),
         ),
         if (widget.colorByFormat && _hasMultipleFormats(filteredBooks))
@@ -116,147 +100,180 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     );
   }
 
-  void _selectClosestEventByProgressPercent(
-    List<LibraryBook> filteredBooks,
-    LineTouchResponse response,
-    Offset? touchPos,
-    TimeSpan timespan,
+  void _clearSelectedReadingEvent() {
+    if (_selectedEvent == null) return;
+    setState(() => _selectedEvent = null);
+  }
+
+  void _showReadingEvent(
+    List<_BookProgressLine> progressLines,
+    EChartSelectedPoint? selected,
   ) {
-    // Find the closest spot to the touch position
-    final spots = response.lineBarSpots!;
-    LineBarSpot closestSpot = spots.first;
-
-    if (touchPos != null && spots.length > 1) {
-      // fl_chart returns spots with similar X values, so compare Y distance.
-      // touchPos.dy is pixels from top; spot.y is percentage (0=bottom, 100=top)
-      // Convert touch Y to percentage: top of chart = 100%, bottom = 0%
-      // Assuming ~200px chart height after accounting for info bar
-      const chartHeight = 200.0;
-      final touchYPercent = 100.0 - (touchPos.dy / chartHeight * 100.0);
-
-      double minDistance = double.infinity;
-      for (final spot in spots) {
-        final yDiff = (spot.y - touchYPercent).abs();
-        if (yDiff < minDistance) {
-          minDistance = yDiff;
-          closestSpot = spot;
-        }
-      }
+    if (selected == null) {
+      _clearSelectedReadingEvent();
+      return;
     }
-
-    final barIndex = closestSpot.barIndex;
-    final spotIndex = closestSpot.spotIndex;
-
-    if (barIndex < 0 || barIndex >= filteredBooks.length) return;
-
-    final book = filteredBooks[barIndex];
-    final bookEvents = book.progressHistory
-        .where(
-          (e) =>
-              widget.periodCutoff == null ||
-              e.end.isAfter(widget.periodCutoff!),
-        )
-        .toList();
-
-    final filteredEvents = _highestProgressPerDay(
-      book,
-      bookEvents,
-    ).where((ev) => book.progressPercentAt(ev) != null).toList();
-
-    if (spotIndex < 0 || spotIndex >= filteredEvents.length) return;
-
-    final event = filteredEvents[spotIndex];
-    final percent = book.progressPercentAt(event) ?? 0;
-
+    if (selected.lineIndex < 0 || selected.lineIndex >= progressLines.length) {
+      return;
+    }
+    final progressLine = progressLines[selected.lineIndex];
+    if (selected.pointIndex < 0 ||
+        selected.pointIndex >= progressLine.events.length) {
+      return;
+    }
+    final event = progressLine.events[selected.pointIndex];
+    final percent = progressLine.book.progressPercentAt(event) ?? 0;
     setState(() {
-      _selectedEvent = (book, event, percent);
-      _selectedSpotIndices = (barIndex, spotIndex);
+      _selectedEvent = _SelectedReadingEvent(
+        book: progressLine.book,
+        event: event,
+        percent: percent,
+        chartPoint: selected,
+      );
     });
   }
 
-  Widget _buildSelectedEventInfo() {
+  List<_BookProgressLine> _progressLines(
+    List<LibraryBook> filteredBooks,
+    TimeSpan timespan,
+  ) {
+    final spanMillis = timespan.end
+        .difference(timespan.beginning)
+        .inMilliseconds
+        .toDouble();
+    return [
+      for (final book in filteredBooks)
+        _lineForBook(book, timespan.beginning, spanMillis),
+    ].where((progressLine) => progressLine.line.points.isNotEmpty).toList();
+  }
+
+  _BookProgressLine _lineForBook(
+    LibraryBook book,
+    DateTime rangeStart,
+    double spanMillis,
+  ) {
+    final bookEvents = book.progressHistory
+        .where(
+          (event) =>
+              widget.periodCutoff == null ||
+              event.end.isAfter(widget.periodCutoff!),
+        )
+        .toList();
+    final events = _highestProgressPerDay(book, bookEvents)
+        .where((event) => book.progressPercentAt(event) != null)
+        .toList();
+    return _BookProgressLine(
+      book: book,
+      events: events,
+      line: EChartLine(
+        points: [
+          for (final event in events)
+            EChartPoint(
+              date: event.end,
+              value: book.progressPercentAt(event) ?? 0,
+              color: widget.colorByFormat ? _dotColor(book, event) : null,
+              dotRadius: widget.colorByFormat
+                  ? _dotRadius(event.end, rangeStart, spanMillis)
+                  : null,
+            ),
+        ],
+        showDots: widget.colorByFormat,
+        stroke: widget.colorByFormat
+            ? EChartLineStroke.polyline
+            : EChartLineStroke.alongIncreasingX,
+        color: _trajectoryColor(book),
+        strokeWidth: _trajectoryWidth(book),
+      ),
+    );
+  }
+
+  Color _trajectoryColor(LibraryBook book) {
+    if (widget.colorByFormat) return EColors.textSecondary;
+    final isSelected = _selectedEvent?.book.supaId == book.supaId;
+    if (isSelected) return EColors.textSecondary;
+    return EColors.textMuted.withValues(alpha: 0.55);
+  }
+
+  double _trajectoryWidth(LibraryBook book) {
+    if (widget.colorByFormat) return 2.6;
+    final isSelected = _selectedEvent?.book.supaId == book.supaId;
+    return isSelected ? 2.2 : 1.4;
+  }
+
+  Color _dotColor(LibraryBook book, ProgressEvent event) {
+    if (widget.colorByFormat) {
+      return book.formatById(event.formatId)?.format.color ?? EColors.textMuted;
+    }
+    final percent = book.progressPercentAt(event) ?? 0;
+    return EHeatmapIntensity.colorAt((percent / 100).clamp(0.0, 1.0));
+  }
+
+  double _dotRadius(DateTime date, DateTime rangeStart, double spanMillis) {
+    final alongRange = spanMillis > 0
+        ? date.difference(rangeStart).inMilliseconds / spanMillis
+        : 0.5;
+    return alongRange / 1.2 + 2;
+  }
+
+  Widget _selectedEventCard() {
     if (_selectedEvent == null) return const SizedBox.shrink();
+    final selected = _selectedEvent!;
+    final dateStr = DateFormat('MMM d, yyyy').format(selected.event.end);
 
-    final (book, event, percent) = _selectedEvent!;
-    final dateStr = DateFormat('MMM d, yyyy').format(event.end);
-
-    return GestureDetector(
-      onTap: () => context.push(LibraryBookPage(book.supaId)),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.sm,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.circular(AppRadii.sm),
-        ),
-        child: Row(
-          children: [
-            _bookCover(book, size: 40),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                book.book.title,
-                style: AppTextStyles.h5,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${percent.round()}%',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.teal,
-                  ),
+    return Material(
+      color: AppColors.background.withValues(alpha: 0.94),
+      borderRadius: BorderRadius.circular(AppRadii.sm),
+      child: InkWell(
+        onTap: () => context.push(LibraryBookPage(selected.book.supaId)),
+        borderRadius: BorderRadius.circular(AppRadii.sm),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.sm,
+          ),
+          child: Row(
+            children: [
+              _bookCover(selected.book, size: 40),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  selected.book.book.title,
+                  style: AppTextStyles.h5,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                Text(dateStr, style: AppTextStyles.caption),
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${selected.percent.round()}%',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: EHeatmapIntensity.colorAt(selected.percent / 100),
+                    ),
+                  ),
+                  Text(dateStr, style: AppTextStyles.caption),
+                ],
+              ),
+              IconButton(
+                tooltip: 'Clear selection',
+                onPressed: _clearSelectedReadingEvent,
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.close, size: 20),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _bookCover(LibraryBook book, {double size = 60}) {
-    final double height = size;
-    final double width = size * 0.75;
-
-    final placeholder = SizedBox(
-      height: height,
-      width: width,
-      child: const Icon(Icons.book, size: 30, color: AppColors.textSecondary),
-    );
-
-    Widget bookArt = placeholder;
-    if (book.book.coverArtS != null &&
-        coverArtLooksDecodable(book.book.coverArtS!)) {
-      bookArt = SizedBox(
-        height: height,
-        width: width,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: Image.memory(
-            fit: BoxFit.cover,
-            book.book.coverArtS!,
-            errorBuilder: (_, _, _) => placeholder,
-          ),
-        ),
-      );
-    }
-
     return Container(
-      height: height,
-      width: width,
-      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
@@ -267,22 +284,23 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
           ),
         ],
       ),
-      child: bookArt,
+      child: BookCover(
+        width: size * 0.75,
+        height: size,
+        bytes: book.book.coverArt,
+      ),
     );
   }
 
   bool _hasMultipleFormats(List<LibraryBook> books) {
-    final allFormats = books
-        .expand((b) => b.formats)
-        .map((f) => f.format)
-        .toSet();
-    return allFormats.length > 1;
+    return books.expand((book) => book.formats).map((format) => format.format).toSet().length >
+        1;
   }
 
   Widget _formatLegend(List<LibraryBook> books) {
     final allFormats =
-        books.expand((b) => b.formats).map((f) => f.format).toSet().toList()
-          ..sortOn((e) => e.name);
+        books.expand((book) => book.formats).map((format) => format.format).toSet().toList()
+          ..sortOn((format) => format.name);
 
     return Padding(
       padding: const EdgeInsets.only(top: 8),
@@ -312,193 +330,31 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     );
   }
 
-  FlBorderData _leftAndBottomAxes() {
-    const borderSide = BorderSide(color: AppColors.textSecondary, width: 1.5);
-    return FlBorderData(
-      show: true,
-      border: const Border(left: borderSide, bottom: borderSide),
-    );
-  }
-
-  FlGridData _horizontalPercentGrid() {
-    return FlGridData(
-      horizontalInterval: horizontalInterval,
-      drawVerticalLine: false,
-    );
-  }
-
-  FlTitlesData _progressPercentAndDateAxes(TimeSpan timespan) {
-    return FlTitlesData(
-      leftTitles: percentageAxisTitles(shiftTitle: Offset(20, -10)),
-      rightTitles: noAxisTitles,
-      bottomTitles: DateAxis(timespan).titles(),
-      topTitles: noAxisTitles,
-    );
-  }
-
-  List<LineChartBarData> _progressLinesHighestPerDay(
-    List<LibraryBook> filteredBooks,
-  ) {
-    final allProgressEvents = filteredBooks
-        .expand((b) => b.progressHistory)
-        .where(
-          (e) =>
-              widget.periodCutoff == null ||
-              e.end.isAfter(widget.periodCutoff!),
-        )
-        .toList();
-
-    if (allProgressEvents.isEmpty) return [];
-
-    int firstDate = allProgressEvents.first.dateTime.millisecondsSinceEpoch;
-    int lastDate = allProgressEvents.first.dateTime.millisecondsSinceEpoch;
-    for (final b in allProgressEvents) {
-      final t = b.dateTime.millisecondsSinceEpoch;
-      firstDate = math.min(firstDate, t);
-      lastDate = math.max(lastDate, t);
-    }
-    final double xRange = lastDate.toDouble() - firstDate;
-
-    final result = <LineChartBarData>[];
-    for (int barIndex = 0; barIndex < filteredBooks.length; barIndex++) {
-      final book = filteredBooks[barIndex];
-      final bookEvents = book.progressHistory
-          .where(
-            (e) =>
-                widget.periodCutoff == null ||
-                e.end.isAfter(widget.periodCutoff!),
-          )
-          .toList();
-
-      final filteredEvents = _highestProgressPerDay(book, bookEvents);
-
-      result.add(
-        LineChartBarData(
-          spots: filteredEvents
-              .where((ev) => book.progressPercentAt(ev) != null)
-              .mapL((curr) => eventToSpot(book, curr)),
-          isCurved: true,
-          curveSmoothness: .05,
-          belowBarData: _fadeTealUnderProgress(),
-          color: AppColors.textSecondary.withValues(alpha: 0.7),
-          dotData: FlDotData(
-            show: true,
-            getDotPainter: (spot, xPercentage, bar, spotIndex) {
-              // Check if this is the selected spot
-              final isSelected =
-                  _selectedSpotIndices != null &&
-                  _selectedSpotIndices!.$1 == barIndex &&
-                  _selectedSpotIndices!.$2 == spotIndex;
-
-              // Get the event at this index to determine format
-              final event = filteredEvents[spotIndex];
-              final format = book.formatById(event.formatId);
-
-              // Calculate proper x percentage
-              xPercentage = xRange > 0
-                  ? (spot.x - firstDate) / xRange * 100
-                  : 50;
-              final double baseRadius = xPercentage / 100 / 1.2 + 2;
-              final double radius = isSelected ? baseRadius + 3 : baseRadius;
-
-              // Use format-based color if enabled
-              final Color dotColor = widget.colorByFormat
-                  ? (format?.format.color ?? AppColors.shimmer)
-                  : AppColors.teal
-                        .withValues(alpha: 0.7)
-                        .lerpWith(
-                          AppColors.primary.withValues(alpha: 0.8),
-                          xPercentage / 100,
-                        );
-
-              return FlDotCirclePainter(
-                radius: radius,
-                color: isSelected ? AppColors.burgundy : dotColor,
-                strokeColor: isSelected ? Colors.white : AppColors.textPrimary,
-                strokeWidth: isSelected ? 2 : 0,
-              );
-            },
-          ),
-        ),
-      );
-    }
-    return result;
-  }
-
-  static BarAreaData _fadeTealUnderProgress() {
-    return BarAreaData(
-      show: true,
-      gradient: LinearGradient(
-        colors: [
-          AppColors.teal.withValues(alpha: 0.15),
-          AppColors.teal.withValues(alpha: 0.04),
-        ],
-        stops: [.4, 1],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ),
-    );
-  }
-
-  static AxisTitles percentageAxisTitles({required Offset shiftTitle}) {
-    return AxisTitles(
-      axisNameWidget: ChartAxisLabel.nudgedIntoPlot(
-        Text('Percentage', style: AppTextStyles.yAxisName),
-        shift: shiftTitle,
-      ),
-      sideTitles: SideTitles(
-        interval: horizontalInterval,
-        reservedSize: 30,
-        showTitles: true,
-        getTitlesWidget: (double value, TitleMeta meta) =>
-            Text(value.floor().toString()),
-      ),
-      axisNameSize: 22,
-    );
-  }
-
   List<ProgressEvent> _highestProgressPerDay(
     LibraryBook book,
     List<ProgressEvent> events,
   ) {
     if (events.isEmpty) return [];
-
-    // Group events by date (normalized to midnight)
     final eventsByDate = <DateTime, ProgressEvent>{};
-
     for (final event in events) {
       final date = event.end.startOfDay;
       final existing = eventsByDate[date];
-
-      // Keep the event with the highest progress for each day
       if (existing == null) {
         eventsByDate[date] = event;
-      } else {
-        final existingPercent = book.progressPercentAt(existing);
-        final currentPercent = book.progressPercentAt(event);
-
-        // If current event has higher progress, or if existing has no valid percent, use current
-        if (currentPercent != null &&
-            (existingPercent == null || currentPercent > existingPercent)) {
+        continue;
+      }
+      final existingPercent = book.progressPercentAt(existing);
+      final currentPercent = book.progressPercentAt(event);
+      if (currentPercent != null &&
+          (existingPercent == null || currentPercent > existingPercent)) {
+        eventsByDate[date] = event;
+      } else if (existingPercent == null && currentPercent == null) {
+        if (event.end.isAfter(existing.end)) {
           eventsByDate[date] = event;
-        } else if (existingPercent == null && currentPercent == null) {
-          // If both are null, use the later one
-          if (event.end.isAfter(existing.end)) {
-            eventsByDate[date] = event;
-          }
         }
       }
     }
-
-    // Return events sorted by date
     final sortedDates = eventsByDate.keys.toList()..sort();
     return sortedDates.mapL((date) => eventsByDate[date]!);
-  }
-
-  FlSpot eventToSpot(LibraryBook book, ProgressEvent ev) {
-    return FlSpot(
-      ev.end.millisecondsSinceEpoch.toDouble(),
-      book.progressPercentAt(ev) ?? 0,
-    );
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:book_track/services/book_universe_service.dart';
+import 'package:book_track/ui/common/book_cover.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,20 +12,21 @@ class const CoverArt(final OpenLibraryBook book)
 }
 
 class _CoverArtState() extends ConsumerState<CoverArt> {
-  late final Future<Uint8List?> futureCoverArtMedSize;
+  late final Future<Uint8List?> futureCoverArt;
 
   @override
   void initState() {
     super.initState();
-    futureCoverArtMedSize = BookUniverseService.downloadMedSizeCover(
-      widget.book,
+    futureCoverArt = BookUniverseService.coverBytes(
+      widget.book.openLibCoverId,
+      OpenLibraryCoverSize.large,
     );
   }
 
   @override
   void dispose() {
     // `ignore()` is for when we _used to but no longer_ care about the result
-    futureCoverArtMedSize.ignore();
+    futureCoverArt.ignore();
     super.dispose();
   }
 
@@ -33,7 +35,7 @@ class _CoverArtState() extends ConsumerState<CoverArt> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: FutureBuilder(
-        future: futureCoverArtMedSize,
+        future: futureCoverArt,
         builder: imageOrPlaceholder,
       ),
     );
@@ -43,43 +45,16 @@ class _CoverArtState() extends ConsumerState<CoverArt> {
     BuildContext _,
     AsyncSnapshot<Uint8List?> snapshot,
   ) {
-    // Waiting: Show loading indicator
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return coverArtMissingPlaceholder(loading: true);
-    }
-    // Null: Show blank box
-    if (snapshot.data == null) {
-      return coverArtMissingPlaceholder(loading: false);
-    }
-    // Data: Show image
-    return Image.memory(snapshot.data!);
-  }
-
-  Widget coverArtMissingPlaceholder({required bool loading}) {
-    return Container(
-      height: 200,
+    final cover = BookCover(
       width: 150,
-      margin: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Center(
-        child: loading
-            ? CircularProgressIndicator()
-            : SizedBox(
-                width: 110,
-                child: Text(
-                  'No cover art found',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-      ),
+      height: 200,
+      bytes: snapshot.data,
+      borderRadius: 10,
+    );
+    if (snapshot.connectionState != ConnectionState.waiting) return cover;
+    return Stack(
+      alignment: Alignment.center,
+      children: [cover, const CircularProgressIndicator()],
     );
   }
 }

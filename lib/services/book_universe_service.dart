@@ -7,6 +7,12 @@ import 'package:http/http.dart' as http;
 
 const _log = ELogger('OpenLibraryBookUniverseRepository');
 
+enum OpenLibraryCoverSize(final String letter) {
+  small('S'),
+  medium('M'),
+  large('L');
+}
+
 class BookUniverseService() {
   static final _bookUniverseRepo = _OpenLibraryBookUniverseRepository();
 
@@ -23,8 +29,11 @@ class BookUniverseService() {
     bookSearchResultsNotifier.notify(searchResults);
   }
 
-  static Future<Uint8List?> downloadMedSizeCover(OpenLibraryBook book) =>
-      _bookUniverseRepo._coverBytes(book.openLibCoverId, 'M');
+  static Future<Uint8List?> coverBytes(
+    int? coverId,
+    OpenLibraryCoverSize size,
+  ) =>
+      _bookUniverseRepo._coverBytes(coverId, size);
 }
 
 /// * Open Library has a simple HTTP search endpoint for books and covers:
@@ -44,8 +53,9 @@ class BookUniverseService() {
 class _OpenLibraryBookUniverseRepository() {
   static final Uri apiUrl = Uri.parse('https://openlibrary.org/search.json');
 
-  static Uri coverUrl(int coverId, String size) =>
-      Uri.parse('https://covers.openlibrary.org/b/id/$coverId-$size.jpg');
+  static Uri coverUrl(int coverId, OpenLibraryCoverSize size) => Uri.parse(
+    'https://covers.openlibrary.org/b/id/$coverId-${size.letter}.jpg',
+  ).replace(queryParameters: {'default': 'false'});
 
   Future<BookSearchResults> search(String containing) async {
     final Uri url = apiUrl.replace(
@@ -79,7 +89,10 @@ class _OpenLibraryBookUniverseRepository() {
               openLibBookDoc['first_publish_year'],
               openLibBookDoc['number_of_pages_median'],
               openLibBookDoc['cover_i'],
-              await _coverBytes(openLibBookDoc['cover_i'], 'S'),
+              await _coverBytes(
+                openLibBookDoc['cover_i'],
+                OpenLibraryCoverSize.small,
+              ),
             );
           }),
         ),
@@ -89,10 +102,14 @@ class _OpenLibraryBookUniverseRepository() {
     }
   }
 
-  Future<Uint8List?> _coverBytes(int? coverId, String size) async {
+  Future<Uint8List?> _coverBytes(
+    int? coverId,
+    OpenLibraryCoverSize size,
+  ) async {
     if (coverId == null) return null;
-    var url = coverUrl(coverId, size);
+    final Uri url = coverUrl(coverId, size);
     final http.Response response = await http.get(url);
+    if (response.statusCode != 200) return null;
     return response.bodyBytes;
   }
 }
@@ -103,5 +120,5 @@ class const OpenLibraryBook(
   final int? yearFirstPublished,
   final int? numPagesMedian,
   final int? openLibCoverId,
-  final Uint8List? coverArtS,
+  final Uint8List? coverArt,
 );

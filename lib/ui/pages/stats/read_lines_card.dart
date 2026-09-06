@@ -2,32 +2,20 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/books_progress_chart/books_progress_chart.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:book_track/ui/pages/stats/stats_providers.dart';
-import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class const ReadLinesCard({
   required final List<LibraryBook> books,
   required final DateTime? periodCutoff,
-}) extends ConsumerWidget {
+}) extends StatelessWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final bool currentlyReadingOnly = ref.watch(
-      readLinesCurrentlyReadingOnlyProvider,
-    );
-
-    final List<LibraryBook> chartBooks = currentlyReadingOnly
-        ? books.whereL((book) => book.isReading)
-        : books;
-
+  Widget build(BuildContext context) {
     return AppCard(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _header(),
-          _currentlyReadingToggle(ref, currentlyReadingOnly),
-          _chart(chartBooks),
+          _chart(),
         ],
       ),
     );
@@ -47,33 +35,12 @@ class const ReadLinesCard({
     );
   }
 
-  Widget _currentlyReadingToggle(WidgetRef ref, bool currentlyReadingOnly) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text('Currently reading only', style: AppTextStyles.body),
-          Switch(
-            value: currentlyReadingOnly,
-            onChanged: (switchValue) =>
-                ref.read(readLinesCurrentlyReadingOnlyProvider.notifier).state =
-                    switchValue,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _chart(List<LibraryBook> chartBooks) {
+  Widget _chart() {
     return SizedBox(
-      height: 300,
+      height: BooksProgressChart.height,
       child: Padding(
         padding: const EdgeInsets.only(left: 18, right: 35, top: 8, bottom: 14),
-        child: BooksProgressChart(
-          books: chartBooks,
-          periodCutoff: periodCutoff,
-        ),
+        child: BooksProgressChart(books: books, periodCutoff: periodCutoff),
       ),
     );
   }

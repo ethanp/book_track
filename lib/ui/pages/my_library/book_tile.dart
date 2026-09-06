@@ -1,14 +1,20 @@
+import 'dart:math';
+
 import 'package:book_track/data_model.dart';
-import 'package:book_track/ui/common/cover_art_bytes.dart';
+import 'package:book_track/ui/common/book_cover.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class const BookTile(final LibraryBook book, final int idx)
     extends ConsumerWidget {
+  static const _coverLeadingExtraWidth = 20.0;
+  static const _coverAspectSlack = 12.0;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Dismissible(
@@ -16,148 +22,124 @@ class const BookTile(final LibraryBook book, final int idx)
       direction: DismissDirection.startToEnd,
       confirmDismiss: (direction) => UpdateProgressDialogPage.show(ref, book),
       background: _addProgressReveal(),
-      child: _bookListTile(context),
-    );
-  }
-
-  Widget _bookListTile(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.push(LibraryBookPage(book.supaId)),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        margin: const EdgeInsets.symmetric(vertical: 2),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadii.sm),
-        ),
-        child: Row(
-          children: [
-            _coverArt(),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(child: _title()),
-                      _progressPercentage(),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(child: _author()),
-                      _pagesRead(),
-                    ],
-                  ),
-                  _startedDate(),
-                  if (book.averagePaceDisplay != null) _averagePace(),
-                  const SizedBox(height: AppSpacing.sm),
-                  _progressBar(),
-                ],
-              ),
-            ),
-          ],
-        ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: LayoutBuilder(builder: _flushCard),
       ),
     );
   }
 
-  Widget _progressBar() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(4),
-      child: LinearProgressIndicator(
-        value: book.progressPercentage.toDouble() / 100,
-        minHeight: 5,
-        backgroundColor: AppColors.progressBarTrack,
-        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.teal),
+  Widget _flushCard(BuildContext context, BoxConstraints constraints) {
+    return EFlushLeadingCard(
+      leadingWidth: min(
+        EFlushLeadingCard.cappedLeadingWidth(constraints.maxWidth) +
+            _coverLeadingExtraWidth +
+            _coverAspectSlack,
+        constraints.maxWidth,
+      ),
+      leadingGap: AppSpacing.md,
+      onActivated: () => context.push(LibraryBookPage(book.supaId)),
+      leading: _coverArt(),
+      child: _copy(),
+    );
+  }
+
+  Widget _coverArt() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double coverHeight = constraints.maxHeight;
+        final double uncappedWidth =
+            coverHeight * BookCover.aspectRatioOf(book.book.coverArt) +
+            _coverAspectSlack;
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: BookCover(
+            width: min(uncappedWidth, constraints.maxWidth),
+            height: coverHeight,
+            bytes: book.book.coverArt,
+            borderRadius: 0,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _copy() {
+    final AverageReadingPace? readingPace = book.averageReadingPace;
+    return Padding(
+      padding: const EdgeInsets.only(
+        top: AppSpacing.sm,
+        right: AppSpacing.md,
+        bottom: AppSpacing.sm,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _identity(),
+          const SizedBox(height: AppSpacing.sm),
+          _schedule(readingPace),
+          const SizedBox(height: AppSpacing.sm),
+          _progress(),
+        ],
       ),
     );
   }
 
-  Widget _pagesRead() {
+  Widget _identity() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [_title(), _author()],
+    );
+  }
+
+  Widget _schedule(AverageReadingPace? readingPace) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _startedAndEta(readingPace?.etaCaption),
+        if (readingPace != null) _averagePace(readingPace.paceLabel),
+      ],
+    );
+  }
+
+  Widget _progress() {
+    return EProgressMeter(
+      value: book.progressPercentage.toDouble() / 100,
+      leadingLabel: '${book.progressPercentage}%',
+      trailingLabel: book.currentBookProgressString,
+      tone: EStatusTone.success,
+    );
+  }
+
+  Widget _title() {
     return Text(
-      book.currentBookProgressString ?? '',
-      style: AppTextStyles.caption,
+      book.book.title,
+      style: AppTextStyles.h4,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
   Widget _author() {
     return Text(
       book.book.author ?? 'Author Unknown',
-      style: AppTextStyles.bodySecondary,
+      style: AppTextStyles.bodySecondary.copyWith(fontStyle: FontStyle.italic),
       overflow: TextOverflow.ellipsis,
       maxLines: 1,
     );
   }
 
-  Widget _startedDate() {
+  Widget _startedAndEta(String? etaCaption) {
+    final String startedCaption = 'Started ${book.startTime.monthDayCaption}';
     return Text(
-      'Started ${book.startTime.monthDayCaption}',
+      etaCaption == null ? startedCaption : '$startedCaption · $etaCaption',
       style: AppTextStyles.caption,
+      maxLines: 2,
     );
   }
 
-  Widget _averagePace() {
-    return Text(book.averagePaceDisplay!, style: AppTextStyles.caption);
-  }
-
-  Widget _title() {
-    return Text(book.book.title, style: AppTextStyles.h5);
-  }
-
-  Widget _progressPercentage() {
-    return Text(
-      '${book.progressPercentage}%',
-      style: AppTextStyles.caption.copyWith(
-        fontWeight: FontWeight.w600,
-        color: AppColors.teal,
-      ),
-    );
-  }
-
-  Widget _coverArt() {
-    const double height = 60.0;
-    const double width = 45.0;
-
-    final placeholder = Container(
-      height: height,
-      width: width,
-      decoration: BoxDecoration(
-        color: AppColors.primaryLight.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(AppRadii.sm),
-      ),
-      child: const Icon(Icons.menu_book, color: AppColors.primary, size: 24),
-    );
-
-    Widget bookArt = placeholder;
-    if (book.book.coverArtS != null &&
-        coverArtLooksDecodable(book.book.coverArtS!)) {
-      bookArt = ClipRRect(
-        borderRadius: BorderRadius.circular(AppRadii.sm),
-        child: Image.memory(
-          fit: BoxFit.fill,
-          height: height,
-          width: width,
-          book.book.coverArtS!,
-          errorBuilder: (_, _, _) => placeholder,
-        ),
-      );
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadii.sm),
-        boxShadow: const [AppShadows.coverArt],
-      ),
-      child: bookArt,
-    );
+  Widget _averagePace(String paceLabel) {
+    return Text(paceLabel, style: AppTextStyles.caption);
   }
 
   Widget _addProgressReveal() {
@@ -173,7 +155,7 @@ class const BookTile(final LibraryBook book, final int idx)
           Icon(Icons.add, color: Colors.white, size: 18),
           SizedBox(width: AppSpacing.xs),
           Text(
-            'Add progress',
+            'Log progress',
             style: TextStyle(
               color: Colors.white,
               fontSize: 15,

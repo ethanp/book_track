@@ -263,8 +263,16 @@ class const AverageReadingPace({
     return '$formatted $unitLabel/day';
   }
 
-  String get display =>
-      eta == null ? paceLabel : '$paceLabel · ETA ${eta!.monthDayCaption}';
+  String? get etaCaption {
+    final DateTime? finishDate = eta;
+    if (finishDate == null) return null;
+    return 'ETA ${finishDate.monthDayCaption}';
+  }
+
+  String get display {
+    final String? etaText = etaCaption;
+    return etaText == null ? paceLabel : '$paceLabel · $etaText';
+  }
 }
 
 class const ProgressEvent({
@@ -308,7 +316,7 @@ class const Book(
   final String? author,
   final int? yearFirstPublished,
   final int? openLibCoverId,
-  final Uint8List? coverArtS,
+  final Uint8List? coverArt,
 );
 
 enum BookFormat() {

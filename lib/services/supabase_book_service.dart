@@ -24,16 +24,13 @@ class SupabaseBookService() {
         .single()
         .withRetry(_log);
     final supaBook = _SupaBook(rawData);
-    final coverArt =
-        // Not sure why, but these angle brackets are necessary.
-        await supaBook.coverKey.map<Future<Uint8List?>>(_getCoverArt);
     return Book(
       supaBook.supaId,
       supaBook.title,
       supaBook.author,
       supaBook.yearPublished,
       supaBook.coverId,
-      coverArt,
+      await _coverArtFor(supaBook),
     );
   }
 
@@ -93,7 +90,7 @@ class SupabaseBookService() {
   }
 
   static Future<int> _storeBookAndCover(OpenLibraryBook book) async {
-    final String? coverKey = await _storeCoverArtS(book);
+    final String? coverKey = await _storeLargeCoverArt(book);
     final _SupaBook result = await _storeBook(book, coverKey);
     return result.supaId;
   }
@@ -132,41 +129,87 @@ class SupabaseBookService() {
     }
   }
 
-  static Future<String?> _storeCoverArtS(OpenLibraryBook book) async {
-    final String? coverKey = book.openLibCoverId.map(_coverPath);
-    if (book.openLibCoverId == null || book.coverArtS == null) {
+  static Future<Uint8List?> _coverArtFor(_SupaBook supaBook) async {
+    if (supaBook.coverId != null && !supaBook.hasLargeCoverKey) {
+      return await _upgradeToLargeCover(supaBook);
+    }
+    return await supaBook.coverKey.map<Future<Uint8List?>>(_getCoverArt);
+  }
+
+  static Future<Uint8List?> _upgradeToLargeCover(_SupaBook supaBook) async {
+    final int? coverId = supaBook.coverId;
+    if (coverId == null) return null;
+    final Uint8List? largeBytes = await BookUniverseService.coverBytes(
+      coverId,
+      OpenLibraryCoverSize.large,
+    );
+    if (largeBytes == null) {
+      return await supaBook.coverKey.map<Future<Uint8List?>>(_getCoverArt);
+    }
+    final String coverKey = _largeCoverPath(coverId);
+    if (!await _upsertCoverArt(coverKey, largeBytes)) {
+      return largeBytes;
+    }
+    await _booksClient
+        .update({_SupaBook.coverKeyCol: coverKey})
+        .eq(_SupaBook.idCol, supaBook.supaId)
+        .withRetry(_log);
+    return largeBytes;
+  }
+
+  static Future<String?> _storeLargeCoverArt(OpenLibraryBook book) async {
+    final int? coverId = book.openLibCoverId;
+    if (coverId == null) {
       _log.log('No cover for ${book.title}');
       return null;
     }
+    final Uint8List? largeBytes = await BookUniverseService.coverBytes(
+      coverId,
+      OpenLibraryCoverSize.large,
+    );
+    if (largeBytes == null) {
+      _log.log('No large cover for ${book.title}');
+      return null;
+    }
+    final String coverKey = _largeCoverPath(coverId);
+    if (!await _upsertCoverArt(coverKey, largeBytes)) return null;
+    return coverKey;
+  }
+
+  static Future<bool> _upsertCoverArt(String coverKey, Uint8List bytes) async {
     try {
-      await _coverArtClient.uploadBinary(coverKey!, book.coverArtS!);
-      return coverKey;
+      await _coverArtClient.uploadBinary(
+        coverKey,
+        bytes,
+        fileOptions: const FileOptions(upsert: true, contentType: 'image/jpeg'),
+      );
+      return true;
     } on StorageException catch (error) {
       if (error.error == 'Duplicate') {
         _log.warn('art $coverKey is duplicate (which is probably fine)');
-      } else {
-        _log.warn('Unknown error: $error');
+        return true;
       }
-      return null;
+      _log.warn('Unknown error: $error');
+      return false;
     } catch (error) {
       _log.error('Failed to store cover art', error);
-      return null;
+      return false;
     }
   }
 
-  static String _coverPath(int coverI) => 's/$coverI.jpg';
+  static String _largeCoverPath(int coverId) => 'l/$coverId.jpg';
 
   static Future<Uint8List?> _getCoverArt(String key) async {
     try {
       return await _coverArtClient.download(key);
-    } on StorageException catch (e) {
-      print('issue with the bucket: $e, $key');
+    } on StorageException catch (error) {
+      _log.warn('issue with the bucket: $error, $key');
       return null;
-    } on ClientException catch (e) {
-      print('http issue $e $key');
+    } on ClientException catch (error) {
+      _log.warn('http issue $error $key');
       return null;
-    } catch (e) {
-      print('strange error: $e');
+    } catch (error) {
+      _log.error('strange error: $error', error);
       return null;
     }
   }
@@ -199,4 +242,9 @@ class const _SupaBook(final PostgrestMap rawData) {
 
   String? get coverKey => rawData[coverKeyCol];
   static final String coverKeyCol = 'small_cover_key';
+
+  bool get hasLargeCoverKey {
+    final String? key = coverKey;
+    return key != null && key.startsWith('l/');
+  }
 }

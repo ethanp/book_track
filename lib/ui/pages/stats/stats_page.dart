@@ -1,7 +1,7 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/extensions.dart';
+import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/app_card.dart';
-import 'package:book_track/ui/common/cover_art_bytes.dart';
+import 'package:book_track/ui/common/book_cover.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/scroll_propagating_list_view.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
@@ -16,6 +16,7 @@ import 'package:book_track/ui/pages/stats/summary_stats_card.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class const StatsPage() extends ConsumerWidget {
@@ -24,103 +25,103 @@ class const StatsPage() extends ConsumerWidget {
     return EScaffoldShell(
       contentMaxWidth: double.infinity,
       appBar: const EAppHeader(title: 'Stats'),
-      body: ref.userLibrary((books) => _body(books, ref)),
-    );
-  }
-
-  Widget _body(List<LibraryBook> userLibrary, WidgetRef ref) {
-    final bool showArchived = ref.watch(showArchivedProvider);
-    final bool includeAudiobooks = ref.watch(includeAudiobooksProvider);
-    final StatsPeriod selectedPeriod = ref.watch(statsPeriodProvider);
-    final DateTime? periodCutoff = selectedPeriod.cutoffDate;
-
-    final List<LibraryBook> books = userLibrary.whereL(
-      (book) =>
-          (showArchived || !book.archived) &&
-          (includeAudiobooks || !book.isAudiobook),
-    );
-
-    return SafeArea(
-      child: Column(
-        children: [
-          const FilterSection(),
-          Expanded(
-            child: SingleChildScrollView(
-              key: const PageStorageKey('stats_scroll'),
-              child: Column(
-                children: [
-                  _filterToggles(ref, includeAudiobooks, showArchived),
-                  SummaryStatsCard(books: books, periodCutoff: periodCutoff),
-                  ActivityCalendarCard(
-                    key: ValueKey(
-                      'calendar-${books.length}-$showArchived-$includeAudiobooks',
-                    ),
-                    books: books,
-                    periodCutoff: periodCutoff,
-                  ),
-                  ReadLinesCard(books: books, periodCutoff: periodCutoff),
-                  ProgressChartCard(books: books, period: selectedPeriod),
-                  FormatBreakdownCard(books: books, periodCutoff: periodCutoff),
-                  ReadingPatternsCard(books: books, periodCutoff: periodCutoff),
-                  ChartCard(
-                    title: 'Recent Stats',
-                    chart: RecentBooksWidget(
-                      books: books,
-                      periodCutoff: periodCutoff,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _filterToggles(
-    WidgetRef ref,
-    bool includeAudiobooks,
-    bool showArchived,
-  ) {
-    return Column(
-      children: [
-        _filterToggle(
-          label: 'Include audiobooks',
-          value: includeAudiobooks,
-          onChanged: (value) {
-            ref.read(includeAudiobooksProvider.notifier).state = value;
-          },
+      body: SafeArea(
+        child: Column(
+          children: [
+            const FilterSection(),
+            const Expanded(child: _StatsCardsList()),
+          ],
         ),
-        _filterToggle(
-          label: 'Include abandoned books',
-          value: showArchived,
-          onChanged: (value) {
-            ref.read(showArchivedProvider.notifier).state = value;
-          },
-        ),
-      ],
+      ),
+    );
+  }
+}
+
+class const _StatsCardsList() extends ConsumerStatefulWidget {
+  @override
+  ConsumerState<_StatsCardsList> createState() => _StatsCardsListState();
+}
+
+class _StatsCardsListState() extends ConsumerState<_StatsCardsList> {
+  List<LibraryBook> _books = const [];
+  StatsPeriod _period = StatsPeriod.allTime;
+  DateTime? _periodCutoff;
+  bool _seeded = false;
+  bool _applyScheduled = false;
+
+  @override
+  Widget build(BuildContext context) {
+    _listenForFilterTaps();
+    return ref.watch(userLibraryProvider).when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, _) => Center(child: Text(err.toString())),
+      data: _listOrSeed,
     );
   }
 
-  Widget _filterToggle({
-    required String label,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.sm,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: AppTextStyles.body),
-          Switch(value: value, onChanged: onChanged),
-        ],
-      ),
+  void _listenForFilterTaps() {
+    ref.listen(includeAbandonedProvider, (_, _) => _scheduleApply());
+    ref.listen(includeAudiobooksProvider, (_, _) => _scheduleApply());
+    ref.listen(includeReadingProvider, (_, _) => _scheduleApply());
+    ref.listen(includeFinishedProvider, (_, _) => _scheduleApply());
+    ref.listen(statsPeriodProvider, (_, _) => _scheduleApply());
+    ref.listen(userLibraryProvider, (previous, next) {
+      if (next.hasValue) _applyFilters();
+    });
+  }
+
+  Widget _listOrSeed(List<LibraryBook> library) {
+    if (!_seeded) {
+      _commitFilters(library);
+      _seeded = true;
+    }
+    return ListView.builder(
+      key: const PageStorageKey('stats_scroll'),
+      scrollCacheExtent: const ScrollCacheExtent.pixels(0),
+      itemCount: 7,
+      itemBuilder: (context, index) => _statsCard(index),
     );
+  }
+
+  void _scheduleApply() {
+    if (_applyScheduled) return;
+    _applyScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _applyScheduled = false;
+      if (mounted) _applyFilters();
+    });
+  }
+
+  void _applyFilters() {
+    final List<LibraryBook>? library = ref.read(userLibraryProvider).value;
+    if (library == null) return;
+    setState(() => _commitFilters(library));
+  }
+
+  void _commitFilters(List<LibraryBook> library) {
+    _books = StatsBookInclusion(
+      includeAbandoned: ref.read(includeAbandonedProvider),
+      includeAudiobooks: ref.read(includeAudiobooksProvider),
+      includeReading: ref.read(includeReadingProvider),
+      includeFinished: ref.read(includeFinishedProvider),
+    ).appliedTo(library);
+    _period = ref.read(statsPeriodProvider);
+    _periodCutoff = _period.cutoffDate;
+  }
+
+  Widget _statsCard(int index) {
+    return switch (index) {
+      0 => SummaryStatsCard(books: _books, periodCutoff: _periodCutoff),
+      1 => ActivityCalendarCard(books: _books, periodCutoff: _periodCutoff),
+      2 => ReadLinesCard(books: _books, periodCutoff: _periodCutoff),
+      3 => ProgressChartCard(books: _books, period: _period),
+      4 => FormatBreakdownCard(books: _books, periodCutoff: _periodCutoff),
+      5 => ReadingPatternsCard(books: _books, periodCutoff: _periodCutoff),
+      _ => ChartCard(
+        title: 'Recent Stats',
+        chart: RecentBooksWidget(books: _books, periodCutoff: _periodCutoff),
+      ),
+    };
   }
 }
 
@@ -260,25 +261,11 @@ class const RecentBooksWidget({
   }
 
   Widget _bookCover(LibraryBook book) {
-    const double size = 30;
-    final placeholder = SizedBox(
-      width: size * 0.75,
-      height: size,
-      child: const Icon(Icons.menu_book, size: 16, color: AppColors.primary),
-    );
-    final coverArt = book.book.coverArtS;
-    if (coverArt == null || !coverArtLooksDecodable(coverArt)) {
-      return placeholder;
-    }
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(3),
-      child: Image.memory(
-        coverArt,
-        width: size * 0.75,
-        height: size,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => placeholder,
-      ),
+    return BookCover(
+      width: 22.5,
+      height: 30,
+      bytes: book.book.coverArt,
+      borderRadius: 3,
     );
   }
 }

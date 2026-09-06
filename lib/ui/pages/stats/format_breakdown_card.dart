@@ -5,7 +5,6 @@ import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class const FormatBreakdownCard({
@@ -75,7 +74,7 @@ class const FormatBreakdownCard({
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Row(
         children: [
-          Expanded(child: SizedBox(height: 150, child: _pieChart(data))),
+          Expanded(child: SizedBox(height: 150, child: _donut(data))),
           _legend(data),
         ],
       ),
@@ -108,23 +107,12 @@ class const FormatBreakdownCard({
     return progress;
   }
 
-  Widget _pieChart(Map<BookFormat, double> data) {
-    final total = data.values.sum;
-    return PieChart(
-      PieChartData(
-        sectionsSpace: 2,
-        centerSpaceRadius: 30,
-        sections: data.entries.mapL((entry) {
-          final percentage = total > 0 ? (entry.value / total * 100) : 0.0;
-          return PieChartSectionData(
-            color: entry.key.color,
-            value: entry.value,
-            title: '${percentage.round()}%',
-            titleStyle: EText.label.small.white.copyWith(fontSize: 11),
-            radius: 45,
-          );
-        }),
-      ),
+  Widget _donut(Map<BookFormat, double> data) {
+    return EDonut(
+      slices: [
+        for (final entry in data.entries)
+          EDonutSlice(value: entry.value, color: entry.key.color),
+      ],
     );
   }
 

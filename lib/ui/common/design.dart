@@ -23,12 +23,6 @@ abstract final class AppColors() {
 
   static const Color progressBarTrack = EColors.surfaceRaised;
 
-  static const Color heatmapEmpty = EColors.surfaceInset;
-  static const Color heatmapLight = EColors.accentSoft;
-  static const Color heatmapMedium = EColors.accent;
-  static const Color heatmapDark = EColors.accentGlow;
-  static const Color heatmapFull = Color(0xFFC4C8FF);
-
   static const Color audiobook = EColors.warning;
   static const Color ebook = Color(0xFF5EC8C2);
   static const Color paperback = EColors.danger;

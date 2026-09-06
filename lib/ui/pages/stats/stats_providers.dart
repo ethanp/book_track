@@ -1,22 +1,35 @@
+import 'package:book_track/data_model.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
-/// Provider for the archive filter toggle in stats.
-/// When true (default), archived books are included in stats.
-final showArchivedProvider = StateProvider<bool>((ref) => true);
+final includeAbandonedProvider = StateProvider<bool>((ref) => true);
 
-/// When true (default), audiobooks are included in stats. Session-scoped.
 final includeAudiobooksProvider = StateProvider<bool>((ref) => true);
 
-/// Provider for the time period filter in stats.
+final includeReadingProvider = StateProvider<bool>((ref) => true);
+
+final includeFinishedProvider = StateProvider<bool>((ref) => true);
+
+class const StatsBookInclusion({
+  required final bool includeAbandoned,
+  required final bool includeAudiobooks,
+  required final bool includeReading,
+  required final bool includeFinished,
+}) {
+  bool includes(LibraryBook book) {
+    if (!includeAbandoned && book.isAbandoned) return false;
+    if (!includeAudiobooks && book.isAudiobook) return false;
+    if (!includeReading && book.isReading) return false;
+    if (!includeFinished && book.isFinished) return false;
+    return true;
+  }
+
+  List<LibraryBook> appliedTo(List<LibraryBook> library) =>
+      library.whereL(includes);
+}
+
 final statsPeriodProvider = StateProvider<StatsPeriod>(
   (ref) => StatsPeriod.allTime,
-);
-
-/// Provider for the Read Lines chart toggle. When true, the chart only shows
-/// books that are currently being read (not finished or abandoned).
-final readLinesCurrentlyReadingOnlyProvider = StateProvider<bool>(
-  (ref) => false,
 );
 
 enum ProgressAggregation() {
