@@ -1,4 +1,5 @@
 import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
 
 /// Surface row used for author and format rows on the book page.
@@ -15,9 +16,9 @@ class const LibraryBookDetailCard({
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: EColors.surface,
         borderRadius: BorderRadius.circular(AppRadii.md),
-        border: Border.all(color: AppColors.divider, width: 0.5),
+        border: Border.all(color: EColors.border, width: 0.5),
       ),
       child: Row(
         children: [

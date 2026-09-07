@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/book_cover.dart';
+import 'package:book_track/ui/common/books_progress_chart/smoothed_book_progress.dart';
 import 'package:book_track/ui/common/books_progress_chart/timespan.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
@@ -13,6 +14,8 @@ class const BooksProgressChart({
   final DateTime? periodCutoff,
   final bool colorByFormat = false,
   final bool showSelectedBookCard = true,
+  final bool smoothProgress = false,
+  final bool showPaceProjection = false,
 }) extends StatefulWidget {
   static const selectionSlotHeight = 64.0;
   static const plotHeight = 300.0;
@@ -32,8 +35,20 @@ class _SelectedReadingEvent({
 class _BookProgressLine({
   required final LibraryBook book,
   required final List<ProgressEvent> events,
-  required final EChartLine line,
-});
+  required final EChartLine trajectory,
+  final EChartLine? eventDots,
+  final EChartLine? paceProjection,
+}) {
+  List<EChartLine> get chartLines {
+    final dots = eventDots;
+    final projection = paceProjection;
+    return [
+      trajectory,
+      if (dots != null) dots,
+      if (projection != null) projection,
+    ];
+  }
+}
 
 class _BooksProgressChartState() extends State<BooksProgressChart> {
   _SelectedReadingEvent? _selectedEvent;
@@ -50,7 +65,8 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
               )
               .toList();
 
-    if (filteredBooks.isEmpty || filteredBooks.every((book) => !book.hasProgress)) {
+    if (filteredBooks.isEmpty ||
+        filteredBooks.every((book) => !book.hasProgress)) {
       return const Center(child: Text('No reading data in this period'));
     }
 
@@ -67,7 +83,13 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
       return const Center(child: Text('No reading data in this period'));
     }
 
-    final timespan = TimeSpan(beginning: eventTimes.min, end: eventTimes.max);
+    final projectedCompletion = _projectedCompletion(filteredBooks);
+    final chartEnd =
+        projectedCompletion != null &&
+            projectedCompletion.isAfter(eventTimes.max)
+        ? projectedCompletion
+        : eventTimes.max;
+    final timespan = TimeSpan(beginning: eventTimes.min, end: chartEnd);
     final progressLines = _progressLines(filteredBooks, timespan);
 
     return Column(
@@ -80,7 +102,8 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
         Expanded(
           child: EChart(
             lines: [
-              for (final progressLine in progressLines) progressLine.line,
+              for (final progressLine in progressLines)
+                ...progressLine.chartLines,
             ],
             valueScale: EChartValueScale.fixed(
               min: 0,
@@ -113,22 +136,29 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
       _clearSelectedReadingEvent();
       return;
     }
-    if (selected.lineIndex < 0 || selected.lineIndex >= progressLines.length) {
-      return;
-    }
-    final progressLine = progressLines[selected.lineIndex];
-    if (selected.pointIndex < 0 ||
-        selected.pointIndex >= progressLine.events.length) {
-      return;
-    }
-    final event = progressLine.events[selected.pointIndex];
-    final percent = progressLine.book.progressPercentAt(event) ?? 0;
+    final progressLine = progressLines
+        .where((line) => line.chartLines.contains(selected.line))
+        .firstOrNull;
+    if (progressLine == null || progressLine.events.isEmpty) return;
+    final event = progressLine.events.minBy(
+      (candidate) =>
+          (candidate.end.difference(selected.point.date).inMilliseconds).abs(),
+    );
+    final dotsLine = progressLine.eventDots ?? progressLine.trajectory;
+    final pointIndex = progressLine.events.indexOf(event);
+    if (pointIndex < 0 || pointIndex >= dotsLine.points.length) return;
+    final allLines = [for (final line in progressLines) ...line.chartLines];
     setState(() {
       _selectedEvent = _SelectedReadingEvent(
         book: progressLine.book,
         event: event,
-        percent: percent,
-        chartPoint: selected,
+        percent: progressLine.book.progressPercentAt(event) ?? 0,
+        chartPoint: EChartSelectedPoint(
+          line: dotsLine,
+          point: dotsLine.points[pointIndex],
+          lineIndex: allLines.indexOf(dotsLine),
+          pointIndex: pointIndex,
+        ),
       );
     });
   }
@@ -142,9 +172,11 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
         .inMilliseconds
         .toDouble();
     return [
-      for (final book in filteredBooks)
-        _lineForBook(book, timespan.beginning, spanMillis),
-    ].where((progressLine) => progressLine.line.points.isNotEmpty).toList();
+          for (final book in filteredBooks)
+            _lineForBook(book, timespan.beginning, spanMillis),
+        ]
+        .where((progressLine) => progressLine.trajectory.points.isNotEmpty)
+        .toList();
   }
 
   _BookProgressLine _lineForBook(
@@ -159,32 +191,103 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
               event.end.isAfter(widget.periodCutoff!),
         )
         .toList();
-    final events = _highestProgressPerDay(book, bookEvents)
-        .where((event) => book.progressPercentAt(event) != null)
-        .toList();
+    final events = _highestProgressPerDay(
+      book,
+      bookEvents,
+    ).where((event) => book.progressPercentAt(event) != null).toList();
+    final eventPoints = _eventPoints(book, events, rangeStart, spanMillis);
     return _BookProgressLine(
       book: book,
       events: events,
-      line: EChartLine(
-        points: [
-          for (final event in events)
-            EChartPoint(
-              date: event.end,
-              value: book.progressPercentAt(event) ?? 0,
-              color: widget.colorByFormat ? _dotColor(book, event) : null,
-              dotRadius: widget.colorByFormat
-                  ? _dotRadius(event.end, rangeStart, spanMillis)
-                  : null,
-            ),
-        ],
-        showDots: widget.colorByFormat,
-        stroke: widget.colorByFormat
-            ? EChartLineStroke.polyline
-            : EChartLineStroke.alongIncreasingX,
-        color: _trajectoryColor(book),
-        strokeWidth: _trajectoryWidth(book),
-      ),
+      trajectory: _trajectoryLine(book, events, eventPoints),
+      eventDots: _eventDotsLine(eventPoints),
+      paceProjection: _paceProjectionLine(book),
     );
+  }
+
+  DateTime? _projectedCompletion(List<LibraryBook> books) {
+    if (!widget.showPaceProjection || books.length != 1) return null;
+    return books.single.averageReadingPace?.eta;
+  }
+
+  List<EChartPoint> _eventPoints(
+    LibraryBook book,
+    List<ProgressEvent> events,
+    DateTime rangeStart,
+    double spanMillis,
+  ) => [
+    for (final event in events)
+      EChartPoint(
+        date: event.end,
+        value: book.progressPercentAt(event) ?? 0,
+        color: widget.colorByFormat ? _dotColor(book, event) : null,
+        dotRadius: widget.colorByFormat
+            ? _dotRadius(event.end, rangeStart, spanMillis)
+            : null,
+      ),
+  ];
+
+  EChartLine _trajectoryLine(
+    LibraryBook book,
+    List<ProgressEvent> events,
+    List<EChartPoint> eventPoints,
+  ) {
+    return EChartLine(
+      points: widget.smoothProgress
+          ? _smoothedTrajectoryPoints(book, events)
+          : eventPoints,
+      showDots: widget.colorByFormat && !widget.smoothProgress,
+      stroke: widget.smoothProgress || !widget.colorByFormat
+          ? EChartLineStroke.alongIncreasingX
+          : EChartLineStroke.polyline,
+      color: _trajectoryColor(book),
+      strokeWidth: _trajectoryWidth(book),
+    );
+  }
+
+  EChartLine? _eventDotsLine(List<EChartPoint> eventPoints) {
+    if (!widget.smoothProgress || !widget.colorByFormat) return null;
+    if (eventPoints.isEmpty) return null;
+    return EChartLine(points: eventPoints, showDots: true, showStroke: false);
+  }
+
+  EChartLine? _paceProjectionLine(LibraryBook book) {
+    if (!widget.showPaceProjection) return null;
+    final completionDate = book.averageReadingPace?.eta;
+    final firstEvent = book.progressHistory.firstOrNull;
+    if (completionDate == null || firstEvent == null) return null;
+    final firstPercent = book.progressPercentAt(firstEvent);
+    if (firstPercent == null || !completionDate.isAfter(firstEvent.end)) {
+      return null;
+    }
+    return EChartLine(
+      points: [
+        EChartPoint(date: firstEvent.end, value: firstPercent),
+        EChartPoint(date: completionDate, value: 100),
+      ],
+      color: EColors.success,
+      strokeWidth: 2.2,
+      showDots: false,
+      pattern: EChartLinePattern.dotted,
+      isInteractive: false,
+    );
+  }
+
+  List<EChartPoint> _smoothedTrajectoryPoints(
+    LibraryBook book,
+    List<ProgressEvent> events,
+  ) {
+    final smoothed = SmoothedBookProgress.fromLoggedPercents([
+      for (final event in events)
+        BookProgressPoint(
+          at: event.end,
+          percent: book.progressPercentAt(event) ?? 0,
+        ),
+    ]);
+    return [
+      for (final point in smoothed.points)
+        EChartPoint(date: point.at, value: point.percent),
+    ];
   }
 
   Color _trajectoryColor(LibraryBook book) {
@@ -221,7 +324,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     final dateStr = DateFormat('MMM d, yyyy').format(selected.event.end);
 
     return Material(
-      color: AppColors.background.withValues(alpha: 0.94),
+      color: EColors.background.withValues(alpha: 0.94),
       borderRadius: BorderRadius.circular(AppRadii.sm),
       child: InkWell(
         onTap: () => context.push(LibraryBookPage(selected.book.supaId)),
@@ -293,13 +396,21 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
   }
 
   bool _hasMultipleFormats(List<LibraryBook> books) {
-    return books.expand((book) => book.formats).map((format) => format.format).toSet().length >
+    return books
+            .expand((book) => book.formats)
+            .map((format) => format.format)
+            .toSet()
+            .length >
         1;
   }
 
   Widget _formatLegend(List<LibraryBook> books) {
     final allFormats =
-        books.expand((book) => book.formats).map((format) => format.format).toSet().toList()
+        books
+            .expand((book) => book.formats)
+            .map((format) => format.format)
+            .toSet()
+            .toList()
           ..sortOn((format) => format.name);
 
     return Padding(

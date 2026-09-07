@@ -1,5 +1,5 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -17,12 +17,12 @@ class const UpdateFormatSelector({
           showSelectedIcon: false,
           style: ButtonStyle(
             backgroundColor: ifSelected(
-              AppColors.primary,
-              otw: AppColors.divider,
+              EColors.accent,
+              otw: EColors.border,
             ),
             foregroundColor: ifSelected(
               Colors.white,
-              otw: AppColors.textPrimary,
+              otw: EColors.textPrimary,
             ),
             visualDensity: VisualDensity.comfortable,
           ),

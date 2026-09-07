@@ -1,6 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,7 +21,7 @@ class const ReadingProgressIndicator(final LibraryBook book)
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textPrimary,
+                color: EColors.textPrimary,
               ),
             ),
             Padding(
@@ -33,7 +33,7 @@ class const ReadingProgressIndicator(final LibraryBook book)
               style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textSecondary,
+                color: EColors.textSecondary,
               ),
             ),
           ],
@@ -46,8 +46,8 @@ class const ReadingProgressIndicator(final LibraryBook book)
     return LinearProgressIndicator(
       borderRadius: BorderRadius.circular(6),
       minHeight: 6,
-      color: AppColors.teal,
-      backgroundColor: AppColors.progressBarTrack,
+      color: EColors.success,
+      backgroundColor: EColors.surfaceRaised,
       value: book.progressPercentage.toDouble() / 100,
     );
   }

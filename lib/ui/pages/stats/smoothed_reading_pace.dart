@@ -1,5 +1,4 @@
-import 'dart:math' as math;
-
+import 'package:book_track/ui/common/centered_moving_average.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 
 class const ReadingPacePoint({
@@ -14,9 +13,10 @@ class const SmoothedReadingPace({
 }) {
   static const trailingWindowDays = 14;
 
-  static const _smoothingHalfWindow = 14;
-
-  static const _smoothingPasses = 5;
+  static const _monthWideFivePass = CenteredMovingAverage(
+    halfWindow: 14,
+    passCount: 5,
+  );
 
   static const empty = SmoothedReadingPace(
     points: [],
@@ -45,7 +45,7 @@ class const SmoothedReadingPace({
     final rawPace = [
       for (final day in days) _trailingAverage(day, dailyPercentByDay),
     ];
-    final smoothedPace = _blurWithFiveCenteredPasses(rawPace);
+    final smoothedPace = _monthWideFivePass.smoothValues(rawPace);
 
     final allPoints = [
       for (var index = 0; index < days.length; index++)
@@ -92,29 +92,5 @@ class const SmoothedReadingPace({
       windowTotal += dailyPercentByDay[day.shiftedByDays(-dayOffset)] ?? 0;
     }
     return windowTotal / trailingWindowDays;
-  }
-
-  static List<double> _blurWithFiveCenteredPasses(List<double> values) {
-    var smoothed = values;
-    for (var pass = 0; pass < _smoothingPasses; pass++) {
-      smoothed = _centeredMovingAverage(smoothed);
-    }
-    return smoothed;
-  }
-
-  static List<double> _centeredMovingAverage(List<double> values) =>
-      List.generate(
-        values.length,
-        (index) => _averageAcrossCenteredMonth(values, index),
-      );
-
-  static double _averageAcrossCenteredMonth(List<double> values, int index) {
-    final firstIndex = math.max(0, index - _smoothingHalfWindow);
-    final lastIndex = math.min(values.length - 1, index + _smoothingHalfWindow);
-    var total = 0.0;
-    for (var neighbor = firstIndex; neighbor <= lastIndex; neighbor++) {
-      total += values[neighbor];
-    }
-    return total / (lastIndex - firstIndex + 1);
   }
 }

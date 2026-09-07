@@ -4,8 +4,8 @@ import 'package:ethan_utils/ethan_utils.dart';
 
 import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/book_cover.dart';
-import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
 
 /// Progress made on a single book for a specific day.
@@ -64,8 +64,8 @@ class const DayProgressEntry({
                       style: TextStyle(
                         fontSize: 11,
                         color: abandoned
-                            ? AppColors.audiobook
-                            : AppColors.primary,
+                            ? EColors.warning
+                            : EColors.accent,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -76,7 +76,7 @@ class const DayProgressEntry({
               progressLabel,
               style: const TextStyle(
                 fontSize: 12,
-                color: AppColors.success,
+                color: EColors.success,
                 fontWeight: FontWeight.w600,
               ),
             ),

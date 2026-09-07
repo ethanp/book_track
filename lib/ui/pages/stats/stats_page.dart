@@ -229,7 +229,7 @@ class const RecentBooksWidget({
                     Text(
                       '+$progressMade%',
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.teal,
+                        color: EColors.success,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

@@ -1,6 +1,7 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -115,8 +116,8 @@ class const _DayOfWeekChart({required final Map<int, double> activityByDay})
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
               colors: [
-                AppColors.teal.withValues(alpha: 0.4),
-                AppColors.teal.withValues(alpha: 0.8),
+                EColors.success.withValues(alpha: 0.4),
+                EColors.success.withValues(alpha: 0.8),
               ],
             ),
             borderRadius: const BorderRadius.vertical(

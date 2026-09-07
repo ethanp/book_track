@@ -4,6 +4,7 @@ import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/supabase_library_service.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/length_input.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -114,7 +115,7 @@ class _ManualBookFormState() extends ConsumerState<ManualBookForm> {
             decoration: InputDecoration(
               hintText: placeholder,
               filled: true,
-              fillColor: AppColors.surfaceInset,
+              fillColor: EColors.surfaceInset,
               contentPadding: const EdgeInsets.all(12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -149,8 +150,8 @@ class _ManualBookFormState() extends ConsumerState<ManualBookForm> {
         child: FilledButton(
           onPressed: () => selectFormat(format),
           style: FilledButton.styleFrom(
-            backgroundColor: isSelected ? format.color : AppColors.shimmer,
-            foregroundColor: isSelected ? Colors.white : AppColors.textPrimary,
+            backgroundColor: isSelected ? format.color : EColors.surfaceRaised,
+            foregroundColor: isSelected ? Colors.white : EColors.textPrimary,
             padding: const EdgeInsets.symmetric(vertical: 8),
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -158,7 +159,7 @@ class _ManualBookFormState() extends ConsumerState<ManualBookForm> {
           child: Text(
             format.name,
             style: AppTextStyles.caption.copyWith(
-              color: isSelected ? Colors.white : AppColors.textPrimary,
+              color: isSelected ? Colors.white : EColors.textPrimary,
             ),
           ),
         ),

@@ -20,18 +20,18 @@ class _ProgressByPeriodChartState() extends State<ProgressByPeriodChart> {
 
   _ProgressLines _progressLines() {
     return _ProgressLines(
-      total: _progressByPeriod(widget.books, widget.period, 'Total', AppColors.teal),
+      total: _progressByPeriod(widget.books, widget.period, 'Total', EColors.success),
       audiobook: _progressByPeriod(
         widget.books.whereL((book) => book.isAudiobook),
         widget.period,
         'Audio',
-        AppColors.primary,
+        EColors.accent,
       ),
       visual: _progressByPeriod(
         widget.books.whereL((book) => !book.isAudiobook),
         widget.period,
         'Visual',
-        AppColors.burgundy,
+        EColors.danger,
       ),
     );
   }
@@ -122,7 +122,7 @@ class _ProgressByPeriodChartState() extends State<ProgressByPeriodChart> {
           color: line.color.withValues(alpha: 0.7),
           showDots: false,
           fillColor: line == progressLines.total
-              ? AppColors.teal.withValues(alpha: 0.12)
+              ? EColors.success.withValues(alpha: 0.12)
               : null,
           label: line.name,
         ),

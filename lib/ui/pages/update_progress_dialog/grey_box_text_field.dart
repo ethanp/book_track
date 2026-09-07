@@ -1,4 +1,4 @@
-import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -44,8 +44,8 @@ class _GreyBoxTextFieldState() extends ConsumerState<GreyBoxTextField> {
           hintText: 'Enter progress here',
           filled: true,
           fillColor: _focusNode.hasFocus
-              ? AppColors.shimmer
-              : AppColors.surfaceInset,
+              ? EColors.surfaceRaised
+              : EColors.surfaceInset,
           contentPadding: const EdgeInsets.all(12),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
@@ -58,7 +58,7 @@ class _GreyBoxTextFieldState() extends ConsumerState<GreyBoxTextField> {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: const BorderSide(
-              color: AppColors.textSecondary,
+              color: EColors.textSecondary,
               width: 1.5,
             ),
           ),

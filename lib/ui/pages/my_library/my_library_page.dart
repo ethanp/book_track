@@ -7,10 +7,10 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:book_track/ui/pages/my_library/archived_books_section.dart';
-import 'package:book_track/ui/pages/my_library/book_tile.dart';
-
 import 'add_book_sheet.dart';
+import 'archived_books_page.dart';
+import 'archived_books_section.dart';
+import 'book_tile.dart';
 
 const _log = ELogger('MyLibraryPage');
 
@@ -41,18 +41,13 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
 
   Widget _pageBody() {
     return SafeArea(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: ref
-              .watch(userLibraryProvider)
-              .when(
-                loading: _loadingScreen,
-                error: _errorScreen,
-                data: _libraryScreen,
-              ),
-        ),
-      ),
+      child: ref
+          .watch(userLibraryProvider)
+          .when(
+            loading: _loadingScreen,
+            error: _errorScreen,
+            data: _libraryScreen,
+          ),
     );
   }
 
@@ -61,15 +56,53 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
       _libraryOrder.compareFn,
       descending: _libraryOrder.descending,
     );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sortSelector(),
-        _userLibraryByStatus(library),
-        if (library.any((book) => book.archived))
-          ArchivedBooksSection(books: library.whereL((book) => book.archived)),
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          sliver: SliverMainAxisGroup(
+            slivers: [
+              SliverToBoxAdapter(child: _sortSelector()),
+              ..._liveStatusSlivers(library.where((book) => !book.archived)),
+              ..._archivedSlivers(library.whereL((book) => book.archived)),
+            ],
+          ),
+        ),
       ],
     );
+  }
+
+  List<Widget> _liveStatusSlivers(Iterable<LibraryBook> liveBooks) {
+    return [
+      for (final readingStatus in ReadingStatus.values)
+        ..._statusSlivers(
+          readingStatus.name,
+          liveBooks.whereL((book) => book.readingStatus == readingStatus),
+        ),
+    ];
+  }
+
+  List<Widget> _statusSlivers(String name, List<LibraryBook> books) {
+    if (books.isEmpty) return [];
+    return [
+      SliverToBoxAdapter(child: _statusTitle(name, books.length)),
+      SliverList.builder(
+        itemCount: books.length,
+        itemBuilder: (context, index) => BookTile(books[index]),
+      ),
+      const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.lg)),
+    ];
+  }
+
+  List<Widget> _archivedSlivers(List<LibraryBook> archivedBooks) {
+    if (archivedBooks.isEmpty) return [];
+    return [
+      SliverToBoxAdapter(
+        child: ArchivedBooksSection(
+          onActivated: () => context.push(const ArchivedBooksPage()),
+        ),
+      ),
+    ];
   }
 
   Widget _sortSelector() {
@@ -103,13 +136,13 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
           children: [
             const Icon(
               Icons.warning_amber_rounded,
-              color: AppColors.destructive,
+              color: EColors.danger,
               size: 40,
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
               'Something went wrong loading your library.',
-              style: AppTextStyles.body.copyWith(color: AppColors.destructive),
+              style: AppTextStyles.body.copyWith(color: EColors.danger),
               textAlign: TextAlign.center,
             ),
           ],
@@ -133,39 +166,6 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
     );
   }
 
-  Widget _userLibraryByStatus(Iterable<LibraryBook> fullLibrary) {
-    final liveBooks = fullLibrary.where((book) => !book.archived);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: ReadingStatus.values.mapL(
-        (readingStatus) => _bookSection(
-          readingStatus.name,
-          liveBooks.whereL((book) => book.readingStatus == readingStatus),
-        ),
-      ),
-    );
-  }
-
-  Widget _bookSection(String name, List<LibraryBook> books) {
-    if (books.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _statusTitle(name, books.length),
-          ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: books.length,
-            itemBuilder: (ctx, idx) => BookTile(books[idx], idx),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _statusTitle(String name, int count) {
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -174,7 +174,7 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
       ),
       child: Text(
         '${name.capitalize} ($count)',
-        style: AppTextStyles.h2.copyWith(color: AppColors.primary),
+        style: AppTextStyles.h2.copyWith(color: EColors.accent),
       ),
     );
   }

@@ -101,7 +101,7 @@ class _LoginPageState() extends State<LoginPage> {
       child: Text(
         _authError!,
         style: AppTextStyles.caption.copyWith(
-          color: AppColors.destructive,
+          color: EColors.danger,
           fontWeight: FontWeight.w600,
         ),
       ),

@@ -29,19 +29,27 @@ class const BookCover({
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
-      child: SizedBox(width: width, height: height, child: _art()),
+      child: SizedBox(width: width, height: height, child: _art(context)),
     );
   }
 
-  Widget _art() {
+  Widget _art(BuildContext context) {
     if (!_hasDecodableCover) return _unknownCover();
     return Image.memory(
       bytes!,
       fit: BoxFit.cover,
       width: width,
       height: height,
+      cacheWidth: _decodeWidthAtDisplaySize(context),
       errorBuilder: (_, _, _) => _unknownCover(),
     );
+  }
+
+  int? _decodeWidthAtDisplaySize(BuildContext context) {
+    if (!width.isFinite || width <= 0) return null;
+    final int pixelWidth = (width * MediaQuery.devicePixelRatioOf(context))
+        .round();
+    return pixelWidth > 0 ? pixelWidth : null;
   }
 
   Widget _unknownCover() => Image.asset(

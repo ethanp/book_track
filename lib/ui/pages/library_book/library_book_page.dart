@@ -28,7 +28,7 @@ class const LibraryBookPage(final int bookId) extends ConsumerWidget {
         body: Center(
           child: Text(
             'Error: $error',
-            style: AppTextStyles.body.copyWith(color: AppColors.destructive),
+            style: AppTextStyles.body.copyWith(color: EColors.danger),
           ),
         ),
       ),

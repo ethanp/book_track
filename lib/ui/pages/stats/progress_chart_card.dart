@@ -4,6 +4,7 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/progress_by_period_chart.dart';
 import 'package:book_track/ui/pages/stats/rolling_average_chart.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -51,9 +52,9 @@ class const ProgressChartCard({
       ),
       padding: const EdgeInsets.only(top: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.surfaceInset,
+        color: EColors.surfaceInset,
         borderRadius: BorderRadius.circular(AppRadii.md),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: EColors.border),
       ),
       child: Column(
         children: [

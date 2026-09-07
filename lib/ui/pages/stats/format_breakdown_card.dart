@@ -58,7 +58,7 @@ class const FormatBreakdownCard({
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.menu_book, size: 40, color: AppColors.shimmer),
+          const Icon(Icons.menu_book, size: 40, color: EColors.surfaceRaised),
           const SizedBox(height: AppSpacing.sm),
           Text('No books in this period', style: AppTextStyles.bodySecondary),
         ],

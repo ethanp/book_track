@@ -2,6 +2,7 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/summary_stats.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -91,7 +92,7 @@ class const SummaryStatsCard({
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+            color: EColors.textPrimary,
           ),
         ),
         Text(label, style: AppTextStyles.caption),
@@ -109,7 +110,7 @@ class const SummaryStatsCard({
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: AppColors.primary,
+            color: EColors.accent,
           ),
         ),
         const SizedBox(height: AppSpacing.xs),

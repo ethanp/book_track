@@ -10,15 +10,14 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class const BookTile(final LibraryBook book, final int idx)
-    extends ConsumerWidget {
+class const BookTile(final LibraryBook book) extends ConsumerWidget {
   static const _coverLeadingExtraWidth = 20.0;
   static const _coverAspectSlack = 12.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Dismissible(
-      key: Key(book.book.supaId.toString()),
+      key: Key(book.supaId.toString()),
       direction: DismissDirection.startToEnd,
       confirmDismiss: (direction) => UpdateProgressDialogPage.show(ref, book),
       background: _addProgressReveal(),
@@ -145,7 +144,7 @@ class const BookTile(final LibraryBook book, final int idx)
   Widget _addProgressReveal() {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.success,
+        color: EColors.success,
         borderRadius: BorderRadius.circular(AppRadii.sm),
       ),
       alignment: Alignment.centerLeft,

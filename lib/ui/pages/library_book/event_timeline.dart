@@ -5,6 +5,7 @@ import 'package:book_track/services/supabase_progress_service.dart';
 import 'package:book_track/ui/common/confirmation_dialog.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,7 +49,7 @@ class const _EventTimelineItem(
         bottom: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: EColors.surface,
         borderRadius: BorderRadius.circular(AppRadii.sm),
         boxShadow: const [AppShadows.card],
       ),
@@ -120,7 +121,7 @@ class const _EventTimelineItem(
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
       iconSize: 18,
-      color: AppColors.primary,
+      color: EColors.accent,
       onPressed: () =>
           UpdateProgressDialogPage.update(ref, libraryBook, progressEvent),
       icon: const Icon(Icons.edit),
@@ -134,7 +135,7 @@ class const _EventTimelineItem(
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
       iconSize: 18,
-      color: AppColors.destructive,
+      color: EColors.danger,
       onPressed: () => ConfirmationDialog.show(
         context: ref.context,
         text: 'Are you sure you want to delete this event?',
@@ -161,7 +162,7 @@ class const _EventTimelineItem(
         gradient: LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
-          colors: [AppColors.divider, AppColors.shimmer, AppColors.divider],
+          colors: [EColors.border, EColors.surfaceRaised, EColors.border],
         ),
       ),
     );

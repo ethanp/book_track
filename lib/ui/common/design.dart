@@ -2,39 +2,12 @@ import 'package:book_track/data_model.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
 
-abstract final class AppColors() {
-  static const Color primary = EColors.accent;
-  static const Color primaryLight = EColors.accentSoft;
-  static const Color surface = EColors.surface;
-  static const Color surfaceInset = EColors.surfaceInset;
-  static const Color background = EColors.background;
-  static const Color burgundy = EColors.danger;
-  static const Color burgundyLight = EColors.danger;
-  static const Color teal = EColors.success;
-  static const Color tealLight = EColors.success;
-  static const Color textPrimary = EColors.textPrimary;
-  static const Color textSecondary = EColors.textSecondary;
-  static const Color destructive = EColors.danger;
-  static const Color warning = EColors.warning;
-  static const Color success = EColors.success;
-  static const Color successLight = EColors.successSoft;
-  static const Color divider = EColors.border;
-  static const Color shimmer = EColors.surfaceRaised;
-
-  static const Color progressBarTrack = EColors.surfaceRaised;
-
-  static const Color audiobook = EColors.warning;
-  static const Color ebook = Color(0xFF5EC8C2);
-  static const Color paperback = EColors.danger;
-  static const Color hardcover = EColors.success;
-}
-
 extension BookFormatColor on BookFormat {
   Color get color => switch (this) {
-    BookFormat.audiobook => AppColors.audiobook,
-    BookFormat.eBook => AppColors.ebook,
-    BookFormat.paperback => AppColors.paperback,
-    BookFormat.hardcover => AppColors.hardcover,
+    BookFormat.audiobook => EColors.warning,
+    BookFormat.eBook => const Color(0xFF5EC8C2),
+    BookFormat.paperback => EColors.danger,
+    BookFormat.hardcover => EColors.success,
   };
 }
 
@@ -79,11 +52,5 @@ abstract final class AppShadows() {
     color: Color(0x47000000),
     blurRadius: 18,
     offset: Offset(0, 8),
-  );
-
-  static const BoxShadow coverArt = BoxShadow(
-    color: Color(0x66000000),
-    blurRadius: 6,
-    offset: Offset(2, 3),
   );
 }

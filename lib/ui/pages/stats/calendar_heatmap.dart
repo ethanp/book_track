@@ -282,7 +282,7 @@ class _CalendarHeatmapState() extends State<CalendarHeatmap> {
           color: level.color,
           borderRadius: BorderRadius.circular(2),
           border: isSelected
-              ? Border.all(color: AppColors.burgundy, width: 1.5)
+              ? Border.all(color: EColors.danger, width: 1.5)
               : Border.fromBorderSide(EHeatmapIntensity.cellHairline),
         ),
       ),
@@ -306,9 +306,9 @@ class _CalendarHeatmapState() extends State<CalendarHeatmap> {
       padding: const EdgeInsets.all(AppSpacing.md),
       margin: const EdgeInsets.only(top: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: EColors.surface,
         borderRadius: BorderRadius.circular(AppRadii.sm),
-        border: Border.all(color: AppColors.divider),
+        border: Border.all(color: EColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

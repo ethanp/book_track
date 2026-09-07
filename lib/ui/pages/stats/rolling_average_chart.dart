@@ -35,7 +35,7 @@ class const RollingAverageChart({
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.show_chart, size: 40, color: AppColors.shimmer),
+          const Icon(Icons.show_chart, size: 40, color: EColors.surfaceRaised),
           const SizedBox(height: AppSpacing.sm),
           Text(
             'Start reading to see your pace!',
@@ -73,10 +73,10 @@ class _PaceTrendState() extends State<_PaceTrend> {
         for (final point in widget.smoothedPace.points)
           EChartPoint(date: point.day, value: point.percentPerDay),
       ],
-      color: AppColors.teal,
+      color: EColors.success,
       strokeWidth: 2,
       showDots: false,
-      fillColor: AppColors.teal.withValues(alpha: 0.2),
+      fillColor: EColors.success.withValues(alpha: 0.2),
     );
     return Stack(
       children: [

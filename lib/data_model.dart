@@ -108,6 +108,28 @@ class LibraryBook(
 
   bool get isReading => readingStatus == ReadingStatus.reading;
 
+  DateTime? get startedOn => progressHistory.firstOrNull?.end;
+
+  DateTime? get finishedOn {
+    if (isAbandoned) return abandonedAt;
+    if (isFinished) return progressHistory.lastOrNull?.end;
+    return null;
+  }
+
+  String get startedAndFinishedCaption {
+    final DateTime? startedOn = this.startedOn;
+    final DateTime? finishedOn = this.finishedOn;
+    if (startedOn == null) return finishedOn?.monthDayCaption ?? '';
+    if (finishedOn == null) return startedOn.monthDayCaption;
+    return '${startedOn.monthDayCaption} – ${finishedOn.monthDayCaption}';
+  }
+
+  String get progressStatusCaption => switch (readingStatus) {
+    ReadingStatus.finished => 'finished',
+    ReadingStatus.abandoned => 'abandoned $progressPercentage%',
+    ReadingStatus.reading => 'reading $progressPercentage%',
+  };
+
   /// Get progress events for a specific format.
   List<ProgressEvent> progressForFormat(LibraryBookFormat format) =>
       progressHistory.whereL((e) => e.formatId == format.supaId);
