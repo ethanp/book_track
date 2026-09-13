@@ -42,7 +42,11 @@ class const DayProgressEntry({
   Widget buildTile(BuildContext context) {
     final status = statusLabel;
     return GestureDetector(
-      onTap: () => context.push(LibraryBookPage(book.supaId)),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => LibraryBookPage(book.id),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.only(bottom: 6),
         child: Row(

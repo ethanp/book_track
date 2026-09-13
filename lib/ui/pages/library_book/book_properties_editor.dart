@@ -1,6 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/services/supabase_book_service.dart';
+import 'package:book_track/sync/library_providers.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
@@ -48,7 +48,8 @@ class _AuthorCardState() extends State<_AuthorCard> {
     setState(() => _editing = false);
     if (author.isEmpty) return;
     _log.log('updating author to $author');
-    await SupabaseBookService.updateAuthor(widget.libraryBook.book, author);
+    final libraryRepository = await ref.read(libraryRepositoryProvider.future);
+    await libraryRepository.books.updateAuthor(widget.libraryBook.book, author);
     ref.invalidate(userLibraryProvider);
   }
 

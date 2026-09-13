@@ -12,7 +12,7 @@ class const ProgressChart(final LibraryBook initialBook)
   Widget build(BuildContext context, WidgetRef ref) {
     return ref.userLibrary((library) {
       final LibraryBook? latestBook = library
-          .where((book) => book.supaId == initialBook.supaId)
+          .where((book) => book.id == initialBook.id)
           .singleOrNull;
       if (latestBook == null) {
         return Text(

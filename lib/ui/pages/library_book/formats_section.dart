@@ -2,7 +2,7 @@ import 'package:book_track/data_model.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/data_model/library_book_format.dart';
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/services/supabase_format_service.dart';
+import 'package:book_track/sync/library_providers.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/length_input.dart';
 import 'package:ethan_ui/ethan_ui.dart';
@@ -66,8 +66,9 @@ class const FormatsSection(final LibraryBook libraryBook)
     );
 
     if (result != null) {
-      await SupabaseFormatService.addFormat(
-        libraryBookId: libraryBook.supaId,
+      final libraryRepository = await ref.read(libraryRepositoryProvider.future);
+      await libraryRepository.formats.addFormat(
+        libraryBookId: libraryBook.id,
         format: result.$1,
         length: result.$2,
       );
@@ -85,7 +86,7 @@ class const FormatsSection(final LibraryBook libraryBook)
     if (hasEvents) {
       // Need to reassign events first
       final otherFormats = libraryBook.formats.whereL(
-        (f) => f.supaId != format.supaId,
+        (otherFormat) => otherFormat.id != format.id,
       );
       if (otherFormats.isEmpty) return; // Can't delete last format
 
@@ -96,11 +97,14 @@ class const FormatsSection(final LibraryBook libraryBook)
       );
 
       if (targetFormat != null) {
-        await SupabaseFormatService.reassignEvents(
-          format.supaId,
-          targetFormat.supaId,
+        final libraryRepository = await ref.read(
+          libraryRepositoryProvider.future,
         );
-        await SupabaseFormatService.deleteFormat(format.supaId);
+        await libraryRepository.formats.reassignEvents(
+          format.id,
+          targetFormat.id,
+        );
+        await libraryRepository.formats.deleteFormat(format.id);
         ref.invalidate(userLibraryProvider);
       }
     } else {
@@ -124,7 +128,10 @@ class const FormatsSection(final LibraryBook libraryBook)
       );
 
       if (confirmed == true) {
-        await SupabaseFormatService.deleteFormat(format.supaId);
+        final libraryRepository = await ref.read(
+          libraryRepositoryProvider.future,
+        );
+        await libraryRepository.formats.deleteFormat(format.id);
         ref.invalidate(userLibraryProvider);
       }
     }
@@ -298,7 +305,7 @@ class _ReassignEventsSheetState() extends State<_ReassignEventsSheet> {
                 EFilterChip(
                   label: format.format.name,
                   color: format.format.color,
-                  selected: _selectedTarget?.supaId == format.supaId,
+                  selected: _selectedTarget?.id == format.id,
                   onActivated: () => setState(() => _selectedTarget = format),
                 ),
             ],

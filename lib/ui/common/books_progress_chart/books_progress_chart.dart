@@ -32,11 +32,11 @@ class const ReadingChartPoint({
   @override
   bool operator ==(Object other) =>
       other is ReadingChartPoint &&
-      other.book.supaId == book.supaId &&
-      other.event.supaId == event.supaId;
+      other.book.id == book.id &&
+      other.event.id == event.id;
 
   @override
-  int get hashCode => Object.hash(book.supaId, event.supaId);
+  int get hashCode => Object.hash(book.id, event.id);
 }
 
 class _SelectedReadingEvent({
@@ -234,7 +234,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
         : EChartInterpolation.polyline;
     if (widget.colorByFormat && !widget.smoothProgress) {
       return EChartSeries.lineAndDots(
-        id: 'trajectory-${book.supaId}',
+        id: 'trajectory-${book.id}',
         points: points,
         interpolation: interpolation,
         color: _trajectoryColor(book),
@@ -242,7 +242,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
       );
     }
     return EChartSeries.line(
-      id: 'trajectory-${book.supaId}',
+      id: 'trajectory-${book.id}',
       points: points,
       interpolation: interpolation,
       color: _trajectoryColor(book),
@@ -259,7 +259,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
   ) {
     if (!widget.smoothProgress || !widget.colorByFormat) return null;
     if (eventPoints.isEmpty) return null;
-    return EChartSeries.dots(id: 'events-${book.supaId}', points: eventPoints);
+    return EChartSeries.dots(id: 'events-${book.id}', points: eventPoints);
   }
 
   EChartSeries<ReadingChartPoint>? _paceProjectionSeries(LibraryBook book) {
@@ -273,7 +273,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     }
     final firstPoint = ReadingChartPoint(book: book, event: firstEvent);
     return EChartSeries.line(
-      id: 'pace-${book.supaId}',
+      id: 'pace-${book.id}',
       points: [
         EChartPoint(date: firstEvent.end, value: firstPercent, id: firstPoint),
         EChartPoint(date: completionDate, value: 100, id: firstPoint),
@@ -311,14 +311,14 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
 
   Color _trajectoryColor(LibraryBook book) {
     if (widget.colorByFormat) return EColors.textSecondary;
-    final isSelected = _selectedEvent?.book.supaId == book.supaId;
+    final isSelected = _selectedEvent?.book.id == book.id;
     if (isSelected) return EColors.textSecondary;
     return EColors.textMuted.withValues(alpha: 0.55);
   }
 
   double _trajectoryWidth(LibraryBook book) {
     if (widget.colorByFormat) return 2.6;
-    final isSelected = _selectedEvent?.book.supaId == book.supaId;
+    final isSelected = _selectedEvent?.book.id == book.id;
     return isSelected ? 2.2 : 1.4;
   }
 
@@ -346,7 +346,11 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
       color: EColors.background.withValues(alpha: 0.94),
       borderRadius: BorderRadius.circular(AppRadii.sm),
       child: InkWell(
-        onTap: () => context.push(LibraryBookPage(selected.book.supaId)),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => LibraryBookPage(selected.book.id),
+          ),
+        ),
         borderRadius: BorderRadius.circular(AppRadii.sm),
         child: Padding(
           padding: const EdgeInsets.symmetric(

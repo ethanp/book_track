@@ -2,7 +2,7 @@ import 'package:book_track/data_model.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/data_model/library_book_format.dart';
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/services/supabase_progress_service.dart';
+import 'package:book_track/sync/library_providers.dart';
 import 'package:book_track/ui/common/length_input.dart';
 import 'package:book_track/ui/common/progress_event_date_caption.dart';
 import 'package:ethan_ui/ethan_ui.dart';
@@ -136,13 +136,13 @@ class _UpdateProgressDialogState()
   bool get _showContinueFromHint =>
       _selectedFormat != null &&
       _previousFormat != null &&
-      _selectedFormat!.supaId != _previousFormat!.supaId &&
+      _selectedFormat!.id != _previousFormat!.id &&
       widget.book.lastProgressPercent != null;
 
   Widget _formatPicker() {
     // Ensure we have a selected format
     final currentFormatId =
-        _selectedFormat?.supaId ?? widget.book.formats.first.supaId;
+        _selectedFormat?.id ?? widget.book.formats.first.id;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -150,13 +150,13 @@ class _UpdateProgressDialogState()
         children: [
           Text('Format:', style: EText.label.small),
           const SizedBox(height: 4),
-          SegmentedButton<int>(
+          SegmentedButton<String>(
             showSelectedIcon: false,
             selected: {currentFormatId},
             segments: [
               for (final format in widget.book.formats)
                 ButtonSegment(
-                  value: format.supaId,
+                  value: format.id,
                   label: Text(format.format.name),
                 ),
             ],
@@ -307,21 +307,22 @@ class _UpdateProgressDialogState()
     }
 
     _log.log(
-      'Submitting progress: formatId=${_selectedFormat!.supaId}, value=$newLen, format=${_selectedProgressEventFormat.name}',
+      'Submitting progress: formatId=${_selectedFormat!.id}, value=$newLen, format=${_selectedProgressEventFormat.name}',
     );
+    final libraryRepository = await ref.read(libraryRepositoryProvider.future);
     if (widget.eventToUpdate != null) {
       _log.log('updating progress to $newLen');
-      await SupabaseProgressService.updateProgressEvent(
+      await libraryRepository.progress.updateProgressEvent(
         preexistingEvent: widget.eventToUpdate!,
         updatedValue: newLen,
         format: _selectedProgressEventFormat,
-        formatId: _selectedFormat!.supaId,
+        formatId: _selectedFormat!.id,
         end: _selectedUpdateTimestamp,
       );
     } else {
-      await SupabaseProgressService.addProgressEvent(
-        libraryBookId: widget.book.supaId,
-        formatId: _selectedFormat!.supaId,
+      await libraryRepository.progress.addProgressEvent(
+        libraryBookId: widget.book.id,
+        formatId: _selectedFormat!.id,
         newValue: newLen,
         format: _selectedProgressEventFormat,
         end: _selectedUpdateTimestamp,

@@ -150,7 +150,7 @@ class _BookProgressDeltas(final LibraryBook _book, final DateTime? _cutoff) {
     if (prevFormat == null || !prevFormat.hasLength) return 0;
 
     // Same format: use raw progress
-    if (prevFormat.supaId == format.supaId) return prevEvent.progress;
+    if (prevFormat.id == format.id) return prevEvent.progress;
 
     // Different format: convert via percentage
     final prevPercent = prevFormat.progressToPercent(prevEvent.progress);

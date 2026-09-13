@@ -64,7 +64,11 @@ class const SearchResults() extends ConsumerWidget {
             fontStyle: FontStyle.italic,
           ),
         ),
-        onTap: () => ref.context.push(SearchResultDetailPage(book)),
+        onTap: () => Navigator.of(ref.context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => SearchResultDetailPage(book),
+          ),
+        ),
       ),
     );
   }

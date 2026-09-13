@@ -1,7 +1,7 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/progress_event_date_caption.dart';
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/services/supabase_progress_service.dart';
+import 'package:book_track/sync/library_providers.dart';
 import 'package:book_track/ui/common/confirmation_dialog.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
@@ -142,7 +142,10 @@ class const _EventTimelineItem(
         title: 'delete event',
         actionName: 'delete',
         onConfirm: () async {
-          await SupabaseProgressService.delete(progressEvent);
+          final libraryRepository = await ref.read(
+            libraryRepositoryProvider.future,
+          );
+          await libraryRepository.progress.delete(progressEvent);
           ref.invalidate(userLibraryProvider);
         },
       ),

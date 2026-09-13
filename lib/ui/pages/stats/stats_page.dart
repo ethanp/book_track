@@ -14,7 +14,6 @@ import 'package:book_track/ui/pages/stats/activity_calendar_card.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:book_track/ui/pages/stats/summary_stats_card.dart';
 import 'package:ethan_ui/ethan_ui.dart';
-import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -215,7 +214,11 @@ class const RecentBooksWidget({
               final book = recentBook.book;
               final progressMade = recentBook.progressMade;
               return GestureDetector(
-                onTap: () => context.push(LibraryBookPage(book.supaId)),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => LibraryBookPage(book.id),
+                  ),
+                ),
                 child: Row(
                   children: [
                     _bookCover(book),

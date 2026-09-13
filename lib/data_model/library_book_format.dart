@@ -4,8 +4,8 @@ import 'package:ethan_utils/ethan_utils.dart';
 /// Represents a specific format (edition) of a book in the user's library.
 /// A LibraryBook can have multiple formats (e.g., hardcover + audiobook).
 class const LibraryBookFormat({
-  required final int supaId,
-  required final int libraryBookId,
+  required final String id,
+  required final String libraryBookId,
   required final BookFormat format,
 
   /// Length in pages (physical/ebook) or minutes (audiobook).
@@ -41,5 +41,5 @@ class const LibraryBookFormat({
 
   @override
   String toString() =>
-      'LibraryBookFormat(id: $supaId, format: ${format.name}, length: $length)';
+      'LibraryBookFormat(id: $id, format: ${format.name}, length: $length)';
 }

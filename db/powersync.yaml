@@ -1,0 +1,47 @@
+# PowerSync Open Edition Configuration for book_track
+
+replication:
+  connections:
+    - type: postgresql
+      hostname: postgres
+      port: 5432
+      database: book_track
+      username: book_track
+      password: !env PS_PG_PASSWORD
+      sslmode: disable
+      id: book_track
+
+storage:
+  type: postgresql
+  hostname: postgres
+  port: 5432
+  database: book_track
+  username: book_track
+  password: !env PS_PG_PASSWORD
+  sslmode: disable
+
+client_auth:
+  jwks:
+    keys:
+      - kty: oct
+        kid: book-track-dev-key
+        k: !env PS_JWT_KEY
+        alg: HS256
+  audience:
+    - powersync
+
+sync_rules:
+  content: |
+    bucket_definitions:
+      book_track_global:
+        priority: 0
+        data:
+          - SELECT * FROM books
+          - SELECT * FROM library_books
+          - SELECT * FROM library_book_formats
+          - SELECT * FROM progress_events
+
+telemetry:
+  disable_telemetry_sharing: true
+
+port: 8080

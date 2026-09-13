@@ -1,7 +1,7 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
-import 'package:book_track/services/supabase_library_service.dart';
+import 'package:book_track/sync/library_providers.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/length_input.dart';
 import 'package:ethan_ui/ethan_ui.dart';
@@ -89,7 +89,8 @@ class _SearchResultDetailPage() extends ConsumerState<SearchResultDetailPage> {
   Future<void> addBookToLibrary(BookFormat bookType, int length) async {
     setState(() => _saving = true);
     try {
-      await SupabaseLibraryService.addBook(widget.book, bookType, length);
+      final libraryRepository = await ref.read(libraryRepositoryProvider.future);
+      await libraryRepository.addBook(widget.book, bookType, length);
     } catch (error, stack) {
       _log.error('(${error.runtimeType}) $error', error, stack);
     } finally {

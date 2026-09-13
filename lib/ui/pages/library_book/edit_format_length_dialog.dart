@@ -1,6 +1,6 @@
 import 'package:book_track/data_model/library_book_format.dart';
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/services/supabase_format_service.dart';
+import 'package:book_track/sync/library_providers.dart';
 import 'package:book_track/ui/common/length_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,7 +17,8 @@ class const EditFormatLengthDialog({required final LibraryBookFormat format})
       builder: (context) => EditFormatLengthDialog(format: format),
     );
     if (length == null) return;
-    await SupabaseFormatService.updateLength(format.supaId, length);
+    final libraryRepository = await ref.read(libraryRepositoryProvider.future);
+    await libraryRepository.formats.updateLength(format.id, length);
     ref.invalidate(userLibraryProvider);
   }
 

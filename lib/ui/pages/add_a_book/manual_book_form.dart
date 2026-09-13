@@ -1,7 +1,7 @@
 import 'package:book_track/data_model.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/services/supabase_library_service.dart';
+import 'package:book_track/sync/library_providers.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/length_input.dart';
 import 'package:ethan_ui/ethan_ui.dart';
@@ -219,7 +219,8 @@ class _ManualBookFormState() extends ConsumerState<ManualBookForm> {
     setState(() => _saving = true);
     try {
       final year = int.tryParse(_yearController.text);
-      await SupabaseLibraryService.addManualBook(
+      final libraryRepository = await ref.read(libraryRepositoryProvider.future);
+      await libraryRepository.addManualBook(
         title: _titleController.text.trim(),
         author: _authorController.text.trim().nullIfEmpty,
         yearPublished: year,

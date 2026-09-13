@@ -1,7 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:book_track/ui/common/sign_out_button.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +32,6 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
           onPressed: () => AddBookSheet.show(context),
           icon: const Icon(Icons.add),
         ),
-        actions: [SignOutButton()],
       ),
       body: _pageBody(),
     );
@@ -100,7 +98,11 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
     return [
       SliverToBoxAdapter(
         child: ArchivedBooksSection(
-          onActivated: () => context.push(const ArchivedBooksPage()),
+          onActivated: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const ArchivedBooksPage(),
+            ),
+          ),
         ),
       ),
     ];

@@ -1,7 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
-import 'package:book_track/services/supabase_library_service.dart';
-import 'package:book_track/services/supabase_progress_service.dart';
+import 'package:book_track/sync/library_providers.dart';
 import 'package:book_track/ui/common/confirmation_dialog.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:ethan_ui/ethan_ui.dart';
@@ -60,9 +59,12 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
       onActivated: () async {
         final format = book.lastUsedFormat ?? book.primaryFormat;
         if (format != null) {
-          await SupabaseProgressService.addProgressEvent(
-            libraryBookId: book.supaId,
-            formatId: format.supaId,
+          final libraryRepository = await ref.read(
+            libraryRepositoryProvider.future,
+          );
+          await libraryRepository.progress.addProgressEvent(
+            libraryBookId: book.id,
+            formatId: format.id,
             newValue: 100,
             format: ProgressEventFormat.percent,
           );
@@ -81,7 +83,12 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
       onActivated: () => _showBookActionDialog(
         ref: ref,
         actionName: 'remove',
-        onConfirm: SupabaseLibraryService.remove,
+        onConfirm: (libraryBook) async {
+          final libraryRepository = await ref.read(
+            libraryRepositoryProvider.future,
+          );
+          await libraryRepository.remove(libraryBook);
+        },
       ),
     );
   }
@@ -96,7 +103,12 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
       onActivated: () => _showBookActionDialog(
         ref: ref,
         actionName: actionName,
-        onConfirm: SupabaseLibraryService.archive,
+        onConfirm: (libraryBook) async {
+          final libraryRepository = await ref.read(
+            libraryRepositoryProvider.future,
+          );
+          await libraryRepository.archive(libraryBook);
+        },
       ),
     );
   }
@@ -110,7 +122,10 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
           : Icons.remove_circle_outline,
       accent: book.isAbandoned ? EColors.success : EColors.warning,
       onActivated: () async {
-        await SupabaseLibraryService.setAbandoned(
+        final libraryRepository = await ref.read(
+          libraryRepositoryProvider.future,
+        );
+        await libraryRepository.setAbandoned(
           book,
           abandoned: !book.isAbandoned,
         );

@@ -83,13 +83,13 @@ LibraryBook _book({
   DateTime? abandonedAt,
 }) {
   return LibraryBook(
-    1,
-    const Book(1, 'Title', 'Author', 2020, null, null),
+    '1',
+    const Book('1', 'Title', 'Author', 2020, null, null),
     events,
     const [
       LibraryBookFormat(
-        supaId: 9,
-        libraryBookId: 1,
+        id: '9',
+        libraryBookId: '1',
         format: BookFormat.paperback,
         length: 100,
       ),
@@ -105,8 +105,8 @@ ProgressEvent _event({
   required int progress,
 }) {
   return ProgressEvent(
-    supaId: id,
-    formatId: 9,
+    id: '$id',
+    formatId: '9',
     end: at,
     progress: progress,
     format: ProgressEventFormat.pageNum,

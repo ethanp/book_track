@@ -7,7 +7,7 @@ import 'dart:typed_data';
 import 'package:book_track/data_model/library_book_format.dart';
 
 class LibraryBook(
-  final int supaId,
+  final String id,
   final Book book,
   List<ProgressEvent> progressHistory,
 
@@ -22,8 +22,8 @@ class LibraryBook(
   );
 
   /// Get format by ID.
-  LibraryBookFormat? formatById(int formatId) =>
-      formats.where((f) => f.supaId == formatId).firstOrNull;
+  LibraryBookFormat? formatById(String formatId) =>
+      formats.where((format) => format.id == formatId).firstOrNull;
 
   /// Primary format (first alphabetically, or first added).
   LibraryBookFormat? get primaryFormat => formats.firstOrNull;
@@ -122,7 +122,7 @@ class LibraryBook(
 
   /// Get progress events for a specific format.
   List<ProgressEvent> progressForFormat(LibraryBookFormat format) =>
-      progressHistory.whereL((e) => e.formatId == format.supaId);
+      progressHistory.whereL((event) => event.formatId == format.id);
 
   /// Format the current book progress as a string.
   String? get currentBookProgressString {
@@ -288,10 +288,10 @@ class const AverageReadingPace({
 }
 
 class const ProgressEvent({
-  required final int supaId,
+  required final String id,
 
   /// FK to LibraryBookFormat - identifies which format this progress was logged in.
-  required final int formatId,
+  required final String formatId,
   required final DateTime end,
   required final int progress,
 
@@ -323,7 +323,7 @@ enum ProgressEventFormat() {
 }
 
 class const Book(
-  final int? supaId,
+  final String id,
   final String title,
   final String? author,
   final int? yearFirstPublished,

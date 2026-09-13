@@ -12,7 +12,7 @@ import 'event_timeline.dart';
 import 'formats_section.dart';
 import 'progress_chart/progress_chart.dart';
 
-class const LibraryBookPage(final int bookId) extends ConsumerWidget {
+class const LibraryBookPage(final String bookId) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final libraryAsync = ref.watch(userLibraryProvider);
@@ -33,7 +33,7 @@ class const LibraryBookPage(final int bookId) extends ConsumerWidget {
         ),
       ),
       data: (books) {
-        final book = books.where((book) => book.supaId == bookId).firstOrNull;
+        final book = books.where((book) => book.id == bookId).firstOrNull;
         if (book == null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             Navigator.of(context).pop();

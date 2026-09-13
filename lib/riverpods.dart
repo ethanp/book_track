@@ -1,6 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/services/book_universe_service.dart';
-import 'package:book_track/services/supabase_library_service.dart';
+import 'package:book_track/sync/library_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'riverpods.g.dart';
@@ -58,5 +58,7 @@ class const BookSearchResults({
 }
 
 @riverpod
-Future<List<LibraryBook>> userLibrary(Ref ref) async =>
-    await SupabaseLibraryService.myBooks();
+Future<List<LibraryBook>> userLibrary(Ref ref) async {
+  final libraryRepository = await ref.watch(libraryRepositoryProvider.future);
+  return libraryRepository.myBooks();
+}

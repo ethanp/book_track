@@ -31,13 +31,13 @@ void main() {
 
 LibraryBook _book() {
   return LibraryBook(
-    1,
-    const Book(1, 'Title', 'Author', 2020, null, null),
+    '1',
+    const Book('1', 'Title', 'Author', 2020, null, null),
     const [],
     const [
       LibraryBookFormat(
-        supaId: 9,
-        libraryBookId: 1,
+        id: '9',
+        libraryBookId: '1',
         format: BookFormat.paperback,
         length: 100,
       ),
@@ -49,8 +49,8 @@ LibraryBook _book() {
 
 ProgressEvent _event({required int id}) {
   return ProgressEvent(
-    supaId: id,
-    formatId: 9,
+    id: '$id',
+    formatId: '9',
     end: DateTime(2026, 3, 2),
     progress: 10,
     format: ProgressEventFormat.pageNum,

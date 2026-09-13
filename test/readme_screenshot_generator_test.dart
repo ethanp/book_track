@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:book_track/data_model.dart';
 import 'package:book_track/data_model/library_book_format.dart';
@@ -31,7 +30,7 @@ void main() {
   testWidgets('writes book progress for README', (tester) async {
     await _writeReadmeScreenshot(
       tester,
-      home: const LibraryBookPage(4),
+      home: const LibraryBookPage('4'),
       screenshotFilename: 'book-progress.png',
     );
   });
@@ -79,33 +78,33 @@ Future<void> _writeReadmeScreenshot(
 List<LibraryBook> _overviewLibrary() {
   return [
     LibraryBook(
-      1,
-      Book(1, 'The Left Hand of Darkness', 'Ursula K. Le Guin', 1969, null, _OverviewJackets.leftHandOfDarkness),
+      '1',
+      Book('1', 'The Left Hand of Darkness', 'Ursula K. Le Guin', 1969, null, _OverviewJackets.leftHandOfDarkness),
       [
         ProgressEvent(
-          supaId: 11,
-          formatId: 101,
+          id: '11',
+          formatId: '101',
           end: DateTime(2026, 6, 2),
           progress: 12,
           format: ProgressEventFormat.pageNum,
         ),
         ProgressEvent(
-          supaId: 12,
-          formatId: 101,
+          id: '12',
+          formatId: '101',
           end: DateTime(2026, 6, 20),
           progress: 88,
           format: ProgressEventFormat.pageNum,
         ),
         ProgressEvent(
-          supaId: 13,
-          formatId: 101,
+          id: '13',
+          formatId: '101',
           end: DateTime(2026, 7, 8),
           progress: 164,
           format: ProgressEventFormat.pageNum,
         ),
         ProgressEvent(
-          supaId: 14,
-          formatId: 101,
+          id: '14',
+          formatId: '101',
           end: DateTime(2026, 8, 1),
           progress: 210,
           format: ProgressEventFormat.pageNum,
@@ -113,8 +112,8 @@ List<LibraryBook> _overviewLibrary() {
       ],
       const [
         LibraryBookFormat(
-          supaId: 101,
-          libraryBookId: 1,
+          id: '101',
+          libraryBookId: '1',
           format: BookFormat.paperback,
           length: 304,
         ),
@@ -123,19 +122,19 @@ List<LibraryBook> _overviewLibrary() {
       null,
     ),
     LibraryBook(
-      2,
-      Book(2, 'Project Hail Mary', 'Andy Weir', 2021, null, _OverviewJackets.projectHailMary),
+      '2',
+      Book('2', 'Project Hail Mary', 'Andy Weir', 2021, null, _OverviewJackets.projectHailMary),
       [
         ProgressEvent(
-          supaId: 21,
-          formatId: 201,
+          id: '21',
+          formatId: '201',
           end: DateTime(2026, 4, 10),
           progress: 40,
           format: ProgressEventFormat.pageNum,
         ),
         ProgressEvent(
-          supaId: 22,
-          formatId: 201,
+          id: '22',
+          formatId: '201',
           end: DateTime(2026, 5, 2),
           progress: 476,
           format: ProgressEventFormat.pageNum,
@@ -143,8 +142,8 @@ List<LibraryBook> _overviewLibrary() {
       ],
       const [
         LibraryBookFormat(
-          supaId: 201,
-          libraryBookId: 2,
+          id: '201',
+          libraryBookId: '2',
           format: BookFormat.hardcover,
           length: 476,
         ),
@@ -153,19 +152,19 @@ List<LibraryBook> _overviewLibrary() {
       null,
     ),
     LibraryBook(
-      3,
-      Book(3, 'A Psalm for the Wild-Built', 'Becky Chambers', 2021, null, _OverviewJackets.psalmForTheWildBuilt),
+      '3',
+      Book('3', 'A Psalm for the Wild-Built', 'Becky Chambers', 2021, null, _OverviewJackets.psalmForTheWildBuilt),
       [
         ProgressEvent(
-          supaId: 31,
-          formatId: 301,
+          id: '31',
+          formatId: '301',
           end: DateTime(2026, 3, 1),
           progress: 10,
           format: ProgressEventFormat.pageNum,
         ),
         ProgressEvent(
-          supaId: 32,
-          formatId: 301,
+          id: '32',
+          formatId: '301',
           end: DateTime(2026, 3, 18),
           progress: 60,
           format: ProgressEventFormat.pageNum,
@@ -173,8 +172,8 @@ List<LibraryBook> _overviewLibrary() {
       ],
       const [
         LibraryBookFormat(
-          supaId: 301,
-          libraryBookId: 3,
+          id: '301',
+          libraryBookId: '3',
           format: BookFormat.eBook,
           length: 160,
         ),
@@ -183,19 +182,19 @@ List<LibraryBook> _overviewLibrary() {
       DateTime(2026, 3, 18),
     ),
     LibraryBook(
-      4,
-      Book(4, 'Piranesi', 'Susanna Clarke', 2020, null, _OverviewJackets.piranesi),
+      '4',
+      Book('4', 'Piranesi', 'Susanna Clarke', 2020, null, _OverviewJackets.piranesi),
       [
         ProgressEvent(
-          supaId: 41,
-          formatId: 401,
+          id: '41',
+          formatId: '401',
           end: DateTime(2026, 9, 1),
           progress: 30,
           format: ProgressEventFormat.minutes,
         ),
         ProgressEvent(
-          supaId: 42,
-          formatId: 401,
+          id: '42',
+          formatId: '401',
           end: DateTime(2026, 9, 10),
           progress: 180,
           format: ProgressEventFormat.minutes,
@@ -203,8 +202,8 @@ List<LibraryBook> _overviewLibrary() {
       ],
       const [
         LibraryBookFormat(
-          supaId: 401,
-          libraryBookId: 4,
+          id: '401',
+          libraryBookId: '4',
           format: BookFormat.audiobook,
           length: 436,
         ),
@@ -215,7 +214,7 @@ List<LibraryBook> _overviewLibrary() {
   ];
 }
 
-abstract final class _OverviewJackets {
+abstract final class _OverviewJackets() {
   static late final Uint8List leftHandOfDarkness;
   static late final Uint8List projectHailMary;
   static late final Uint8List psalmForTheWildBuilt;

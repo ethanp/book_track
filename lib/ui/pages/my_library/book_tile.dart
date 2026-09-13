@@ -18,7 +18,7 @@ class const BookTile(final LibraryBook book) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Dismissible(
-      key: Key(book.supaId.toString()),
+      key: Key(book.id),
       direction: DismissDirection.startToEnd,
       confirmDismiss: (direction) => UpdateProgressDialogPage.show(ref, book),
       background: _addProgressReveal(),
@@ -38,7 +38,11 @@ class const BookTile(final LibraryBook book) extends ConsumerWidget {
         constraints.maxWidth,
       ),
       leadingGap: AppSpacing.md,
-      onActivated: () => context.push(LibraryBookPage(book.supaId)),
+      onActivated: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => LibraryBookPage(book.id),
+        ),
+      ),
       leading: _coverArt(),
       child: _copy(),
     );

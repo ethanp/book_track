@@ -51,7 +51,11 @@ class const _ArchivedBookRow(final LibraryBook book) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => context.push(LibraryBookPage(book.supaId)),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => LibraryBookPage(book.id),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Row(
