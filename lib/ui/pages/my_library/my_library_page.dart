@@ -1,6 +1,7 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_sync/ethan_sync.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,9 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
           onPressed: () => AddBookSheet.show(context),
           icon: const Icon(Icons.add),
         ),
+        actions: [
+          const ESyncPhaseIcon(),
+        ],
       ),
       body: _pageBody(),
     );

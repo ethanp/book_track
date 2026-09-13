@@ -13,6 +13,7 @@ import 'package:book_track/ui/pages/stats/reading_patterns_card.dart';
 import 'package:book_track/ui/pages/stats/activity_calendar_card.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:book_track/ui/pages/stats/summary_stats_card.dart';
+import 'package:ethan_sync/ethan_sync.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -23,7 +24,12 @@ class const StatsPage() extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return EScaffoldShell(
       contentMaxWidth: double.infinity,
-      appBar: const EAppHeader(title: 'Stats'),
+      appBar: EAppHeader(
+        title: 'Stats',
+        actions: [
+          const ESyncPhaseIcon(),
+        ],
+      ),
       body: SafeArea(
         bottom: false,
         child: Column(
