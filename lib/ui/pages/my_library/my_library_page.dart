@@ -41,6 +41,7 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
 
   Widget _pageBody() {
     return SafeArea(
+      bottom: false,
       child: ref
           .watch(userLibraryProvider)
           .when(
@@ -59,7 +60,7 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
     return CustomScrollView(
       slivers: [
         SliverPadding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.lg).withOverlaidTabBar(context),
           sliver: SliverMainAxisGroup(
             slivers: [
               SliverToBoxAdapter(child: _sortSelector()),
@@ -194,7 +195,8 @@ enum _LibraryOrder(
 
   static Comparable bookProgress(LibraryBook book) => book.progressPercentage;
 
-  static Comparable bookStartTime(LibraryBook book) => book.startTime;
+  static Comparable bookStartTime(LibraryBook book) =>
+      book.firstLoggedProgressAtOrEpoch;
 
   static Comparable bookPace(LibraryBook book) =>
       book.averageReadingPace?.unitsPerDay ?? 0;

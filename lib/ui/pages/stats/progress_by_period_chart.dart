@@ -20,18 +20,23 @@ class _ProgressByPeriodChartState() extends State<ProgressByPeriodChart> {
 
   _ProgressLines _progressLines() {
     return _ProgressLines(
-      total: _progressByPeriod(widget.books, widget.period, 'Total', EColors.success),
+      total: _progressByPeriod(
+        widget.books,
+        widget.period,
+        'Total',
+        EColors.success,
+      ),
       audiobook: _progressByPeriod(
         widget.books.whereL((book) => book.isAudiobook),
         widget.period,
         'Audio',
-        EColors.accent,
+        BookFormat.audiobook.color,
       ),
       visual: _progressByPeriod(
         widget.books.whereL((book) => !book.isAudiobook),
         widget.period,
         'Visual',
-        EColors.danger,
+        BookFormat.paperback.color,
       ),
     );
   }
@@ -94,7 +99,8 @@ class _ProgressByPeriodChartState() extends State<ProgressByPeriodChart> {
     return Column(
       children: [
         _legendRow(progressLines),
-        if (_selectedBucket != null) _periodTotals(progressLines, _selectedBucket!),
+        if (_selectedBucket != null)
+          _periodTotals(progressLines, _selectedBucket!),
         Expanded(child: _progressByPeriodLines(progressLines)),
       ],
     );
@@ -109,31 +115,32 @@ class _ProgressByPeriodChartState() extends State<ProgressByPeriodChart> {
         .expand((line) => line.data)
         .mapL((point) => point.progress)
         .max;
-    final chartLines = [
+    final chartSeries = [
       for (final line in progressLines.lines)
-        EChartLine(
+        EChartSeries.line(
+          id: line.name,
           points: [
             for (final point in line.data)
               EChartPoint(
                 date: point.date,
                 value: _extrapolatedProgress(point),
+                id: point.date,
               ),
           ],
           color: line.color.withValues(alpha: 0.7),
-          showDots: false,
           fillColor: line == progressLines.total
               ? EColors.success.withValues(alpha: 0.12)
               : null,
           label: line.name,
         ),
     ];
-    return EChart(
-      lines: chartLines,
+    return EChart<DateTime>(
+      series: chartSeries,
       valueScale: EChartValueScale.nice(maxProgress, tickSuffix: '%'),
       start: timespan.beginning,
       end: timespan.end,
       onPointSelected: (selected) {
-        setState(() => _selectedBucket = selected?.point.date);
+        setState(() => _selectedBucket = selected?.pointId);
       },
     );
   }
@@ -236,7 +243,4 @@ class const ProgressLine({
   required final Color color,
 });
 
-class const ProgressDataPoint(
-  final DateTime date,
-  final double progress,
-);
+class const ProgressDataPoint(final DateTime date, final double progress);

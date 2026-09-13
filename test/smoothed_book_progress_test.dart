@@ -148,5 +148,59 @@ void main() {
       expect(percentOn(progress, day(3)), greaterThan(0));
       expect(percentOn(progress, day(3)), lessThan(40));
     });
+
+    test('empty logs stay empty', () {
+      final progress = SmoothedBookProgress.fromLoggedPercents(const []);
+      expect(progress.points, isEmpty);
+    });
+
+    test('same-day logs produce one deterministic day', () {
+      final morning = DateTime(2026, 1, 4, 8);
+      final evening = DateTime(2026, 1, 4, 20);
+      final progress = SmoothedBookProgress.fromLoggedPercents([
+        logged(evening, 40),
+        logged(morning, 10),
+      ]);
+
+      expect(progress.points, hasLength(1));
+      expect(progress.points.single.at.startOfDay, day(4));
+      expect(progress.points.single.percent, 10);
+    });
+
+    test('sparse logs still emit a point for every day in the span', () {
+      final progress = SmoothedBookProgress.fromLoggedPercents([
+        logged(day(1), 0),
+        logged(day(20), 50),
+      ]);
+
+      expect(progress.points, hasLength(20));
+      expect(progress.points.first.at, day(1));
+      expect(progress.points.last.at, day(20));
+    });
+
+    test('the same logs always produce the same percents', () {
+      final logs = [logged(day(1), 0), logged(day(8), 22), logged(day(15), 40)];
+      final first = SmoothedBookProgress.fromLoggedPercents(logs);
+      final second = SmoothedBookProgress.fromLoggedPercents(logs);
+
+      expect(
+        first.points.map((point) => point.percent),
+        second.points.map((point) => point.percent),
+      );
+    });
+
+    test('output never contains NaN or infinity', () {
+      final progress = SmoothedBookProgress.fromLoggedPercents([
+        logged(day(1), 0),
+        logged(day(1), 0),
+        logged(day(2), 100),
+        logged(day(10), 100),
+      ]);
+
+      for (final point in progress.points) {
+        expect(point.percent.isFinite, isTrue);
+        expect(point.percent.isNaN, isFalse);
+      }
+    });
   });
 }

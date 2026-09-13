@@ -6,305 +6,151 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class const CalendarHeatmap({
-  required final Map<DateTime, int> activityByDay,
+abstract final class LibraryProgressCalendar() {
+  static EPeriodQuartileHeatmapScale scaleFor(
+    Iterable<num> observedPercentPoints,
+  ) => EPeriodQuartileHeatmapScale(
+    observedQuantities: observedPercentPoints,
+    legendTitle: 'Daily library-progress change · period quartiles',
+    captionForQuantity: (quantity) => '≤${quantity.round()}pp',
+  );
 
-  /// Books to show details for when a day is selected.
-  required final List<LibraryBook> books,
+  static ECalendarDayPresentation<DateTime> day({
+    required DateTime date,
+    required int percentPoints,
+    required EHeatmapScale scale,
+  }) {
+    final day = date.startOfDay;
+    if (percentPoints <= 0) {
+      return ECalendarDayPresentation(
+        date: day,
+        id: day,
+        semanticsLabel: 'No library-progress change',
+        visual: const ECalendarDayEmpty(),
+      );
+    }
+    return ECalendarDayPresentation(
+      date: day,
+      id: day,
+      semanticsLabel: '$percentPoints percentage points',
+      visual: ECalendarDayMeasuredHeat(
+        intensity: scale.intensityFor(percentPoints),
+      ),
+    );
+  }
 
-  /// Number of weeks to display (default 26 = 6 months).
-  final int weeksToShow = 26,
+  static DateTime firstVisibleDate({
+    required Map<DateTime, int> activityByDay,
+    required DateTime today,
+    required int weeksToShow,
+    DateTime? periodCutoff,
+  }) {
+    final cutoffDate = periodCutoff?.startOfDay;
+    if (cutoffDate != null) return cutoffDate;
+    if (activityByDay.keys.isNotEmpty) {
+      final earliest = activityByDay.keys.minBy<num>(
+        (date) => date.millisecondsSinceEpoch,
+      );
+      final twoYearsBack = today.shiftedByDays(-365 * 2);
+      return earliest.isAfter(twoYearsBack) ? earliest : twoYearsBack;
+    }
+    return today.shiftedByDays(-weeksToShow * 7);
+  }
 
-  /// Only show dates after this cutoff (inclusive).
-  final DateTime? periodCutoff,
-}) extends StatefulWidget {
-  @override
-  State<CalendarHeatmap> createState() => _CalendarHeatmapState();
+  static DateTime firstAllTimeDate({
+    required Map<DateTime, int> activityByDay,
+    required DateTime today,
+    DateTime? periodCutoff,
+  }) {
+    final cutoffDate = periodCutoff?.startOfDay;
+    if (cutoffDate != null) return cutoffDate;
+    if (activityByDay.isEmpty) return today.startOfDay;
+    return activityByDay.keys.min.startOfDay;
+  }
+
+  static List<ECalendarDailyMeasure> allTimeDailyMeasures({
+    required Map<DateTime, int> activityByDay,
+    required DateTime today,
+    DateTime? periodCutoff,
+  }) {
+    return dailyMeasures(
+      activityByDay: activityByDay,
+      today: today,
+      weeksToShow: 0,
+      periodCutoff: firstAllTimeDate(
+        activityByDay: activityByDay,
+        today: today,
+        periodCutoff: periodCutoff,
+      ),
+    );
+  }
+
+  static List<ECalendarDailyMeasure> dailyMeasures({
+    required Map<DateTime, int> activityByDay,
+    required DateTime today,
+    required int weeksToShow,
+    DateTime? periodCutoff,
+  }) {
+    final first = firstVisibleDate(
+      activityByDay: activityByDay,
+      today: today,
+      weeksToShow: weeksToShow,
+      periodCutoff: periodCutoff,
+    ).startOfDay;
+    final last = today.startOfDay;
+    final days = <ECalendarDailyMeasure>[];
+    for (var day = first; !day.isAfter(last); day = day.shiftedByDays(1)) {
+      final quantity = activityByDay[day] ?? 0;
+      days.add(
+        ECalendarDailyMeasure(
+          date: day,
+          quantity: quantity,
+          isActive: quantity > 0,
+        ),
+      );
+    }
+    return days;
+  }
 }
 
-class _CalendarHeatmapState() extends State<CalendarHeatmap> {
-  DateTime? selectedDate;
-  final _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  int get _maxActivity {
-    if (widget.activityByDay.isEmpty) return 1;
-    final max = widget.activityByDay.values.max;
-    return max > 0 ? max : 1;
-  }
-
+class const CalendarHeatmap({
+  required final Map<DateTime, int> activityByDay,
+  required final List<LibraryBook> books,
+  final int weeksToShow = 26,
+  final DateTime? periodCutoff,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _heatmapGrid(),
-        if (selectedDate != null) _dayDetails(selectedDate!),
-      ],
-    );
-  }
-
-  Widget _heatmapGrid() {
     final today = DateTime.now().startOfDay;
-    final months = _buildMonths(today);
-
-    return SingleChildScrollView(
-      controller: _scrollController,
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [_dayLabels(), ...months],
+    final scale = LibraryProgressCalendar.scaleFor(activityByDay.values);
+    return EContributionCalendar<DateTime>(
+      firstVisibleDate: LibraryProgressCalendar.firstVisibleDate(
+        activityByDay: activityByDay,
+        today: today,
+        weeksToShow: weeksToShow,
+        periodCutoff: periodCutoff,
       ),
-    );
-  }
-
-  Widget _dayLabels() {
-    const days = ['', 'M', '', 'W', '', 'F', ''];
-    return Column(
-      children: days.mapL(
-        (day) => SizedBox(
-          height: 12,
-          width: 20,
-          child: Text(day, style: AppTextStyles.caption.copyWith(fontSize: 9)),
-        ),
+      lastVisibleDate: today,
+      presentationFor: (date) => LibraryProgressCalendar.day(
+        date: date,
+        percentPoints: activityByDay[date.startOfDay] ?? 0,
+        scale: scale,
       ),
+      selectedDayBuilder: (context, day) =>
+          _SelectedLibraryProgressDay(date: day.date, books: books),
     );
   }
+}
 
-  List<Widget> _buildMonths(DateTime today) {
-    final months = <Widget>[];
-
-    // Find the earliest date with actual activity data
-    final earliestDataDate = widget.activityByDay.keys.isNotEmpty
-        ? widget.activityByDay.keys.minBy<num>((d) => d.millisecondsSinceEpoch)
-        : null;
-
-    // Determine the start date based on:
-    // 1. periodCutoff (if set) - takes precedence
-    // 2. earliest data date (if exists), but cap at 2 years back max
-    // 3. weeksToShow back from today (fallback if no data)
-    final cutoffDate = widget.periodCutoff?.startOfDay;
-
-    DateTime effectiveStartDate;
-    if (cutoffDate != null) {
-      effectiveStartDate = cutoffDate;
-    } else if (earliestDataDate != null) {
-      // Use the earliest data date, but cap at 2 years back to avoid showing decades of empty data
-      final maxBackDate = today.shiftedByDays(-365 * 2);
-      effectiveStartDate = earliestDataDate.isAfter(maxBackDate)
-          ? earliestDataDate
-          : maxBackDate;
-    } else {
-      // No data at all, use weeksToShow as fallback
-      effectiveStartDate = today.shiftedByDays(-widget.weeksToShow * 7);
-    }
-
-    // Find the first day of the first month to show
-    var currentMonthStart = DateTime(
-      effectiveStartDate.year,
-      effectiveStartDate.month,
-      1,
-    );
-    final todayMonthStart = DateTime(today.year, today.month, 1);
-
-    while (!currentMonthStart.isAfter(todayMonthStart)) {
-      final monthWidget = _buildMonth(currentMonthStart, today, cutoffDate);
-      if (monthWidget != null) {
-        months.add(monthWidget);
-      }
-
-      // Move to next month
-      if (currentMonthStart.month == 12) {
-        currentMonthStart = DateTime(currentMonthStart.year + 1, 1, 1);
-      } else {
-        currentMonthStart = DateTime(
-          currentMonthStart.year,
-          currentMonthStart.month + 1,
-          1,
-        );
-      }
-    }
-
-    return months;
-  }
-
-  Widget? _buildMonth(
-    DateTime monthStart,
-    DateTime today,
-    DateTime? cutoffDate,
-  ) {
-    final daysInMonth = DateTime(monthStart.year, monthStart.month + 1, 0).day;
-    final firstDayOfMonth = DateTime(monthStart.year, monthStart.month, 1);
-    final firstWeekday = firstDayOfMonth.weekday;
-
-    // Find the Sunday that starts the week containing the 1st
-    var weekStart = firstDayOfMonth.shiftedByDays(-(firstWeekday % 7));
-
-    // Build all weeks that contain days from this month
-    final weekColumns = <Widget>[];
-    var currentWeekStart = weekStart;
-
-    while (currentWeekStart.isBefore(
-      DateTime(monthStart.year, monthStart.month + 1, 1),
-    )) {
-      final weekColumn = _buildWeekColumn(
-        currentWeekStart,
-        monthStart,
-        daysInMonth,
-        today,
-        cutoffDate,
-      );
-      if (weekColumn != null) {
-        weekColumns.add(weekColumn);
-      }
-      currentWeekStart = currentWeekStart.shiftedByDays(7);
-
-      // Stop if we've passed today
-      if (currentWeekStart.isAfter(today.shiftedByDays(6))) {
-        break;
-      }
-    }
-
-    if (weekColumns.isEmpty) return null;
-
-    // Month label row
-    final monthLabel = Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        children: List.generate(weekColumns.length, (index) {
-          // Only show label on first week column of the month
-          if (index == 0) {
-            final monthName = DateFormat('MMM yy').format(monthStart);
-            return SizedBox(
-              width: 12,
-              child: Text(
-                monthName,
-                style: AppTextStyles.caption.copyWith(fontSize: 9),
-                textAlign: TextAlign.left,
-                overflow: TextOverflow.visible,
-                softWrap: false,
-              ),
-            );
-          } else {
-            return const SizedBox(width: 12);
-          }
-        }),
-      ),
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        monthLabel,
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: weekColumns,
-        ),
-      ],
-    );
-  }
-
-  Widget? _buildWeekColumn(
-    DateTime weekStart,
-    DateTime monthStart,
-    int daysInMonth,
-    DateTime today,
-    DateTime? cutoffDate,
-  ) {
-    final weekDays = <Widget>[];
-
-    bool hasAnyVisibleDays = false;
-
-    for (var dayOffset = 0; dayOffset < 7; dayOffset++) {
-      final date = weekStart.shiftedByDays(dayOffset).startOfDay;
-
-      // Check if this date is in the current month
-      final isInMonth =
-          date.year == monthStart.year && date.month == monthStart.month;
-
-      // Filter by period cutoff
-      final isBeforeCutoff = cutoffDate != null && date.isBefore(cutoffDate);
-      final isAfterToday = date.isAfter(today);
-
-      if (!isInMonth || isBeforeCutoff || isAfterToday) {
-        // Empty cell for dates outside the month, before cutoff, or in the future
-        weekDays.add(const SizedBox(width: 12, height: 12));
-      } else {
-        hasAnyVisibleDays = true;
-        final activity = widget.activityByDay[date] ?? 0;
-        weekDays.add(_dayCell(activity, date));
-      }
-    }
-
-    // Don't show week column if all days are filtered out
-    if (!hasAnyVisibleDays) {
-      return null;
-    }
-
-    return Column(children: weekDays);
-  }
-
-  Widget _dayCell(int activity, DateTime date) {
-    final level = _intensityOfMaxActivity(activity);
-    final isSelected = selectedDate?.sameDayAs(date) == true;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (isSelected) {
-            selectedDate = null;
-          } else {
-            selectedDate = date;
-          }
-        });
-      },
-      child: Container(
-        width: 10,
-        height: 10,
-        margin: const EdgeInsets.all(1),
-        decoration: BoxDecoration(
-          color: level.color,
-          borderRadius: BorderRadius.circular(2),
-          border: isSelected
-              ? Border.all(color: EColors.danger, width: 1.5)
-              : Border.fromBorderSide(EHeatmapIntensity.cellHairline),
-        ),
-      ),
-    );
-  }
-
-  EHeatmapIntensity _intensityOfMaxActivity(int activity) {
-    if (activity == 0) return EHeatmapIntensity.none;
-    final ratio = activity / _maxActivity;
-    if (ratio <= 0.25) return EHeatmapIntensity.low;
-    if (ratio <= 0.50) return EHeatmapIntensity.mid;
-    if (ratio <= 0.75) return EHeatmapIntensity.high;
-    return EHeatmapIntensity.peak;
-  }
-
-  Widget _dayDetails(DateTime date) {
-    final dateStr = DateFormat('MMM d, yyyy').format(date);
-    final tiles = DayProgressEntry.tilesForDate(date, widget.books, context);
-
+class const _SelectedLibraryProgressDay({
+  required final DateTime date,
+  required final List<LibraryBook> books,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final tiles = DayProgressEntry.tilesForDate(date, books, context);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      margin: const EdgeInsets.only(top: AppSpacing.sm),
       decoration: BoxDecoration(
         color: EColors.surface,
         borderRadius: BorderRadius.circular(AppRadii.sm),
@@ -313,7 +159,7 @@ class _CalendarHeatmapState() extends State<CalendarHeatmap> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(dateStr, style: AppTextStyles.h5),
+          Text(DateFormat('MMM d, yyyy').format(date), style: AppTextStyles.h5),
           const SizedBox(height: AppSpacing.sm),
           if (tiles.isEmpty)
             Text('No reading activity', style: AppTextStyles.bodySecondary)

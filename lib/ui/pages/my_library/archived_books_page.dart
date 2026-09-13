@@ -1,4 +1,5 @@
 import 'package:book_track/data_model.dart';
+import 'package:book_track/ui/library_book_presentation.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/book_cover.dart';
 import 'package:book_track/ui/common/design.dart';
@@ -15,18 +16,19 @@ class const ArchivedBooksPage() extends ConsumerWidget {
       contentMaxWidth: double.infinity,
       appBar: const EAppHeader(title: 'Archived'),
       body: SafeArea(
+        bottom: false,
         child: ref
             .watch(userLibraryProvider)
             .when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) => Center(child: Text('$error')),
-              data: _pageBody,
+              data: (library) => _pageBody(context, library),
             ),
       ),
     );
   }
 
-  Widget _pageBody(List<LibraryBook> library) {
+  Widget _pageBody(BuildContext context, List<LibraryBook> library) {
     final archivedBooks = library.whereL((book) => book.archived);
     archivedBooks.sortOn((book) => book.book.title.toLowerCase());
     if (archivedBooks.isEmpty) {
@@ -35,7 +37,7 @@ class const ArchivedBooksPage() extends ConsumerWidget {
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.lg).withOverlaidTabBar(context),
       itemCount: archivedBooks.length,
       itemBuilder: (context, index) => _ArchivedBookRow(archivedBooks[index]),
     );

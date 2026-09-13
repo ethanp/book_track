@@ -47,9 +47,14 @@ class LibraryBook(
     return formatById(progressHistory.last.formatId) ?? primaryFormat;
   }
 
-  DateTime get startTime =>
-      progressHistory.firstOrNull?.end ??
-      DateTime.fromMillisecondsSinceEpoch(0);
+  /// Time of the first recorded progress event. Not an explicit "started" date.
+  DateTime? get firstLoggedProgressAt => progressHistory.firstOrNull?.end;
+
+  DateTime? get lastLoggedProgressAt => progressHistory.lastOrNull?.end;
+
+  /// Sort key when a book has no logs yet.
+  DateTime get firstLoggedProgressAtOrEpoch =>
+      firstLoggedProgressAt ?? DateTime.fromMillisecondsSinceEpoch(0);
 
   /// Calculate book progress percentage from an event.
   double? progressPercentAt(ProgressEvent event) {
@@ -108,27 +113,12 @@ class LibraryBook(
 
   bool get isReading => readingStatus == ReadingStatus.reading;
 
-  DateTime? get startedOn => progressHistory.firstOrNull?.end;
-
-  DateTime? get finishedOn {
+  /// When the book left [ReadingStatus.reading], if it has.
+  DateTime? get readingEndedAt {
     if (isAbandoned) return abandonedAt;
-    if (isFinished) return progressHistory.lastOrNull?.end;
+    if (isFinished) return lastLoggedProgressAt;
     return null;
   }
-
-  String get startedAndFinishedCaption {
-    final DateTime? startedOn = this.startedOn;
-    final DateTime? finishedOn = this.finishedOn;
-    if (startedOn == null) return finishedOn?.monthDayCaption ?? '';
-    if (finishedOn == null) return startedOn.monthDayCaption;
-    return '${startedOn.monthDayCaption} – ${finishedOn.monthDayCaption}';
-  }
-
-  String get progressStatusCaption => switch (readingStatus) {
-    ReadingStatus.finished => 'finished',
-    ReadingStatus.abandoned => 'abandoned $progressPercentage%',
-    ReadingStatus.reading => 'reading $progressPercentage%',
-  };
 
   /// Get progress events for a specific format.
   List<ProgressEvent> progressForFormat(LibraryBookFormat format) =>

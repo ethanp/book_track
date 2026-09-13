@@ -40,12 +40,12 @@ class const LibraryBookPage(final int bookId) extends ConsumerWidget {
           });
           return const SizedBox.shrink();
         }
-        return _bookPage(book);
+        return _bookPage(context, book);
       },
     );
   }
 
-  Widget _bookPage(LibraryBook book) {
+  Widget _bookPage(BuildContext context, LibraryBook book) {
     return EScaffoldShell(
       contentMaxWidth: double.infinity,
       appBar: EAppHeader(
@@ -54,7 +54,9 @@ class const LibraryBookPage(final int bookId) extends ConsumerWidget {
         actions: [ReadingProgressIndicator(book)],
       ),
       body: SafeArea(
+        bottom: false,
         child: SingleChildScrollView(
+          padding: EdgeInsets.zero.withOverlaidTabBar(context),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

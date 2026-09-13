@@ -26,6 +26,7 @@ class const StatsPage() extends ConsumerWidget {
       contentMaxWidth: double.infinity,
       appBar: const EAppHeader(title: 'Stats'),
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             const FilterSection(),

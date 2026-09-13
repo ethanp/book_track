@@ -25,21 +25,33 @@ class const BooksProgressChart({
   State<BooksProgressChart> createState() => _BooksProgressChartState();
 }
 
+class const ReadingChartPoint({
+  required final LibraryBook book,
+  required final ProgressEvent event,
+}) {
+  @override
+  bool operator ==(Object other) =>
+      other is ReadingChartPoint &&
+      other.book.supaId == book.supaId &&
+      other.event.supaId == event.supaId;
+
+  @override
+  int get hashCode => Object.hash(book.supaId, event.supaId);
+}
+
 class _SelectedReadingEvent({
   required final LibraryBook book,
   required final ProgressEvent event,
   required final double percent,
-  required final EChartSelectedPoint chartPoint,
+  required final EChartSelectedPoint<ReadingChartPoint> chartPoint,
 });
 
 class _BookProgressLine({
-  required final LibraryBook book,
-  required final List<ProgressEvent> events,
-  required final EChartLine trajectory,
-  final EChartLine? eventDots,
-  final EChartLine? paceProjection,
+  required final EChartSeries<ReadingChartPoint> trajectory,
+  final EChartSeries<ReadingChartPoint>? eventDots,
+  final EChartSeries<ReadingChartPoint>? paceProjection,
 }) {
-  List<EChartLine> get chartLines {
+  List<EChartSeries<ReadingChartPoint>> get chartSeries {
     final dots = eventDots;
     final projection = paceProjection;
     return [
@@ -100,10 +112,10 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
             child: _selectedEvent == null ? null : _selectedEventCard(),
           ),
         Expanded(
-          child: EChart(
-            lines: [
+          child: EChart<ReadingChartPoint>(
+            series: [
               for (final progressLine in progressLines)
-                ...progressLine.chartLines,
+                ...progressLine.chartSeries,
             ],
             valueScale: EChartValueScale.fixed(
               min: 0,
@@ -113,8 +125,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
             start: timespan.beginning,
             end: timespan.end,
             selectedPoint: _selectedEvent?.chartPoint,
-            onPointSelected: (selected) =>
-                _showReadingEvent(progressLines, selected),
+            onPointSelected: _showReadingEvent,
           ),
         ),
         if (widget.colorByFormat && _hasMultipleFormats(filteredBooks))
@@ -128,37 +139,19 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     setState(() => _selectedEvent = null);
   }
 
-  void _showReadingEvent(
-    List<_BookProgressLine> progressLines,
-    EChartSelectedPoint? selected,
-  ) {
+  void _showReadingEvent(EChartSelectedPoint<ReadingChartPoint>? selected) {
     if (selected == null) {
       _clearSelectedReadingEvent();
       return;
     }
-    final progressLine = progressLines
-        .where((line) => line.chartLines.contains(selected.line))
-        .firstOrNull;
-    if (progressLine == null || progressLine.events.isEmpty) return;
-    final event = progressLine.events.minBy(
-      (candidate) =>
-          (candidate.end.difference(selected.point.date).inMilliseconds).abs(),
-    );
-    final dotsLine = progressLine.eventDots ?? progressLine.trajectory;
-    final pointIndex = progressLine.events.indexOf(event);
-    if (pointIndex < 0 || pointIndex >= dotsLine.points.length) return;
-    final allLines = [for (final line in progressLines) ...line.chartLines];
     setState(() {
       _selectedEvent = _SelectedReadingEvent(
-        book: progressLine.book,
-        event: event,
-        percent: progressLine.book.progressPercentAt(event) ?? 0,
-        chartPoint: EChartSelectedPoint(
-          line: dotsLine,
-          point: dotsLine.points[pointIndex],
-          lineIndex: allLines.indexOf(dotsLine),
-          pointIndex: pointIndex,
-        ),
+        book: selected.pointId.book,
+        event: selected.pointId.event,
+        percent:
+            selected.pointId.book.progressPercentAt(selected.pointId.event) ??
+            0,
+        chartPoint: selected,
       );
     });
   }
@@ -196,12 +189,11 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
       bookEvents,
     ).where((event) => book.progressPercentAt(event) != null).toList();
     final eventPoints = _eventPoints(book, events, rangeStart, spanMillis);
+    final eventDots = _eventDotsSeries(book, eventPoints);
     return _BookProgressLine(
-      book: book,
-      events: events,
-      trajectory: _trajectoryLine(book, events, eventPoints),
-      eventDots: _eventDotsLine(eventPoints),
-      paceProjection: _paceProjectionLine(book),
+      trajectory: _trajectorySeries(book, events, eventPoints, eventDots),
+      eventDots: eventDots,
+      paceProjection: _paceProjectionSeries(book),
     );
   }
 
@@ -210,7 +202,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     return books.single.averageReadingPace?.eta;
   }
 
-  List<EChartPoint> _eventPoints(
+  List<EChartPoint<ReadingChartPoint>> _eventPoints(
     LibraryBook book,
     List<ProgressEvent> events,
     DateTime rangeStart,
@@ -220,6 +212,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
       EChartPoint(
         date: event.end,
         value: book.progressPercentAt(event) ?? 0,
+        id: ReadingChartPoint(book: book, event: event),
         color: widget.colorByFormat ? _dotColor(book, event) : null,
         dotRadius: widget.colorByFormat
             ? _dotRadius(event.end, rangeStart, spanMillis)
@@ -227,31 +220,49 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
       ),
   ];
 
-  EChartLine _trajectoryLine(
+  EChartSeries<ReadingChartPoint> _trajectorySeries(
     LibraryBook book,
     List<ProgressEvent> events,
-    List<EChartPoint> eventPoints,
+    List<EChartPoint<ReadingChartPoint>> eventPoints,
+    EChartSeries<ReadingChartPoint>? eventDots,
   ) {
-    return EChartLine(
-      points: widget.smoothProgress
-          ? _smoothedTrajectoryPoints(book, events)
-          : eventPoints,
-      showDots: widget.colorByFormat && !widget.smoothProgress,
-      stroke: widget.smoothProgress || !widget.colorByFormat
-          ? EChartLineStroke.alongIncreasingX
-          : EChartLineStroke.polyline,
+    final points = widget.smoothProgress
+        ? _smoothedTrajectoryPoints(book, events)
+        : eventPoints;
+    final interpolation = widget.smoothProgress || !widget.colorByFormat
+        ? EChartInterpolation.alongIncreasingX
+        : EChartInterpolation.polyline;
+    if (widget.colorByFormat && !widget.smoothProgress) {
+      return EChartSeries.lineAndDots(
+        id: 'trajectory-${book.supaId}',
+        points: points,
+        interpolation: interpolation,
+        color: _trajectoryColor(book),
+        strokeWidth: _trajectoryWidth(book),
+      );
+    }
+    return EChartSeries.line(
+      id: 'trajectory-${book.supaId}',
+      points: points,
+      interpolation: interpolation,
       color: _trajectoryColor(book),
       strokeWidth: _trajectoryWidth(book),
+      hits: eventDots == null
+          ? EChartPointHits.include
+          : EChartPointHits.ignore,
     );
   }
 
-  EChartLine? _eventDotsLine(List<EChartPoint> eventPoints) {
+  EChartSeries<ReadingChartPoint>? _eventDotsSeries(
+    LibraryBook book,
+    List<EChartPoint<ReadingChartPoint>> eventPoints,
+  ) {
     if (!widget.smoothProgress || !widget.colorByFormat) return null;
     if (eventPoints.isEmpty) return null;
-    return EChartLine(points: eventPoints, showDots: true, showStroke: false);
+    return EChartSeries.dots(id: 'events-${book.supaId}', points: eventPoints);
   }
 
-  EChartLine? _paceProjectionLine(LibraryBook book) {
+  EChartSeries<ReadingChartPoint>? _paceProjectionSeries(LibraryBook book) {
     if (!widget.showPaceProjection) return null;
     final completionDate = book.averageReadingPace?.eta;
     final firstEvent = book.progressHistory.firstOrNull;
@@ -260,20 +271,21 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     if (firstPercent == null || !completionDate.isAfter(firstEvent.end)) {
       return null;
     }
-    return EChartLine(
+    final firstPoint = ReadingChartPoint(book: book, event: firstEvent);
+    return EChartSeries.line(
+      id: 'pace-${book.supaId}',
       points: [
-        EChartPoint(date: firstEvent.end, value: firstPercent),
-        EChartPoint(date: completionDate, value: 100),
+        EChartPoint(date: firstEvent.end, value: firstPercent, id: firstPoint),
+        EChartPoint(date: completionDate, value: 100, id: firstPoint),
       ],
       color: EColors.success,
       strokeWidth: 2.2,
-      showDots: false,
-      pattern: EChartLinePattern.dotted,
-      isInteractive: false,
+      dash: EChartStrokeDash.dotted,
+      hits: EChartPointHits.ignore,
     );
   }
 
-  List<EChartPoint> _smoothedTrajectoryPoints(
+  List<EChartPoint<ReadingChartPoint>> _smoothedTrajectoryPoints(
     LibraryBook book,
     List<ProgressEvent> events,
   ) {
@@ -286,7 +298,14 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     ]);
     return [
       for (final point in smoothed.points)
-        EChartPoint(date: point.at, value: point.percent),
+        EChartPoint(
+          date: point.at,
+          value: point.percent,
+          id: ReadingChartPoint(
+            book: book,
+            event: _loggedEventNearest(events, point.at),
+          ),
+        ),
     ];
   }
 
@@ -438,6 +457,12 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
           ),
         ),
       ),
+    );
+  }
+
+  ProgressEvent _loggedEventNearest(List<ProgressEvent> events, DateTime at) {
+    return events.minBy(
+      (candidate) => (candidate.end.difference(at).inMilliseconds).abs(),
     );
   }
 

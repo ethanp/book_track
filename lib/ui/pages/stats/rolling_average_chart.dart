@@ -64,24 +64,28 @@ class const _PaceTrend({required final SmoothedReadingPace smoothedPace})
 }
 
 class _PaceTrendState() extends State<_PaceTrend> {
-  EChartSelectedPoint? _hoveredPoint;
+  EChartSelectedPoint<DateTime>? _hoveredPoint;
 
   @override
   Widget build(BuildContext context) {
-    final line = EChartLine(
+    final paceSeries = EChartSeries.line(
+      id: 'pace',
       points: [
         for (final point in widget.smoothedPace.points)
-          EChartPoint(date: point.day, value: point.percentPerDay),
+          EChartPoint(
+            date: point.day,
+            value: point.percentPerDay,
+            id: point.day,
+          ),
       ],
       color: EColors.success,
       strokeWidth: 2,
-      showDots: false,
       fillColor: EColors.success.withValues(alpha: 0.2),
     );
     return Stack(
       children: [
-        EChart(
-          lines: [line],
+        EChart<DateTime>(
+          series: [paceSeries],
           valueScale: EChartValueScale.nice(
             widget.smoothedPace.maxPace,
             tickSuffix: '%',
@@ -95,8 +99,8 @@ class _PaceTrendState() extends State<_PaceTrend> {
     );
   }
 
-  Widget _hoverCaption(EChartSelectedPoint hovered) {
-    final dateStr = DateFormat('MMM d, yyyy').format(hovered.point.date);
+  Widget _hoverCaption(EChartSelectedPoint<DateTime> hovered) {
+    final dateStr = DateFormat('MMM d, yyyy').format(hovered.date);
     return Align(
       alignment: Alignment.topCenter,
       child: Padding(
@@ -110,7 +114,7 @@ class _PaceTrendState() extends State<_PaceTrend> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Text(
-              '$dateStr · ${_paceKeepingTenthsBelowTen(hovered.point.value)}/day',
+              '$dateStr · ${_paceKeepingTenthsBelowTen(hovered.value)}/day',
               style: AppTextStyles.caption,
             ),
           ),

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:book_track/data_model.dart';
+import 'package:book_track/ui/library_book_presentation.dart';
 import 'package:book_track/ui/common/book_cover.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
@@ -129,12 +130,13 @@ class const BookTile(final LibraryBook book) extends ConsumerWidget {
   }
 
   Widget _startedAndEta(String? etaCaption) {
-    final String startedCaption = 'Started ${book.startTime.monthDayCaption}';
-    return Text(
-      etaCaption == null ? startedCaption : '$startedCaption · $etaCaption',
-      style: AppTextStyles.caption,
-      maxLines: 2,
-    );
+    final DateTime? startedOn = book.startedOn;
+    final String caption = [
+      if (startedOn != null) 'Started ${startedOn.monthDayCaption}',
+      if (etaCaption != null) etaCaption,
+    ].join(' · ');
+    if (caption.isEmpty) return const SizedBox.shrink();
+    return Text(caption, style: AppTextStyles.caption, maxLines: 2);
   }
 
   Widget _averagePace(String paceLabel) {
