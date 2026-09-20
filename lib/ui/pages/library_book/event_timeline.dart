@@ -1,4 +1,5 @@
 import 'package:book_track/data_model.dart';
+import 'package:book_track/data_model/library_book_format.dart';
 import 'package:book_track/ui/common/progress_event_date_caption.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/sync/library_providers.dart';
@@ -63,44 +64,80 @@ class const _EventTimelineItem(
   }
 
   Widget _eventInfo() {
-    final percentString = libraryBook.intPercentProgressAt(progressEvent);
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: progressEvent.dateTime.slashMonthDayYearAtTime,
-            style: AppTextStyles.caption,
+    final ProgressSincePrevious? progressGained = libraryBook
+        .progressSincePrevious(progressEvent);
+    return Table(
+      defaultColumnWidth: const IntrinsicColumnWidth(),
+      defaultVerticalAlignment: TableCellVerticalAlignment.top,
+      children: [
+        TableRow(
+          children: [
+            _dateCell(),
+            _readoutCell(_positionCaption()),
+            _readoutCell(
+              '(${libraryBook.intPercentProgressAt(progressEvent)}%)',
+            ),
+          ],
+        ),
+        if (progressGained != null && !progressGained.isZero)
+          TableRow(
+            children: [
+              const SizedBox.shrink(),
+              _plusCell(progressGained.plusUnitsCaption),
+              _plusCell(progressGained.plusPercentCaption),
+            ],
           ),
-          TextSpan(text: '  ·  ', style: AppTextStyles.caption),
-          TextSpan(
-            text: '${_progressDisplayString()} ($percentString%)',
-            style: AppTextStyles.body,
-          ),
-        ],
-      ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+      ],
     );
   }
 
-  String _progressDisplayString() {
+  Widget _dateCell() {
+    return Text(
+      '${progressEvent.dateTime.slashMonthDayYearAtTime}  ·  ',
+      style: AppTextStyles.caption,
+    );
+  }
+
+  Widget _readoutCell(String caption) {
+    return Padding(
+      padding: const EdgeInsets.only(left: AppSpacing.sm),
+      child: Text(caption, style: AppTextStyles.body),
+    );
+  }
+
+  Widget _plusCell(String caption) {
+    return Padding(
+      padding: const EdgeInsets.only(left: AppSpacing.sm),
+      child: Text(
+        caption,
+        style: AppTextStyles.body.copyWith(
+          color: EColors.success,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  String _positionCaption() {
+    final LibraryBookFormat? format = libraryBook.formatById(
+      progressEvent.formatId,
+    );
+    if (format?.isAudiobook == true) {
+      return libraryBook.bookProgressString(progressEvent);
+    }
     switch (progressEvent.format) {
       case ProgressEventFormat.pageNum:
         return '${progressEvent.progress} pgs';
       case ProgressEventFormat.minutes:
-        return '${progressEvent.progress} mins';
+        return progressEvent.progress.minsToHhMm;
       case ProgressEventFormat.percent:
-        return _percentAsNativeUnits();
+        return _percentAsPages();
     }
   }
 
-  String _percentAsNativeUnits() {
-    final nativeAmount = libraryBook.pagesAt(progressEvent);
+  String _percentAsPages() {
+    final double nativeAmount = libraryBook.pagesAt(progressEvent);
     if (nativeAmount <= 0) return progressEvent.stringWSuffix;
-    final bookFormat = libraryBook.formatById(progressEvent.formatId);
-    if (bookFormat?.isAudiobook == true) {
-      return '${nativeAmount.round()} mins';
-    }
     return '${nativeAmount.round()} pgs';
   }
 

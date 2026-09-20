@@ -49,7 +49,13 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
           .when(
             loading: _loadingScreen,
             error: _errorScreen,
-            data: _libraryScreen,
+            data: (library) {
+              if (library.isEmpty &&
+                  !ref.watch(hasCompletedFirstDownloadProvider)) {
+                return _waitingForFirstDownload();
+              }
+              return _libraryScreen(library);
+            },
           ),
     );
   }
@@ -150,6 +156,25 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
             Text(
               'Something went wrong loading your library.',
               style: AppTextStyles.body.copyWith(color: EColors.danger),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _waitingForFirstDownload() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              ref.watch(syncStatusCaptionProvider),
+              style: AppTextStyles.bodySecondary,
               textAlign: TextAlign.center,
             ),
           ],

@@ -69,6 +69,51 @@ class LibraryBook(
   int intPercentProgressAt(ProgressEvent p) =>
       (progressPercentAt(p) ?? 0).floor();
 
+  ProgressSincePrevious? progressSincePrevious(ProgressEvent event) {
+    final LibraryBookFormat? format = formatById(event.formatId);
+    if (format == null) return null;
+
+    final ProgressEvent? previous = _previousProgressEvent(event);
+    final double currentPercent = progressPercentAt(event) ?? 0;
+    final double previousPercent;
+    final int previousDisplayedPercent;
+    if (previous == null) {
+      previousPercent = 0;
+      previousDisplayedPercent = 0;
+    } else {
+      previousPercent = progressPercentAt(previous) ?? 0;
+      previousDisplayedPercent = intPercentProgressAt(previous);
+    }
+    final int percentGained = max(
+      0,
+      intPercentProgressAt(event) - previousDisplayedPercent,
+    );
+
+    int unitsGained = 0;
+    if (format.hasLength) {
+      unitsGained = max(
+        0,
+        format.percentToProgress(currentPercent) -
+            format.percentToProgress(previousPercent),
+      );
+    }
+
+    return ProgressSincePrevious(
+      percent: percentGained,
+      units: unitsGained,
+      isAudiobook: format.isAudiobook,
+      hasLength: format.hasLength,
+    );
+  }
+
+  ProgressEvent? _previousProgressEvent(ProgressEvent event) {
+    final int index = progressHistory.indexWhere(
+      (historyEvent) => historyEvent.id == event.id,
+    );
+    if (index <= 0) return null;
+    return progressHistory[index - 1];
+  }
+
   /// Overall book progress (max % across all events with known lengths).
   double? get overallProgressPercent {
     double? maxPercent;
@@ -259,6 +304,27 @@ class LibraryBook(
   }
 
   String? get averagePaceDisplay => averageReadingPace?.display;
+}
+
+class const ProgressSincePrevious({
+  required final int percent,
+  required final int units,
+  required final bool isAudiobook,
+  required final bool hasLength,
+}) {
+  bool get isZero => percent <= 0 && units <= 0;
+
+  String get plusUnitsCaption {
+    if (!hasLength) return '';
+    return '+${isAudiobook ? units.minsToHhMm : '$units pgs'}';
+  }
+
+  String get plusPercentCaption => '+$percent%';
+
+  String get plusCaption {
+    if (plusUnitsCaption.isEmpty) return plusPercentCaption;
+    return '$plusUnitsCaption $plusPercentCaption';
+  }
 }
 
 class const AverageReadingPace({

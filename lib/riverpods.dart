@@ -1,6 +1,7 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/sync/library_providers.dart';
+import 'package:ethan_sync/ethan_sync.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'riverpods.g.dart';
@@ -59,6 +60,7 @@ class const BookSearchResults({
 
 @riverpod
 Future<List<LibraryBook>> userLibrary(Ref ref) async {
-  final libraryRepository = await ref.watch(libraryRepositoryProvider.future);
-  return libraryRepository.myBooks();
+  ref.watch(localDataRevisionProvider);
+  final libraryCatalog = await ref.watch(libraryCatalogProvider.future);
+  return libraryCatalog.myBooks();
 }

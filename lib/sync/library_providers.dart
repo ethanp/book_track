@@ -8,3 +8,7 @@ final libraryRepositoryProvider = FutureProvider<LibraryRepository>((
   final database = await ref.watch(powerSyncDatabaseProvider.future);
   return LibraryRepository(database);
 });
+
+final libraryCatalogProvider = FutureProvider<LibraryCatalog>((ref) async {
+  return ref.watch(libraryRepositoryProvider.future);
+});

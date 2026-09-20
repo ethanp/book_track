@@ -90,8 +90,8 @@ void main() {
 
     expect(find.byType(CalendarHeatmap), findsNothing);
     expect(find.byType(ECalendarCharts), findsOneWidget);
-    expect(find.text('library-progress points per week'), findsOneWidget);
-    expect(find.text('Trailing 7-day library-progress points'), findsOneWidget);
+    expect(find.text('library-progress points per week'), findsNothing);
+    expect(find.text('Library-progress points rolling load'), findsOneWidget);
   });
 
   testWidgets('selected day shows progress details', (tester) async {

@@ -46,6 +46,78 @@ void main() {
     });
   });
 
+  group('LibraryBook progressSincePrevious', () {
+    test('audiobook logs use hours:minutes and session deltas', () {
+      final book = _audiobook(
+        events: [
+          _audioEvent(
+            id: 'start',
+            at: DateTime(2026, 9, 16, 23, 36),
+            progress: 0,
+            format: ProgressEventFormat.percent,
+          ),
+          _audioEvent(
+            id: 'thirty',
+            at: DateTime(2026, 9, 17, 22, 32),
+            progress: 30,
+          ),
+          _audioEvent(
+            id: 'one-thirty',
+            at: DateTime(2026, 9, 18, 19, 58),
+            progress: 130,
+          ),
+        ],
+      );
+
+      final ProgressSincePrevious? start = book.progressSincePrevious(
+        book.progressHistory[0],
+      );
+      final ProgressSincePrevious? thirty = book.progressSincePrevious(
+        book.progressHistory[1],
+      );
+      final ProgressSincePrevious? oneThirty = book.progressSincePrevious(
+        book.progressHistory[2],
+      );
+
+      expect(book.bookProgressString(book.progressHistory[1]), '0:30');
+      expect(book.bookProgressString(book.progressHistory[2]), '2:10');
+      expect(start?.isZero, isTrue);
+      expect(thirty?.plusCaption, '+0:30 +7%');
+      expect(oneThirty?.plusCaption, '+1:40 +26%');
+    });
+
+    test('print logs use page deltas', () {
+      final book = _book(
+        events: [
+          _event(id: 1, at: DateTime(2026, 9, 16), progress: 0),
+          _event(id: 2, at: DateTime(2026, 9, 17), progress: 20),
+          _event(id: 3, at: DateTime(2026, 9, 18), progress: 47),
+        ],
+      );
+
+      expect(
+        book.progressSincePrevious(book.progressHistory[0])?.isZero,
+        isTrue,
+      );
+      expect(
+        book.progressSincePrevious(book.progressHistory[1])?.plusCaption,
+        '+20 pgs +20%',
+      );
+      expect(
+        book.progressSincePrevious(book.progressHistory[2])?.plusCaption,
+        '+27 pgs +27%',
+      );
+      expect(
+        book.progressSincePrevious(book.progressHistory[2])?.plusUnitsCaption,
+        '+27 pgs',
+      );
+      expect(
+        book.progressSincePrevious(book.progressHistory[2])?.plusPercentCaption,
+        '+27%',
+      );
+    });
+  });
+
   group('LibraryBookPresentation', () {
     test('formats a first-log to ended date range', () {
       final book = _book(
@@ -110,5 +182,38 @@ ProgressEvent _event({
     end: at,
     progress: progress,
     format: ProgressEventFormat.pageNum,
+  );
+}
+
+LibraryBook _audiobook({required List<ProgressEvent> events}) {
+  return LibraryBook(
+    '1',
+    const Book('1', 'Title', 'Author', 2020, null, null),
+    events,
+    const [
+      LibraryBookFormat(
+        id: 'audio',
+        libraryBookId: '1',
+        format: BookFormat.audiobook,
+        length: 390,
+      ),
+    ],
+    false,
+    null,
+  );
+}
+
+ProgressEvent _audioEvent({
+  required String id,
+  required DateTime at,
+  required int progress,
+  ProgressEventFormat format = ProgressEventFormat.minutes,
+}) {
+  return ProgressEvent(
+    id: id,
+    formatId: 'audio',
+    end: at,
+    progress: progress,
+    format: format,
   );
 }

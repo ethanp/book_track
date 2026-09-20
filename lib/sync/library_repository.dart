@@ -7,7 +7,15 @@ import 'package:ethan_sync/ethan_sync.dart';
 import 'package:powersync/powersync.dart';
 import 'package:uuid/uuid.dart';
 
-class LibraryRepository(final PowerSyncDatabase _powerSync) {
+/// Lists the user's library. Tests override [libraryCatalogProvider] with a
+/// scripted catalog so first-download refresh can run without PowerSync's
+/// native library.
+abstract class LibraryCatalog() {
+  Future<List<LibraryBook>> myBooks();
+}
+
+class LibraryRepository(final PowerSyncDatabase _powerSync)
+    implements LibraryCatalog {
   static const _uuid = Uuid();
 
   final BooksRepository books = BooksRepository(_powerSync);
@@ -16,6 +24,7 @@ class LibraryRepository(final PowerSyncDatabase _powerSync) {
     _powerSync,
   );
 
+  @override
   Future<List<LibraryBook>> myBooks() async {
     final libraryRows = await _powerSync.getAll('SELECT * FROM library_books');
     final libraryBookIds = [
