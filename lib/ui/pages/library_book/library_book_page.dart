@@ -33,16 +33,27 @@ class const LibraryBookPage(final String bookId) extends ConsumerWidget {
         ),
       ),
       data: (books) {
-        final book = books.where((book) => book.id == bookId).firstOrNull;
+        final LibraryBook? book = books
+            .where((book) => book.id == bookId)
+            .firstOrNull;
         if (book == null) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.of(context).pop();
-          });
+          _popDetailOnceBookIsGone(context);
           return const SizedBox.shrink();
         }
         return _bookPage(context, book);
       },
     );
+  }
+
+  void _popDetailOnceBookIsGone(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted) return;
+      final ModalRoute<Object?>? route = ModalRoute.of(context);
+      if (route == null || !route.isCurrent) return;
+      final NavigatorState navigator = Navigator.of(context);
+      if (!navigator.canPop()) return;
+      navigator.pop();
+    });
   }
 
   Widget _bookPage(BuildContext context, LibraryBook book) {

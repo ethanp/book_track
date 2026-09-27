@@ -83,6 +83,7 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
       onActivated: () => _showBookActionDialog(
         ref: ref,
         actionName: 'remove',
+        popDetailPage: false,
         onConfirm: (libraryBook) async {
           final libraryRepository = await ref.read(
             libraryRepositoryProvider.future,
@@ -154,6 +155,7 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
     required WidgetRef ref,
     required String actionName,
     required Future<void> Function(LibraryBook) onConfirm,
+    bool popDetailPage = true,
   }) => ConfirmationDialog.show(
     context: ref.context,
     text:
@@ -162,7 +164,10 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
     title: '${actionName.capitalize} Book',
     actionName: actionName,
     onConfirm: () async {
-      onConfirm(book).then((_) => ref.invalidate(userLibraryProvider));
+      await onConfirm(book);
+      if (!ref.context.mounted) return;
+      ref.invalidate(userLibraryProvider);
+      if (!popDetailPage) return;
       ref.context.pop();
     },
   );
