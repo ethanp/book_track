@@ -2,6 +2,7 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/calendar_heatmap.dart';
+import 'package:book_track/ui/pages/stats/library_progress_calendar.dart';
 import 'package:book_track/ui/pages/stats/reading_activity_data.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';

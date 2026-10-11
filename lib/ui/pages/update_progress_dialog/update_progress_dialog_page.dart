@@ -157,7 +157,7 @@ class _UpdateProgressDialogState()
               for (final format in widget.book.formats)
                 ButtonSegment(
                   value: format.id,
-                  label: Text(format.format.name),
+                  label: Text(format.format.label),
                 ),
             ],
             onSelectionChanged: (selection) {

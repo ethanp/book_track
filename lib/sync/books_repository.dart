@@ -57,6 +57,13 @@ class BooksRepository(final PowerSyncDatabase _powerSync) {
     ]);
   }
 
+  Future<void> updateCoverArt(Book book, Uint8List coverArt) async {
+    await _powerSync.execute('UPDATE books SET cover_b64 = ? WHERE id = ?', [
+      base64Encode(coverArt),
+      book.id,
+    ]);
+  }
+
   Future<String?> _existingBookId({
     required String title,
     String? author,

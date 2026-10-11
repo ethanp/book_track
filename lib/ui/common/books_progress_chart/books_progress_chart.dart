@@ -455,7 +455,7 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
                   ),
                 ),
                 const SizedBox(width: 4),
-                Text(format.name, style: const TextStyle(fontSize: 11)),
+                Text(format.label, style: const TextStyle(fontSize: 11)),
               ],
             ),
           ),

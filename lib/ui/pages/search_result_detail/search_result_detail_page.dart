@@ -3,13 +3,13 @@ import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/sync/library_providers.dart';
 import 'package:book_track/ui/common/design.dart';
-import 'package:book_track/ui/common/length_input.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'cover_art.dart';
+import 'search_result_length_dialog.dart';
 
 const _log = ELogger('SearchResultDetailPage');
 
@@ -64,7 +64,7 @@ class _SearchResultDetailPage() extends ConsumerState<SearchResultDetailPage> {
       child: FilledButton(
         onPressed: () => _promptForLength(bookType),
         style: FilledButton.styleFrom(backgroundColor: bookType.color),
-        child: Text(bookType.name, style: EText.label.small.white),
+        child: Text(bookType.label, style: EText.label.small.white),
       ),
     );
   }
@@ -75,7 +75,7 @@ class _SearchResultDetailPage() extends ConsumerState<SearchResultDetailPage> {
 
     final result = await showDialog<int>(
       context: context,
-      builder: (context) => _LengthInputDialog(
+      builder: (context) => SearchResultLengthDialog(
         isAudiobook: isAudiobook,
         initialValue: isAudiobook ? null : initialLength,
       ),
@@ -136,66 +136,6 @@ class _SearchResultDetailPage() extends ConsumerState<SearchResultDetailPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(children: [keyWidget, SizedBox(width: 16), valueWidget]),
-    );
-  }
-}
-
-class const _LengthInputDialog({
-  required final bool isAudiobook,
-  final int? initialValue,
-}) extends StatefulWidget {
-  @override
-  State<_LengthInputDialog> createState() => _LengthInputDialogState();
-}
-
-class _LengthInputDialogState() extends State<_LengthInputDialog> {
-  late final LengthInputController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = LengthInputController.fromAudiobook(
-      isAudiobook: widget.isAudiobook,
-      initialValue: widget.isAudiobook ? null : widget.initialValue,
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _submitEnteredLength() {
-    final length = _controller.value;
-    if (length != null && length > 0) Navigator.pop(context, length);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.isAudiobook ? 'Audiobook Length' : 'Book Length'),
-      content: Padding(
-        padding: const EdgeInsets.only(top: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              widget.isAudiobook
-                  ? 'How long is the audiobook?'
-                  : 'How many pages?',
-            ),
-            const SizedBox(height: 8),
-            LengthInput(
-              controller: _controller,
-              autofocus: true,
-              showLabel: !widget.isAudiobook,
-              onChanged: () => setState(() {}),
-            ),
-          ],
-        ),
-      ),
-      actions: _controller.dialogActions(context, _submitEnteredLength),
     );
   }
 }

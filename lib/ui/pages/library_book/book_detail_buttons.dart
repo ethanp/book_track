@@ -43,7 +43,7 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
   Widget _logProgress(WidgetRef ref) {
     return _action(
       title: 'Log progress',
-      subtitle: 'Sync with reality',
+      subtitle: 'Where you are',
       icon: Icons.format_list_bulleted,
       accent: EColors.accent,
       onActivated: () => UpdateProgressDialogPage.show(ref, book),
@@ -53,7 +53,7 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
   Widget _complete(WidgetRef ref) {
     return _action(
       title: 'Complete',
-      subtitle: 'Mark book as finished',
+      subtitle: 'Finish the book',
       icon: Icons.check_box_outlined,
       accent: EColors.success,
       onActivated: () async {
@@ -77,7 +77,7 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
   Widget _remove(WidgetRef ref) {
     return _action(
       title: 'Remove',
-      subtitle: 'Remove book from app',
+      subtitle: 'Delete the book',
       icon: Icons.delete,
       accent: EColors.danger,
       onActivated: () => _showBookActionDialog(
@@ -98,7 +98,7 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
     final actionName = book.archived ? 'unarchive' : 'archive';
     return _action(
       title: actionName,
-      subtitle: '${book.archived ? 'Show on' : 'Hide from'} home screen',
+      subtitle: book.archived ? 'Show on home' : 'Hide from home',
       icon: Icons.archive,
       accent: EColors.accent,
       onActivated: () => _showBookActionDialog(
@@ -117,7 +117,7 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
   Widget _abandon(WidgetRef ref) {
     return _action(
       title: book.isAbandoned ? 'Resume' : 'Abandon',
-      subtitle: '${book.isAbandoned ? 'Continue' : 'Stop'} reading',
+      subtitle: book.isAbandoned ? 'Keep reading' : 'Stop reading',
       icon: book.isAbandoned
           ? Icons.play_circle_outline
           : Icons.remove_circle_outline,

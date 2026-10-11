@@ -157,7 +157,7 @@ class _ManualBookFormState() extends ConsumerState<ManualBookForm> {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           child: Text(
-            format.name,
+            format.label,
             style: AppTextStyles.caption.copyWith(
               color: isSelected ? Colors.white : EColors.textPrimary,
             ),

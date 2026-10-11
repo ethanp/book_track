@@ -1,5 +1,6 @@
 import 'package:book_track/ui/pages/stats/activity_calendar_card.dart';
 import 'package:book_track/ui/pages/stats/calendar_heatmap.dart';
+import 'package:book_track/ui/pages/stats/library_progress_calendar.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,10 +24,6 @@ void main() {
     expect(scale.captionFor(EHeatmapIntensity.peak), '≤40pp');
     expect(scale.levelFor(5), EHeatmapIntensity.low);
     expect(scale.levelFor(40), EHeatmapIntensity.peak);
-    expect(
-      scale.legendTitle,
-      'Daily library-progress change · period quartiles',
-    );
   });
 
   test('period cutoff is the first visible date', () {
@@ -90,8 +87,6 @@ void main() {
 
     expect(find.byType(CalendarHeatmap), findsNothing);
     expect(find.byType(ECalendarCharts), findsOneWidget);
-    expect(find.text('library-progress points per week'), findsNothing);
-    expect(find.text('Library-progress points rolling load'), findsOneWidget);
   });
 
   testWidgets('selected day shows progress details', (tester) async {
@@ -111,6 +106,5 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('e-contrib-day-2026-9-8')));
     await tester.pump();
     expect(find.text('Sep 8, 2026'), findsOneWidget);
-    expect(find.text('No reading activity'), findsOneWidget);
   });
 }

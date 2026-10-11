@@ -118,6 +118,51 @@ void main() {
     });
   });
 
+  group('LibraryBook progressEventDays', () {
+    test('two logs on one day sum to the day total', () {
+      final book = _book(
+        events: [
+          _event(id: 1, at: DateTime(2026, 10, 11, 9, 15), progress: 20),
+          _event(id: 2, at: DateTime(2026, 10, 11, 14, 30), progress: 47),
+        ],
+      );
+
+      expect(book.progressEventDays, hasLength(1));
+      expect(book.progressEventDays.single.events, hasLength(2));
+      expect(book.progressEventDays.single.progressGained?.plusCaption, '+47 pgs +47%');
+    });
+
+    test('logs on different days stay in separate groups', () {
+      final book = _book(
+        events: [
+          _event(id: 1, at: DateTime(2026, 10, 10, 21), progress: 20),
+          _event(id: 2, at: DateTime(2026, 10, 11, 9), progress: 47),
+        ],
+      );
+
+      expect(book.progressEventDays, hasLength(2));
+      expect(
+        book.progressEventDays[0].progressGained?.plusCaption,
+        '+20 pgs +20%',
+      );
+      expect(
+        book.progressEventDays[1].progressGained?.plusCaption,
+        '+27 pgs +27%',
+      );
+    });
+
+    test('a single log day total equals that log delta', () {
+      final book = _book(
+        events: [_event(id: 1, at: DateTime(2026, 10, 11, 9, 15), progress: 20)],
+      );
+
+      expect(
+        book.progressEventDays.single.progressGained?.plusCaption,
+        book.progressSincePrevious(book.progressHistory.single)?.plusCaption,
+      );
+    });
+  });
+
   group('LibraryBookPresentation', () {
     test('formats a first-log to ended date range', () {
       final book = _book(

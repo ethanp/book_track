@@ -143,7 +143,7 @@ class const FormatBreakdownCard({
           ),
           const SizedBox(width: AppSpacing.sm),
           Text(
-            '${format.nameAsCapitalizedWords} (${share.round()}%)',
+            '${format.label} (${share.round()}%)',
             style: AppTextStyles.caption,
           ),
         ],

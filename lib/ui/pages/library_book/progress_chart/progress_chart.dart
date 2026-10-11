@@ -6,6 +6,10 @@ import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+abstract final class _BookProgressPlot() {
+  static const height = BooksProgressChart.plotHeight * 0.6;
+}
+
 class const ProgressChart(final LibraryBook initialBook)
     extends ConsumerWidget {
   @override
@@ -60,7 +64,7 @@ class const ProgressChart(final LibraryBook initialBook)
                     style: AppTextStyles.bodySecondary,
                   )
                 : SizedBox(
-                    height: BooksProgressChart.plotHeight,
+                    height: _BookProgressPlot.height,
                     child: _chart(latestBook),
                   ),
           ],

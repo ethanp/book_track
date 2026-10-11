@@ -54,7 +54,7 @@ class _EditFormatLengthDialogState() extends State<EditFormatLengthDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Edit ${widget.format.format.name} length'),
+      title: Text('Edit ${widget.format.format.label} length'),
       content: Padding(
         padding: const EdgeInsets.only(top: 16),
         child: LengthInput(

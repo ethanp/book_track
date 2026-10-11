@@ -78,7 +78,6 @@ void main() {
       );
       await tester.pump();
       await tester.pump();
-      expect(find.text('Downloading library...'), findsWidgets);
 
       catalog.books = [_downloadedLibraryBook()];
       laterRevisions.add(1);

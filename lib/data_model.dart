@@ -114,6 +114,77 @@ class LibraryBook(
     return progressHistory[index - 1];
   }
 
+  List<ProgressEventDay> get progressEventDays {
+    if (progressHistory.isEmpty) return const [];
+    final List<ProgressEventDay> days = [];
+    DateTime? day;
+    List<ProgressEvent> dayEvents = [];
+    for (final ProgressEvent event in progressHistory) {
+      final DateTime eventDay = event.end.startOfDay;
+      if (day != null && !eventDay.sameDayAs(day)) {
+        days.add(_progressEventDay(day, dayEvents));
+        dayEvents = [];
+      }
+      day = eventDay;
+      dayEvents.add(event);
+    }
+    days.add(_progressEventDay(day!, dayEvents));
+    return days;
+  }
+
+  ProgressEventDay _progressEventDay(
+    DateTime day,
+    List<ProgressEvent> events,
+  ) {
+    return ProgressEventDay(
+      day: day,
+      events: List.unmodifiable(events),
+      progressGained: _sumProgressSincePrevious(events),
+    );
+  }
+
+  ProgressSincePrevious? _sumProgressSincePrevious(
+    List<ProgressEvent> events,
+  ) {
+    int percent = 0;
+    int units = 0;
+    bool? isAudiobook;
+    bool hasLength = false;
+    bool mixedUnits = false;
+    bool anyGain = false;
+    for (final ProgressEvent event in events) {
+      final ProgressSincePrevious? gain = progressSincePrevious(event);
+      if (gain == null) continue;
+      anyGain = true;
+      percent += gain.percent;
+      if (!gain.hasLength) continue;
+      if (isAudiobook == null) {
+        isAudiobook = gain.isAudiobook;
+        units = gain.units;
+        hasLength = true;
+      } else if (isAudiobook == gain.isAudiobook) {
+        units += gain.units;
+      } else {
+        mixedUnits = true;
+      }
+    }
+    if (!anyGain) return null;
+    if (mixedUnits) {
+      return ProgressSincePrevious(
+        percent: percent,
+        units: 0,
+        isAudiobook: false,
+        hasLength: false,
+      );
+    }
+    return ProgressSincePrevious(
+      percent: percent,
+      units: units,
+      isAudiobook: isAudiobook ?? false,
+      hasLength: hasLength,
+    );
+  }
+
   /// Overall book progress (max % across all events with known lengths).
   double? get overallProgressPercent {
     double? maxPercent;
@@ -306,6 +377,12 @@ class LibraryBook(
   String? get averagePaceDisplay => averageReadingPace?.display;
 }
 
+class const ProgressEventDay({
+  required final DateTime day,
+  required final List<ProgressEvent> events,
+  final ProgressSincePrevious? progressGained,
+});
+
 class const ProgressSincePrevious({
   required final int percent,
   required final int units,
@@ -397,11 +474,13 @@ class const Book(
   final Uint8List? coverArt,
 );
 
-enum BookFormat() {
-  audiobook,
-  eBook,
-  paperback,
-  hardcover,
+enum BookFormat({final String? _label}) {
+  audiobook(),
+  eBook(label: 'eBook'),
+  paperback(),
+  hardcover();
+
+  String get label => _label ?? name.capitalize;
 }
 
 enum ReadingStatus() {

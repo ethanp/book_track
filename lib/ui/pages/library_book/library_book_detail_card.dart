@@ -2,14 +2,9 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
 
-/// Surface row used for author and format rows on the book page.
-class const LibraryBookDetailCard({
-  required final IconData icon,
-  required final Color iconColor,
-  required final String title,
-  required final Widget subtitle,
-  final Widget? trailing,
-}) extends StatelessWidget {
+/// Shared book-page card surface. Rows inside stay visually separate.
+class const LibraryBookDetailSurface({required final Widget child})
+    extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -20,6 +15,22 @@ class const LibraryBookDetailCard({
         borderRadius: BorderRadius.circular(AppRadii.md),
         border: Border.all(color: EColors.border, width: 0.5),
       ),
+      child: child,
+    );
+  }
+}
+
+/// Icon, value, and trailing actions on [LibraryBookDetailSurface].
+class const LibraryBookDetailCard({
+  required final IconData icon,
+  required final Color iconColor,
+  required final String title,
+  required final Widget subtitle,
+  final Widget? trailing,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return LibraryBookDetailSurface(
       child: Row(
         children: [
           Icon(icon, color: iconColor, size: 20),
