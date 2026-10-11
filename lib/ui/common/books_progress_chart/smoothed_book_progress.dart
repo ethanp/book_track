@@ -16,36 +16,35 @@ class const SmoothedBookProgress({
     if (logged.length < 2) {
       return SmoothedBookProgress(points: logged);
     }
-    return SmoothedBookProgress(points: _approachingDailyPoints(logged));
+    return SmoothedBookProgress(points: _pointsBetweenTrendAndLogs(logged));
   }
 
-  static List<BookProgressPoint> _approachingDailyPoints(
+  static List<BookProgressPoint> _pointsBetweenTrendAndLogs(
     List<BookProgressPoint> logged,
   ) {
     final ordered = logged.sortedOn((point) => point.at);
     final longTerm = _LongTermLogTrend.fromLogs(ordered);
     final firstDay = ordered.first.at.startOfDay;
     final dayCount = ordered.last.at.startOfDay.difference(firstDay).inDays;
-    final approachingPercents = [
-      for (var dayOffset = 0; dayOffset <= dayCount; dayOffset++)
-        _approachingPercentOn(
-          firstDay.shiftedByDays(dayOffset),
-          ordered,
-          longTerm,
-        ),
+    final List<DateTime> sampleTimes = [
+      ordered.first.at,
+      for (var dayOffset = 1; dayOffset < dayCount; dayOffset++)
+        firstDay.shiftedByDays(dayOffset),
+      if (ordered.last.at.isAfter(ordered.first.at)) ordered.last.at,
     ];
-    approachingPercents[0] = ordered.first.percent;
-    final percents = _nondecreasingClamped(approachingPercents);
+    final percentsBetweenTrendAndLogs = [
+      for (final sampleTime in sampleTimes)
+        _percentBetweenTrendAndLog(sampleTime, ordered, longTerm),
+    ];
+    percentsBetweenTrendAndLogs[0] = ordered.first.percent;
+    final percents = _nondecreasingClamped(percentsBetweenTrendAndLogs);
     return [
-      for (var dayOffset = 0; dayOffset <= dayCount; dayOffset++)
-        BookProgressPoint(
-          at: firstDay.shiftedByDays(dayOffset),
-          percent: percents[dayOffset],
-        ),
+      for (var index = 0; index < sampleTimes.length; index++)
+        BookProgressPoint(at: sampleTimes[index], percent: percents[index]),
     ];
   }
 
-  static double _approachingPercentOn(
+  static double _percentBetweenTrendAndLog(
     DateTime day,
     List<BookProgressPoint> ordered,
     _LongTermLogTrend longTerm,

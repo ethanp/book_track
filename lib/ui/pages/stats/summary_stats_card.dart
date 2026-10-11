@@ -69,15 +69,20 @@ class const SummaryStatsCard({
         vertical: AppSpacing.sm,
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _statTile(stats.totalPages.asCompactCount, 'pages read'),
-          _statTile('${stats.totalHours}h', 'listened'),
-          _streakTile('Current Streak', stats.currentStreak, null),
-          _streakTile(
-            'Longest Streak',
-            stats.longestStreak,
-            stats.longestStreakDateRange,
+          Expanded(
+            child: _statTile(stats.totalPages.asCompactCount, 'pages read'),
+          ),
+          Expanded(child: _statTile('${stats.totalHours}h', 'listened')),
+          Expanded(
+            child: _streakTile('Current Streak', stats.currentStreak, null),
+          ),
+          Expanded(
+            child: _streakTile(
+              'Longest Streak',
+              stats.longestStreak,
+              stats.longestStreakDateRange,
+            ),
           ),
         ],
       ),
@@ -89,15 +94,20 @@ class const SummaryStatsCard({
       children: [
         Text(
           '$days days',
+          textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: EColors.textPrimary,
           ),
         ),
-        Text(label, style: AppTextStyles.caption),
+        Text(label, textAlign: TextAlign.center, style: AppTextStyles.caption),
         if (dateRange != null && dateRange.isNotEmpty)
-          Text(dateRange, style: AppTextStyles.caption.copyWith(fontSize: 10)),
+          Text(
+            dateRange,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.caption.copyWith(fontSize: 10),
+          ),
       ],
     );
   }
@@ -107,6 +117,7 @@ class const SummaryStatsCard({
       children: [
         Text(
           statValue,
+          textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -114,7 +125,7 @@ class const SummaryStatsCard({
           ),
         ),
         const SizedBox(height: AppSpacing.xs),
-        Text(label, style: AppTextStyles.caption),
+        Text(label, textAlign: TextAlign.center, style: AppTextStyles.caption),
       ],
     );
   }

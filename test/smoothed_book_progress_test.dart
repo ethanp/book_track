@@ -154,7 +154,22 @@ void main() {
       expect(progress.points, isEmpty);
     });
 
-    test('same-day logs produce one deterministic day', () {
+    test('an evening start reaches the next morning progress', () {
+      final started = DateTime.parse('2026-10-10T20:28:49.774887');
+      final latest = DateTime.parse('2026-10-11T09:45:40.803712');
+      const latestPercent = 16 / 114 * 100;
+      final progress = SmoothedBookProgress.fromLoggedPercents([
+        logged(started, 0),
+        logged(latest, latestPercent),
+      ]);
+
+      expect(progress.points.first.at, started);
+      expect(progress.points.first.percent, 0);
+      expect(progress.points.last.at, latest);
+      expect(progress.points.last.percent, closeTo(latestPercent, 0.05));
+    });
+
+    test('same-day logs run from the earlier log to the later one', () {
       final morning = DateTime(2026, 1, 4, 8);
       final evening = DateTime(2026, 1, 4, 20);
       final progress = SmoothedBookProgress.fromLoggedPercents([
@@ -162,9 +177,12 @@ void main() {
         logged(morning, 10),
       ]);
 
-      expect(progress.points, hasLength(1));
-      expect(progress.points.single.at.startOfDay, day(4));
-      expect(progress.points.single.percent, 10);
+      expect(progress.points, hasLength(2));
+      expect(progress.points.first.at, morning);
+      expect(progress.points.first.percent, 10);
+      expect(progress.points.last.at, evening);
+      expect(progress.points.last.percent, greaterThan(10));
+      expect(progress.points.last.percent, lessThan(40));
     });
 
     test('sparse logs still emit a point for every day in the span', () {

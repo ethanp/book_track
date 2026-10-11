@@ -8,6 +8,7 @@ class const DayOfWeekChart({required final Map<int, double> activityByDay})
   static const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   static const double barWidth = 30.0;
   static const double maxBarHeight = 120.0;
+  static const double labelBlockHeight = 42.0;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class const DayOfWeekChart({required final Map<int, double> activityByDay})
         : activityByDay.values.max;
 
     return SizedBox(
-      height: maxBarHeight + 40,
+      height: maxBarHeight + labelBlockHeight,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         crossAxisAlignment: CrossAxisAlignment.end,
