@@ -5,6 +5,8 @@ import 'package:book_track/data_model/library_book_format.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:book_track/ui/pages/my_library/my_library_page.dart';
+import 'package:clock/clock.dart';
+import 'package:ethan_sync/ethan_sync.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +14,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const _phoneSize = Size(390, 844);
+
+/// Pace and ETA count days up to today, so the screenshots pin it.
+final _screenshotToday = DateTime(2026, 10, 31);
 
 void main() {
   setUpAll(() async {
@@ -40,6 +45,21 @@ Future<void> _writeReadmeScreenshot(
   WidgetTester tester, {
   required Widget home,
   required String screenshotFilename,
+}) {
+  return withClock(
+    Clock.fixed(_screenshotToday),
+    () => _writeReadmeScreenshotNow(
+      tester,
+      home: home,
+      screenshotFilename: screenshotFilename,
+    ),
+  );
+}
+
+Future<void> _writeReadmeScreenshotNow(
+  WidgetTester tester, {
+  required Widget home,
+  required String screenshotFilename,
 }) async {
   debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
   addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -50,6 +70,14 @@ Future<void> _writeReadmeScreenshot(
       ProviderScope(
         overrides: [
           userLibraryProvider.overrideWith((ref) async => _overviewLibrary()),
+          // The header's sync icon reads live PowerSync state; show it synced.
+          syncStatusDetailsProvider.overrideWithValue(
+            SyncStatusDetails(
+              phase: SyncPhase.synced,
+              caption: 'Synced',
+              connected: true,
+            ),
+          ),
         ],
         child: MaterialApp(
           theme: ETheme.material3Dark,

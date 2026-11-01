@@ -1,5 +1,4 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/calendar_heatmap.dart';
 import 'package:book_track/ui/pages/stats/library_progress_calendar.dart';
@@ -30,7 +29,8 @@ class _ActivityCalendarCardState() extends State<ActivityCalendarCard> {
   }
 
   Widget _card(ReadingActivityData data) {
-    return AppCard(
+    return ECard(
+      padding: EdgeInsets.zero,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -61,7 +61,9 @@ class _ActivityCalendarCardState() extends State<ActivityCalendarCard> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: EHeatmapLegend(
-              scale: LibraryProgressCalendar.scaleFor(data.activityByDay.values),
+              scale: LibraryProgressCalendar.scaleFor(
+                data.activityByDay.values,
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.lg),

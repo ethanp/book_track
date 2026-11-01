@@ -1,6 +1,6 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
 
 import 'day_of_week_chart.dart';
@@ -15,7 +15,8 @@ class const ReadingPatternsCard({
   }
 
   Widget _card(_ReadingPatternsData data) {
-    return AppCard(
+    return ECard(
+      padding: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(

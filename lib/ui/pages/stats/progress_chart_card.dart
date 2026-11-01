@@ -1,5 +1,4 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/progress_by_period_chart.dart';
 import 'package:book_track/ui/pages/stats/rolling_average_chart.dart';
@@ -14,7 +13,8 @@ class const ProgressChartCard({
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return ECard(
+      padding: EdgeInsets.zero,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

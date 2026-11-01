@@ -1,5 +1,4 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/summary_stats.dart';
 import 'package:ethan_ui/ethan_ui.dart';
@@ -16,7 +15,8 @@ class const SummaryStatsCard({
   }
 
   Widget _card(SummaryStats stats) {
-    return AppCard(
+    return ECard(
+      padding: EdgeInsets.zero,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

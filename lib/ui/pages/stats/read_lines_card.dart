@@ -1,7 +1,7 @@
 import 'package:book_track/data_model.dart';
-import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/books_progress_chart/books_progress_chart.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
 
 class const ReadLinesCard({
@@ -10,13 +10,11 @@ class const ReadLinesCard({
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return ECard(
+      padding: EdgeInsets.zero,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          _header(),
-          _chart(),
-        ],
+        children: [_header(), _chart()],
       ),
     );
   }

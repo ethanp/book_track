@@ -1,5 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
+import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/stats/filter_section.dart';
 import 'package:book_track/ui/pages/stats/format_breakdown_card.dart';
 import 'package:book_track/ui/pages/stats/progress_chart_card.dart';
@@ -22,12 +23,7 @@ class const StatsPage() extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return EScaffoldShell(
       contentMaxWidth: double.infinity,
-      appBar: EAppHeader(
-        title: 'Stats',
-        actions: [
-          const ESyncPhaseIcon(),
-        ],
-      ),
+      appBar: EAppHeader(title: 'Stats', actions: [const ESyncPhaseIcon()]),
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -56,11 +52,13 @@ class _StatsCardsListState() extends ConsumerState<_StatsCardsList> {
   @override
   Widget build(BuildContext context) {
     _listenForFilterTaps();
-    return ref.watch(userLibraryProvider).when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, _) => Center(child: Text(err.toString())),
-      data: _listOrSeed,
-    );
+    return ref
+        .watch(userLibraryProvider)
+        .when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, _) => Center(child: Text(err.toString())),
+          data: _listOrSeed,
+        );
   }
 
   void _listenForFilterTaps() {
@@ -79,11 +77,16 @@ class _StatsCardsListState() extends ConsumerState<_StatsCardsList> {
       _commitFilters(library);
       _seeded = true;
     }
-    return ListView.builder(
+    return ListView.separated(
       key: const PageStorageKey('stats_scroll'),
       scrollCacheExtent: const ScrollCacheExtent.pixels(0),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
       itemCount: 7,
       itemBuilder: (context, index) => _statsCard(index),
+      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.lg),
     );
   }
 

@@ -33,9 +33,7 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
           onPressed: () => AddBookSheet.show(context),
           icon: const Icon(Icons.add),
         ),
-        actions: [
-          const ESyncPhaseIcon(),
-        ],
+        actions: [const ESyncPhaseIcon()],
       ),
       body: _pageBody(),
     );
@@ -68,7 +66,7 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
     return CustomScrollView(
       slivers: [
         SliverPadding(
-          padding: const EdgeInsets.all(AppSpacing.lg).withOverlaidTabBar(context),
+          padding: ETabBarOverlay.paddingOf(context),
           sliver: SliverMainAxisGroup(
             slivers: [
               SliverToBoxAdapter(child: _sortSelector()),
@@ -109,9 +107,7 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
       SliverToBoxAdapter(
         child: ArchivedBooksSection(
           onActivated: () => Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => const ArchivedBooksPage(),
-            ),
+            MaterialPageRoute<void>(builder: (_) => const ArchivedBooksPage()),
           ),
         ),
       ),

@@ -8,6 +8,7 @@ environment:
   sdk: ^3.13.0
 
 dependencies:
+  clock: ^1.1.1
   ethan_utils:
     path: ../ethan_utils
   ethan_ui:

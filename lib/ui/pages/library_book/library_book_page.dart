@@ -67,7 +67,10 @@ class const LibraryBookPage(final String bookId) extends ConsumerWidget {
       body: SafeArea(
         bottom: false,
         child: SingleChildScrollView(
-          padding: EdgeInsets.zero.withOverlaidTabBar(context),
+          padding: ETabBarOverlay.paddingOf(
+            context,
+            contentPadding: EdgeInsets.zero,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

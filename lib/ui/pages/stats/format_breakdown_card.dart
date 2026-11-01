@@ -1,7 +1,6 @@
 import 'dart:math' show max;
 
 import 'package:book_track/data_model.dart';
-import 'package:book_track/ui/common/app_card.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
@@ -22,7 +21,8 @@ class const FormatBreakdownCard({
         )
         .toList();
 
-    return AppCard(
+    return ECard(
+      padding: EdgeInsets.zero,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

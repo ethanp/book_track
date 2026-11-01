@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'dart:math';
 
 import 'package:ethan_utils/ethan_utils.dart';
@@ -350,7 +351,7 @@ class LibraryBook(
 
     final DateTime paceStart = firstEvent.end.startOfDay;
     final DateTime paceEnd = isReading
-        ? DateTime.now().startOfDay
+        ? clock.now().startOfDay
         : lastEvent.end.startOfDay;
     final int elapsedDays = max(1, paceEnd.difference(paceStart).inDays);
     final double unitsPerDay = amount / elapsedDays;
@@ -363,7 +364,7 @@ class LibraryBook(
             .percentToProgress(remainingPercent)
             .toDouble();
         final int daysRemaining = max(1, (remainingUnits / unitsPerDay).ceil());
-        eta = DateTime.now().startOfDay.add(Duration(days: daysRemaining));
+        eta = clock.now().startOfDay.add(Duration(days: daysRemaining));
       }
     }
 
