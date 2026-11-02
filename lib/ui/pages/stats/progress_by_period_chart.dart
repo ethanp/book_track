@@ -115,25 +115,24 @@ class _ProgressByPeriodChartState() extends State<ProgressByPeriodChart> {
         .expand((line) => line.data)
         .mapL((point) => point.progress)
         .max;
-    final chartSeries = [
-      for (final line in progressLines.lines)
-        EChartSeries.line(
-          id: line.name,
-          points: [
-            for (final point in line.data)
-              EChartPoint(
-                date: point.date,
-                value: _extrapolatedProgress(point),
-                id: point.date,
-              ),
-          ],
-          color: line.color.withValues(alpha: 0.7),
-          fillColor: line == progressLines.total
-              ? EColors.success.withValues(alpha: 0.12)
-              : null,
-          label: line.name,
-        ),
-    ];
+    final chartSeries = progressLines.lines.mapL(
+      (line) => EChartSeries.line(
+        id: line.name,
+        points: [
+          for (final point in line.data)
+            EChartPoint(
+              date: point.date,
+              value: _extrapolatedProgress(point),
+              id: point.date,
+            ),
+        ],
+        color: line.color.withValues(alpha: 0.7),
+        fillColor: line == progressLines.total
+            ? EColors.success.withValues(alpha: 0.12)
+            : null,
+        label: line.name,
+      ),
+    );
     return EChart<DateTime>(
       series: chartSeries,
       valueScale: EChartValueScale.nice(maxProgress, tickSuffix: '%'),

@@ -109,10 +109,9 @@ class const FormatBreakdownCard({
 
   Widget _donut(Map<BookFormat, double> data) {
     return EDonut(
-      slices: [
-        for (final entry in data.entries)
-          EDonutSlice(value: entry.value, color: entry.key.color),
-      ],
+      slices: data.entries.mapL(
+        (entry) => EDonutSlice(value: entry.value, color: entry.key.color),
+      ),
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:book_track/data_model.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/sync/books_repository.dart';
 import 'package:book_track/sync/formats_repository.dart';
@@ -27,9 +28,9 @@ class LibraryRepository(final PowerSyncDatabase _powerSync)
   @override
   Future<List<LibraryBook>> myBooks() async {
     final libraryRows = await _powerSync.getAll('SELECT * FROM library_books');
-    final libraryBookIds = [
-      for (final libraryRow in libraryRows) libraryRow['id'] as String,
-    ];
+    final libraryBookIds = libraryRows.mapL(
+      (libraryRow) => libraryRow['id'] as String,
+    );
     final progressByLibraryBookId = await progress.historyForLibraryBooks(
       libraryBookIds,
     );
@@ -100,10 +101,7 @@ class LibraryRepository(final PowerSyncDatabase _powerSync)
     );
   }
 
-  Future<void> setAbandoned(
-    LibraryBook book, {
-    required bool abandoned,
-  }) async {
+  Future<void> setAbandoned(LibraryBook book, {required bool abandoned}) async {
     await _powerSync.execute(
       'UPDATE library_books SET abandoned_at = ? WHERE id = ?',
       [abandoned ? DateTime.now().toIso8601String() : null, book.id],

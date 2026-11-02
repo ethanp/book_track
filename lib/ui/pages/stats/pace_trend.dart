@@ -1,4 +1,5 @@
 import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/ui/pages/stats/smoothed_reading_pace.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
@@ -17,14 +18,13 @@ class _PaceTrendState() extends State<PaceTrend> {
   Widget build(BuildContext context) {
     final paceSeries = EChartSeries.line(
       id: 'pace',
-      points: [
-        for (final point in widget.smoothedPace.points)
-          EChartPoint(
-            date: point.day,
-            value: point.percentPerDay,
-            id: point.day,
-          ),
-      ],
+      points: widget.smoothedPace.points.mapL(
+        (point) => EChartPoint(
+          date: point.day,
+          value: point.percentPerDay,
+          id: point.day,
+        ),
+      ),
       color: EColors.success,
       strokeWidth: 2,
       fillColor: EColors.success.withValues(alpha: 0.2),

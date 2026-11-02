@@ -1,4 +1,5 @@
 import 'package:book_track/data_model/library_book_format.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
@@ -35,15 +36,14 @@ class _ReassignEventsSheetState() extends State<ReassignEventsSheet> {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: [
-              for (final format in widget.otherFormats)
-                EFilterChip(
-                  label: format.format.label,
-                  color: format.format.color,
-                  selected: _selectedTarget?.id == format.id,
-                  onActivated: () => setState(() => _selectedTarget = format),
-                ),
-            ],
+            children: widget.otherFormats.mapL(
+              (format) => EFilterChip(
+                label: format.format.label,
+                color: format.format.color,
+                selected: _selectedTarget?.id == format.id,
+                onActivated: () => setState(() => _selectedTarget = format),
+              ),
+            ),
           ),
         ],
       ),

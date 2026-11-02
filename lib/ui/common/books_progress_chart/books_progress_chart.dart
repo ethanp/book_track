@@ -164,10 +164,8 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
         .difference(timespan.beginning)
         .inMilliseconds
         .toDouble();
-    return [
-          for (final book in filteredBooks)
-            _lineForBook(book, timespan.beginning, spanMillis),
-        ]
+    return filteredBooks
+        .mapL((book) => _lineForBook(book, timespan.beginning, spanMillis))
         .where((progressLine) => progressLine.trajectory.points.isNotEmpty)
         .toList();
   }
@@ -207,18 +205,17 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     List<ProgressEvent> events,
     DateTime rangeStart,
     double spanMillis,
-  ) => [
-    for (final event in events)
-      EChartPoint(
-        date: event.end,
-        value: book.progressPercentAt(event) ?? 0,
-        id: ReadingChartPoint(book: book, event: event),
-        color: widget.colorByFormat ? _dotColor(book, event) : null,
-        dotRadius: widget.colorByFormat
-            ? _dotRadius(event.end, rangeStart, spanMillis)
-            : null,
-      ),
-  ];
+  ) => events.mapL(
+    (event) => EChartPoint(
+      date: event.end,
+      value: book.progressPercentAt(event) ?? 0,
+      id: ReadingChartPoint(book: book, event: event),
+      color: widget.colorByFormat ? _dotColor(book, event) : null,
+      dotRadius: widget.colorByFormat
+          ? _dotRadius(event.end, rangeStart, spanMillis)
+          : null,
+    ),
+  );
 
   EChartSeries<ReadingChartPoint> _trajectorySeries(
     LibraryBook book,
@@ -289,24 +286,24 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     LibraryBook book,
     List<ProgressEvent> events,
   ) {
-    final smoothed = SmoothedBookProgress.fromLoggedPercents([
-      for (final event in events)
-        BookProgressPoint(
+    final smoothed = SmoothedBookProgress.fromLoggedPercents(
+      events.mapL(
+        (event) => BookProgressPoint(
           at: event.end,
           percent: book.progressPercentAt(event) ?? 0,
         ),
-    ]);
-    return [
-      for (final point in smoothed.points)
-        EChartPoint(
-          date: point.at,
-          value: point.percent,
-          id: ReadingChartPoint(
-            book: book,
-            event: _loggedEventNearest(events, point.at),
-          ),
+      ),
+    );
+    return smoothed.points.mapL(
+      (point) => EChartPoint(
+        date: point.at,
+        value: point.percent,
+        id: ReadingChartPoint(
+          book: book,
+          event: _loggedEventNearest(events, point.at),
         ),
-    ];
+      ),
+    );
   }
 
   Color _trajectoryColor(LibraryBook book) {

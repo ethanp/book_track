@@ -42,9 +42,9 @@ class const SmoothedReadingPace({
       for (var dayOffset = 0; dayOffset <= daysToShow; dayOffset++)
         earliestDay.shiftedByDays(dayOffset),
     ];
-    final rawPace = [
-      for (final day in days) _trailingAverage(day, dailyPercentByDay),
-    ];
+    final rawPace = days.mapL(
+      (day) => _trailingAverage(day, dailyPercentByDay),
+    );
     final smoothedPace = _monthWideFivePass.smoothValues(rawPace);
 
     final allPoints = [

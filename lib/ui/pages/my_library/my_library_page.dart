@@ -122,15 +122,14 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
           alignment: WrapAlignment.center,
           spacing: AppSpacing.sm,
           runSpacing: AppSpacing.sm,
-          children: [
-            for (final orderValue in _LibraryOrder.values)
-              EFilterChip(
-                label: orderValue.label,
-                color: EColors.accentGlow,
-                selected: _libraryOrder == orderValue,
-                onActivated: () => setState(() => _libraryOrder = orderValue),
-              ),
-          ],
+          children: _LibraryOrder.values.mapL(
+            (orderValue) => EFilterChip(
+              label: orderValue.label,
+              color: EColors.accentGlow,
+              selected: _libraryOrder == orderValue,
+              onActivated: () => setState(() => _libraryOrder = orderValue),
+            ),
+          ),
         ),
       ),
     );

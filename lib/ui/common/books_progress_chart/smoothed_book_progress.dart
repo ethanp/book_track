@@ -32,10 +32,9 @@ class const SmoothedBookProgress({
         firstDay.shiftedByDays(dayOffset),
       if (ordered.last.at.isAfter(ordered.first.at)) ordered.last.at,
     ];
-    final percentsBetweenTrendAndLogs = [
-      for (final sampleTime in sampleTimes)
-        _percentBetweenTrendAndLog(sampleTime, ordered, longTerm),
-    ];
+    final percentsBetweenTrendAndLogs = sampleTimes.mapL(
+      (sampleTime) => _percentBetweenTrendAndLog(sampleTime, ordered, longTerm),
+    );
     percentsBetweenTrendAndLogs[0] = ordered.first.percent;
     final percents = _nondecreasingClamped(percentsBetweenTrendAndLogs);
     return [
@@ -89,10 +88,9 @@ class const _LongTermLogTrend({
 }) {
   factory fromLogs(List<BookProgressPoint> logs) {
     final firstDay = logs.first.at.startOfDay;
-    final dayOffsets = [
-      for (final log in logs)
-        log.at.startOfDay.difference(firstDay).inDays.toDouble(),
-    ];
+    final dayOffsets = logs.mapL(
+      (log) => log.at.startOfDay.difference(firstDay).inDays.toDouble(),
+    );
     final percents = logs.mapL((log) => log.percent);
     final meanDayOffset = _mean(dayOffsets);
     final meanPercent = _mean(percents);

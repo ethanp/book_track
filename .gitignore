@@ -12,7 +12,6 @@
 .swiftpm/
 migrate_working_dir/
 .env
-supabase/.temp/
 .build_hash_iphone
 
 # IntelliJ related

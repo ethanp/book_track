@@ -51,13 +51,12 @@ class const SummaryStatsCard({
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          for (final status in ReadingStatus.values)
-            _statTile(
-              stats.statusCounts[status].toString(),
-              status.nameAsCapitalizedWords,
-            ),
-        ],
+        children: ReadingStatus.values.mapL(
+          (status) => _statTile(
+            stats.statusCounts[status].toString(),
+            status.nameAsCapitalizedWords,
+          ),
+        ),
       ),
     );
   }

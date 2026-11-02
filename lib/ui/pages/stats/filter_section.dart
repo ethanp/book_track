@@ -1,4 +1,5 @@
 import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:flutter/material.dart';
@@ -35,18 +36,17 @@ class const FilterSection() extends ConsumerWidget {
 
   List<Widget> _periodChips(WidgetRef ref) {
     final StatsPeriod selectedPeriod = ref.watch(statsPeriodProvider);
-    return [
-      for (final period in StatsPeriod.values)
-        EFilterChip(
-          label: period.label,
-          color: EColors.accentGlow,
-          compact: true,
-          selected: period == selectedPeriod,
-          onActivated: () {
-            ref.read(statsPeriodProvider.notifier).state = period;
-          },
-        ),
-    ];
+    return StatsPeriod.values.mapL(
+      (period) => EFilterChip(
+        label: period.label,
+        color: EColors.accentGlow,
+        compact: true,
+        selected: period == selectedPeriod,
+        onActivated: () {
+          ref.read(statsPeriodProvider.notifier).state = period;
+        },
+      ),
+    );
   }
 
   List<Widget> _inclusionChips(WidgetRef ref) {

@@ -141,8 +141,7 @@ class _UpdateProgressDialogState()
 
   Widget _formatPicker() {
     // Ensure we have a selected format
-    final currentFormatId =
-        _selectedFormat?.id ?? widget.book.formats.first.id;
+    final currentFormatId = _selectedFormat?.id ?? widget.book.formats.first.id;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -153,13 +152,12 @@ class _UpdateProgressDialogState()
           SegmentedButton<String>(
             showSelectedIcon: false,
             selected: {currentFormatId},
-            segments: [
-              for (final format in widget.book.formats)
-                ButtonSegment(
-                  value: format.id,
-                  label: Text(format.format.label),
-                ),
-            ],
+            segments: widget.book.formats.mapL(
+              (format) => ButtonSegment(
+                value: format.id,
+                label: Text(format.format.label),
+              ),
+            ),
             onSelectionChanged: (selection) {
               final newFormat = widget.book.formatById(selection.first);
               if (newFormat == null) {
