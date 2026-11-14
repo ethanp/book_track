@@ -68,8 +68,7 @@ class const FormatsSection(final LibraryBook libraryBook)
               Text('Formats', style: AppTextStyles.h2),
               IconButton(
                 tooltip: 'Add format',
-                onPressed: () =>
-                    showAddFormat(context, ref, libraryBook),
+                onPressed: () => showAddFormat(context, ref, libraryBook),
                 icon: const Icon(Icons.add_circle_outline),
               ),
             ],
@@ -154,4 +153,3 @@ class const FormatsSection(final LibraryBook libraryBook)
     }
   }
 }
-

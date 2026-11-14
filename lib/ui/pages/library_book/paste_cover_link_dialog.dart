@@ -1,13 +1,9 @@
 import 'dart:typed_data';
 
-import 'package:book_track/data_model.dart';
-import 'package:book_track/riverpods.dart';
-import 'package:book_track/sync/library_providers.dart';
 import 'package:book_track/ui/common/book_cover.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
 const _log = ELogger('PasteCoverLinkDialog');
@@ -16,21 +12,10 @@ class const PasteCoverLinkDialog() extends StatefulWidget {
   static const _downloadTimeout = Duration(seconds: 20);
   static const _maxCoverBytes = 4 * 1024 * 1024;
 
-  static Future<void> show({
-    required BuildContext context,
-    required WidgetRef ref,
-    required Book book,
-  }) async {
-    final Uint8List? coverArt = await showDialog<Uint8List>(
-      context: context,
-      builder: (context) => const PasteCoverLinkDialog(),
-    );
-    if (coverArt == null) return;
-    _log.log('updating cover (${coverArt.length} bytes)');
-    final libraryRepository = await ref.read(libraryRepositoryProvider.future);
-    await libraryRepository.books.updateCoverArt(book, coverArt);
-    ref.invalidate(userLibraryProvider);
-  }
+  static Future<Uint8List?> show(BuildContext context) => showDialog<Uint8List>(
+    context: context,
+    builder: (context) => const PasteCoverLinkDialog(),
+  );
 
   @override
   State<PasteCoverLinkDialog> createState() => _PasteCoverLinkDialogState();

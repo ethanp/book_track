@@ -10,6 +10,7 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'cover_search_dialog.dart';
 import 'library_book_detail_card.dart';
 import 'single_format_line.dart';
 import 'paste_cover_link_dialog.dart';
@@ -49,8 +50,7 @@ class _PropertiesCardState() extends State<_PropertiesCard> {
     super.dispose();
   }
 
-  String get _displayedAuthor =>
-      widget.libraryBook.book.author ?? 'unknown';
+  String get _displayedAuthor => widget.libraryBook.book.author ?? 'unknown';
 
   Future<void> _commitAuthor(WidgetRef ref) async {
     final author = _author.text.trim();
@@ -59,6 +59,17 @@ class _PropertiesCardState() extends State<_PropertiesCard> {
     _log.log('updating author to $author');
     final libraryRepository = await ref.read(libraryRepositoryProvider.future);
     await libraryRepository.books.updateAuthor(widget.libraryBook.book, author);
+    ref.invalidate(userLibraryProvider);
+  }
+
+  Future<void> _replaceCover(WidgetRef ref, Uint8List? coverArt) async {
+    if (coverArt == null) return;
+    _log.log('updating cover (${coverArt.length} bytes)');
+    final libraryRepository = await ref.read(libraryRepositoryProvider.future);
+    await libraryRepository.books.updateCoverArt(
+      widget.libraryBook.book,
+      coverArt,
+    );
     ref.invalidate(userLibraryProvider);
   }
 
@@ -93,7 +104,11 @@ class _PropertiesCardState() extends State<_PropertiesCard> {
   Widget _authorRow(WidgetRef ref) {
     return Row(
       children: [
-        const Icon(Icons.person, color: EColors.textMuted, size: _leadingIconSize),
+        const Icon(
+          Icons.person,
+          color: EColors.textMuted,
+          size: _leadingIconSize,
+        ),
         const SizedBox(width: _leadingGap),
         Expanded(child: _authorValueAndLabel(ref)),
         _authorActions(ref),
@@ -168,7 +183,11 @@ class _PropertiesCardState() extends State<_PropertiesCard> {
     final Uint8List? coverArt = widget.libraryBook.book.coverArt;
     return Row(
       children: [
-        const Icon(Icons.image, color: EColors.textMuted, size: _leadingIconSize),
+        const Icon(
+          Icons.image,
+          color: EColors.textMuted,
+          size: _leadingIconSize,
+        ),
         const SizedBox(width: _leadingGap),
         Expanded(
           child: Column(
@@ -187,12 +206,17 @@ class _PropertiesCardState() extends State<_PropertiesCard> {
           ),
         ),
         IconButton(
-          tooltip: 'Edit cover',
-          onPressed: () => PasteCoverLinkDialog.show(
-            context: context,
-            ref: ref,
-            book: widget.libraryBook.book,
+          tooltip: 'Search covers',
+          onPressed: () async => _replaceCover(
+            ref,
+            await CoverSearchDialog.show(context, widget.libraryBook),
           ),
+          icon: const Icon(Icons.search, size: 18),
+        ),
+        IconButton(
+          tooltip: 'Paste cover link',
+          onPressed: () async =>
+              _replaceCover(ref, await PasteCoverLinkDialog.show(context)),
           icon: const Icon(Icons.edit_outlined, size: 18),
         ),
       ],

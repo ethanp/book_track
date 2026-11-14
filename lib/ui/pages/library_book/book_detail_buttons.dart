@@ -21,7 +21,11 @@ class const BookDetailButtons(final LibraryBook book) extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: ELayout.spaceLg),
       child: Column(
         children: [
-          for (var actionIndex = 0; actionIndex < actions.length; actionIndex += 2) ...[
+          for (
+            var actionIndex = 0;
+            actionIndex < actions.length;
+            actionIndex += 2
+          ) ...[
             if (actionIndex > 0) const SizedBox(height: ELayout.spaceSm),
             Row(
               children: [
