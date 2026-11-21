@@ -5,7 +5,7 @@ import 'package:book_track/services/book_cover_search.dart';
 import 'package:book_track/ui/common/book_cover.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Shows up to [BookCoverSearch.maxCovers] book-shaped covers found for the
 /// book; returns the one picked.

@@ -8,7 +8,7 @@ import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:book_track/ui/pages/update_progress_dialog/update_progress_dialog_page.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class const BookTile(final LibraryBook book) extends ConsumerWidget {
@@ -137,7 +137,7 @@ class const BookTile(final LibraryBook book) extends ConsumerWidget {
     final DateTime? startedOn = book.startedOn;
     final String caption = [
       if (startedOn != null) 'Started ${startedOn.monthDayCaption}',
-      if (etaCaption != null) etaCaption,
+      ?etaCaption,
     ].join(' · ');
     if (caption.isEmpty) return const SizedBox.shrink();
     return Text(caption, style: AppTextStyles.caption, maxLines: 2);

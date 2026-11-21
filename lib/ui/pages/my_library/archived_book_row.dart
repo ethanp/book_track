@@ -3,7 +3,7 @@ import 'package:book_track/ui/common/book_cover.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/library_book_presentation.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class const ArchivedBookRow(final LibraryBook book) extends StatelessWidget {
   static const _coverWidth = 48.0;

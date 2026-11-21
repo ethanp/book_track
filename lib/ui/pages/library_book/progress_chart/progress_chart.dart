@@ -3,7 +3,7 @@ import 'package:book_track/extensions.dart';
 import 'package:book_track/ui/common/books_progress_chart/books_progress_chart.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:ethan_ui/ethan_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 abstract final class _BookProgressPlot() {

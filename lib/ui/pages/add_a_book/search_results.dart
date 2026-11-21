@@ -4,7 +4,7 @@ import 'package:book_track/ui/common/book_cover.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/search_result_detail/search_result_detail_page.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'results_count.dart';

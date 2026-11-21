@@ -6,7 +6,7 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/ui/common/book_cover.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:ethan_ui/ethan_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Progress made on a single book for a specific day.
 class const DayProgressEntry({

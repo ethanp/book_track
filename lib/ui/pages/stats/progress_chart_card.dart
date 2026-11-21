@@ -5,7 +5,7 @@ import 'package:book_track/ui/pages/stats/rolling_average_chart.dart';
 import 'package:book_track/ui/pages/stats/stats_providers.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class const ProgressChartCard({
   required final List<LibraryBook> books,

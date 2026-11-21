@@ -6,7 +6,7 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
 class const BooksProgressChart({
@@ -52,13 +52,7 @@ class _BookProgressLine({
   final EChartSeries<ReadingChartPoint>? paceProjection,
 }) {
   List<EChartSeries<ReadingChartPoint>> get chartSeries {
-    final dots = eventDots;
-    final projection = paceProjection;
-    return [
-      trajectory,
-      if (dots != null) dots,
-      if (projection != null) projection,
-    ];
+    return [trajectory, ?eventDots, ?paceProjection];
   }
 }
 

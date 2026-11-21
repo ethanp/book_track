@@ -4,7 +4,7 @@ import 'package:book_track/ui/pages/my_library/my_library_page.dart';
 import 'package:book_track/ui/pages/stats/stats_page.dart';
 import 'package:ethan_sync/ethan_sync.dart';
 import 'package:ethan_ui/ethan_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 const _mainTabs = <EMainTab>[
   EMainTab(

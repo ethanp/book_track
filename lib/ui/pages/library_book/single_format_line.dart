@@ -2,7 +2,7 @@ import 'package:book_track/data_model.dart';
 import 'package:book_track/data_model/library_book_format.dart';
 import 'package:book_track/ui/common/design.dart';
 import 'package:ethan_ui/ethan_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'edit_format_length_dialog.dart';

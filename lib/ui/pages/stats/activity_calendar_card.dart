@@ -5,7 +5,7 @@ import 'package:book_track/ui/pages/stats/library_progress_calendar.dart';
 import 'package:book_track/ui/pages/stats/reading_activity_data.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class const ActivityCalendarCard({
   required final List<LibraryBook> books,

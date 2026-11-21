@@ -4,7 +4,7 @@ import 'package:book_track/ui/common/design.dart';
 import 'package:book_track/ui/common/scroll_propagating_list_view.dart';
 import 'package:book_track/ui/pages/library_book/library_book_page.dart';
 import 'package:ethan_ui/ethan_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class const RecentBooksWidget({
   required final List<LibraryBook> books,

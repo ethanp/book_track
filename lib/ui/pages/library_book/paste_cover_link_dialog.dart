@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:book_track/ui/common/book_cover.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:http/http.dart' as http;
 
 const _log = ELogger('PasteCoverLinkDialog');

@@ -6,7 +6,7 @@ import 'package:book_track/sync/library_providers.dart';
 import 'package:book_track/ui/common/length_input.dart';
 import 'package:book_track/ui/common/progress_event_date_caption.dart';
 import 'package:ethan_ui/ethan_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'update_format_selector.dart';

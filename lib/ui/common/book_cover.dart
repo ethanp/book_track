@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Book cover art, or the on-brand unknown-cover image when none is usable.
 class const BookCover({

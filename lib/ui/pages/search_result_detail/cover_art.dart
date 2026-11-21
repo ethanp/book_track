@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/ui/common/book_cover.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class const CoverArt(final OpenLibraryBook book)

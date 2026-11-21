@@ -1,6 +1,6 @@
 import 'package:book_track/data_model.dart';
 import 'package:ethan_ui/ethan_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 extension BookFormatColor on BookFormat {
   Color get color => switch (this) {
