@@ -256,18 +256,22 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
   EChartSeries<ReadingChartPoint>? _paceProjectionSeries(LibraryBook book) {
     if (!widget.showPaceProjection) return null;
     final completionDate = book.averageReadingPace?.eta;
-    final firstEvent = book.progressHistory.firstOrNull;
-    if (completionDate == null || firstEvent == null) return null;
-    final firstPercent = book.progressPercentAt(firstEvent);
-    if (firstPercent == null || !completionDate.isAfter(firstEvent.end)) {
+    final latestEvent = book.progressHistory.lastOrNull;
+    if (completionDate == null || latestEvent == null) return null;
+    final latestPercent = book.progressPercentAt(latestEvent);
+    if (latestPercent == null || !completionDate.isAfter(latestEvent.end)) {
       return null;
     }
-    final firstPoint = ReadingChartPoint(book: book, event: firstEvent);
+    final latestPoint = ReadingChartPoint(book: book, event: latestEvent);
     return EChartSeries.line(
       id: 'pace-${book.id}',
       points: [
-        EChartPoint(date: firstEvent.end, value: firstPercent, id: firstPoint),
-        EChartPoint(date: completionDate, value: 100, id: firstPoint),
+        EChartPoint(
+          date: latestEvent.end,
+          value: latestPercent,
+          id: latestPoint,
+        ),
+        EChartPoint(date: completionDate, value: 100, id: latestPoint),
       ],
       color: EColors.success,
       strokeWidth: 2.2,
