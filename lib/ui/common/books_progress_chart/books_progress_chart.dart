@@ -1,4 +1,5 @@
 import 'package:book_track/data_model.dart';
+import 'package:clock/clock.dart';
 import 'package:book_track/ui/common/book_cover.dart';
 import 'package:book_track/ui/common/books_progress_chart/smoothed_book_progress.dart';
 import 'package:book_track/ui/common/books_progress_chart/timespan.dart';
@@ -259,18 +260,13 @@ class _BooksProgressChartState() extends State<BooksProgressChart> {
     final latestEvent = book.progressHistory.lastOrNull;
     if (completionDate == null || latestEvent == null) return null;
     final latestPercent = book.progressPercentAt(latestEvent);
-    if (latestPercent == null || !completionDate.isAfter(latestEvent.end)) {
-      return null;
-    }
+    final DateTime now = clock.now();
+    if (latestPercent == null || !completionDate.isAfter(now)) return null;
     final latestPoint = ReadingChartPoint(book: book, event: latestEvent);
     return EChartSeries.line(
       id: 'pace-${book.id}',
       points: [
-        EChartPoint(
-          date: latestEvent.end,
-          value: latestPercent,
-          id: latestPoint,
-        ),
+        EChartPoint(date: now, value: latestPercent, id: latestPoint),
         EChartPoint(date: completionDate, value: 100, id: latestPoint),
       ],
       color: EColors.success,

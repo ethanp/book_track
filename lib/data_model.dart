@@ -326,12 +326,12 @@ class LibraryBook(
     return 0;
   }
 
-  /// Average reading pace from first progress event to the pace end date.
+  /// Average reading pace from the first progress event's time to the pace end.
   ///
   /// Uses progress *gained* since the first marker (so a partway start isn't
   /// counted as pages already read). Finished/abandoned books end at the final
-  /// marker's date; in-progress books end today. The ETA continues from the
-  /// latest marker at that pace.
+  /// marker's time; in-progress books end now, as if the latest progress were
+  /// logged now. The ETA continues from now at that pace.
   AverageReadingPace? get averageReadingPace {
     if (progressHistory.length < 2) return null;
 
@@ -350,12 +350,12 @@ class LibraryBook(
     final double amount = format.percentToProgress(percentGained).toDouble();
     if (amount <= 0) return null;
 
-    final DateTime paceStart = firstEvent.end.startOfDay;
-    final DateTime paceEnd = isReading
-        ? clock.now().startOfDay
-        : lastEvent.end.startOfDay;
-    final int elapsedDays = max(1, paceEnd.difference(paceStart).inDays);
-    final double unitsPerDay = amount / elapsedDays;
+    final DateTime now = clock.now();
+    final DateTime paceEnd = isReading ? now : lastEvent.end;
+    final Duration elapsed = paceEnd.difference(firstEvent.end);
+    if (elapsed <= Duration.zero) return null;
+    final double unitsPerDay =
+        amount * Duration.microsecondsPerDay / elapsed.inMicroseconds;
 
     DateTime? eta;
     if (isReading) {
@@ -365,7 +365,7 @@ class LibraryBook(
             .percentToProgress(remainingPercent)
             .toDouble();
         final double daysRemaining = remainingUnits / unitsPerDay;
-        eta = lastEvent.end.add(
+        eta = now.add(
           Duration(
             microseconds: (daysRemaining * Duration.microsecondsPerDay).round(),
           ),
