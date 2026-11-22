@@ -28,6 +28,15 @@ class const LibraryBookFormat({
     return (percent / 100 * length!).round();
   }
 
+  ProgressEventFormat get lengthProgressFormat =>
+      isAudiobook ? ProgressEventFormat.minutes : ProgressEventFormat.pageNum;
+
+  /// Unit a first progress log starts in: time for audio, pages for print,
+  /// percent for eBook.
+  ProgressEventFormat get defaultProgressFormat => format == BookFormat.eBook
+      ? ProgressEventFormat.percent
+      : lengthProgressFormat;
+
   String get unitLabel => isAudiobook ? 'minutes' : 'pages';
 
   String get lengthDisplay {

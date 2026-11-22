@@ -27,12 +27,14 @@ class const UpdateProgressDialogPage({
   ProgressEventFormat get initialProgressFormat =>
       eventToUpdate?.format ?? _lastUsedProgressFormat;
 
+  /// The 0 logged when a book is added is not a unit choice, so it does not
+  /// count as last used.
   ProgressEventFormat get _lastUsedProgressFormat {
-    final lastEvent = book.progressHistory.lastOrNull;
-    if (lastEvent != null) return lastEvent.format;
-    return _initialFormat?.isAudiobook == true
-        ? ProgressEventFormat.minutes
-        : ProgressEventFormat.pageNum;
+    final ProgressEvent? lastLoggedEvent = book.progressHistory.reversed
+        .where((event) => event.progress > 0)
+        .firstOrNull;
+    if (lastLoggedEvent != null) return lastLoggedEvent.format;
+    return _initialFormat?.defaultProgressFormat ?? ProgressEventFormat.pageNum;
   }
 
   DateTime get initialTimestamp => eventToUpdate?.end ?? DateTime.now();
@@ -85,9 +87,7 @@ class _UpdateProgressDialogState()
     // Ensure _selectedFormat is never null - use first format as fallback
     if (_selectedFormat == null && widget.book.formats.isNotEmpty) {
       _selectedFormat = widget.book.formats.first;
-      _selectedProgressEventFormat = _selectedFormat!.isAudiobook
-          ? ProgressEventFormat.minutes
-          : ProgressEventFormat.pageNum;
+      _selectedProgressEventFormat = _selectedFormat!.defaultProgressFormat;
     }
     _previousFormat = _selectedFormat;
   }
@@ -168,9 +168,7 @@ class _UpdateProgressDialogState()
               setState(() {
                 _previousFormat = _selectedFormat;
                 _selectedFormat = newFormat;
-                _selectedProgressEventFormat = newFormat.isAudiobook
-                    ? ProgressEventFormat.minutes
-                    : ProgressEventFormat.pageNum;
+                _selectedProgressEventFormat = newFormat.defaultProgressFormat;
                 _prefillSuggestedPosition(newFormat);
               });
             },
@@ -232,7 +230,7 @@ class _UpdateProgressDialogState()
       currentlySelectedFormat: _selectedProgressEventFormat,
       onSelected: (selected) =>
           setState(() => _selectedProgressEventFormat = selected),
-      book: widget.book,
+      bookFormat: _selectedFormat ?? widget.book.formats.first,
     );
   }
 
@@ -289,9 +287,7 @@ class _UpdateProgressDialogState()
         return;
       }
       _selectedFormat = widget.book.formats.first;
-      _selectedProgressEventFormat = _selectedFormat!.isAudiobook
-          ? ProgressEventFormat.minutes
-          : ProgressEventFormat.pageNum;
+      _selectedProgressEventFormat = _selectedFormat!.defaultProgressFormat;
       _log.log(
         'Format was null, using first format: ${_selectedFormat!.format.name}',
       );

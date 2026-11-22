@@ -123,7 +123,7 @@ class LibraryRepository(final PowerSyncDatabase _powerSync)
       libraryBookId: libraryBookId,
       formatId: format.id,
       newValue: 0,
-      format: ProgressEventFormat.percent,
+      format: format.defaultProgressFormat,
     );
   }
 

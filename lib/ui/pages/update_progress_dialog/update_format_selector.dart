@@ -1,4 +1,5 @@
 import 'package:book_track/data_model.dart';
+import 'package:book_track/data_model/library_book_format.dart';
 import 'package:ethan_ui/ethan_ui.dart';
 import 'package:ethan_utils/ethan_utils.dart';
 import 'package:material_ui/material_ui.dart';
@@ -6,7 +7,7 @@ import 'package:material_ui/material_ui.dart';
 class const UpdateFormatSelector({
   required final ProgressEventFormat currentlySelectedFormat,
   required final void Function(ProgressEventFormat) onSelected,
-  required final LibraryBook book,
+  required final LibraryBookFormat bookFormat,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -16,14 +17,8 @@ class const UpdateFormatSelector({
         SegmentedButton<ProgressEventFormat>(
           showSelectedIcon: false,
           style: ButtonStyle(
-            backgroundColor: ifSelected(
-              EColors.accent,
-              otw: EColors.border,
-            ),
-            foregroundColor: ifSelected(
-              Colors.white,
-              otw: EColors.textPrimary,
-            ),
+            backgroundColor: ifSelected(EColors.accent, otw: EColors.border),
+            foregroundColor: ifSelected(Colors.white, otw: EColors.textPrimary),
             visualDensity: VisualDensity.comfortable,
           ),
           selected: {currentlySelectedFormat},
@@ -46,10 +41,9 @@ class const UpdateFormatSelector({
 
   List<ButtonSegment<ProgressEventFormat>> segments() {
     final Map<ProgressEventFormat, String> formatLabels = {
-      if (book.defaultProgressFormat == ProgressEventFormat.minutes)
-        ProgressEventFormat.minutes: 'audio hh:mm'
-      else if (book.defaultProgressFormat == ProgressEventFormat.pageNum)
-        ProgressEventFormat.pageNum: 'pages',
+      bookFormat.lengthProgressFormat: bookFormat.isAudiobook
+          ? 'audio hh:mm'
+          : 'pages',
       ProgressEventFormat.percent: '%',
     };
     return formatLabels.entries.mapL(

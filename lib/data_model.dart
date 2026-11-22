@@ -36,12 +36,6 @@ class LibraryBook(
   LibraryBookFormat? formatForEvent(ProgressEvent event) =>
       formatById(event.formatId);
 
-  /// Default progress event format based on the primary book format.
-  ProgressEventFormat get defaultProgressFormat =>
-      primaryFormat?.isAudiobook == true
-      ? ProgressEventFormat.minutes
-      : ProgressEventFormat.pageNum;
-
   /// Get the last-used format (from most recent progress event).
   LibraryBookFormat? get lastUsedFormat {
     if (progressHistory.isEmpty) return primaryFormat;
