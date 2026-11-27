@@ -36,7 +36,7 @@ class const ArchivedBooksPage() extends ConsumerWidget {
       );
     }
     return ListView.builder(
-      padding: ETabBarOverlay.paddingOf(context),
+      padding: ELayout.pagePadding.plusBottomInset(context),
       itemCount: archivedBooks.length,
       itemBuilder: (context, index) => ArchivedBookRow(archivedBooks[index]),
     );

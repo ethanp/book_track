@@ -66,7 +66,7 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
     return CustomScrollView(
       slivers: [
         SliverPadding(
-          padding: ETabBarOverlay.paddingOf(context),
+          padding: ELayout.pagePadding.plusBottomInset(context),
           sliver: SliverMainAxisGroup(
             slivers: [
               SliverToBoxAdapter(child: _sortSelector()),

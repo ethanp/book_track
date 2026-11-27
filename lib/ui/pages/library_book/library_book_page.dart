@@ -1,3 +1,4 @@
+import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
@@ -67,10 +68,7 @@ class const LibraryBookPage(final String bookId) extends ConsumerWidget {
       body: SafeArea(
         bottom: false,
         child: SingleChildScrollView(
-          padding: ETabBarOverlay.paddingOf(
-            context,
-            contentPadding: EdgeInsets.zero,
-          ),
+          padding: EdgeInsets.zero.plusBottomInset(context),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
