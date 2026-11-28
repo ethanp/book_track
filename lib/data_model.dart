@@ -1,4 +1,5 @@
 import 'package:clock/clock.dart';
+
 import 'dart:math';
 
 import 'package:ethan_utils/ethan_utils.dart';
@@ -127,10 +128,7 @@ class LibraryBook(
     return days;
   }
 
-  ProgressEventDay _progressEventDay(
-    DateTime day,
-    List<ProgressEvent> events,
-  ) {
+  ProgressEventDay _progressEventDay(DateTime day, List<ProgressEvent> events) {
     return ProgressEventDay(
       day: day,
       events: List.unmodifiable(events),
@@ -138,9 +136,7 @@ class LibraryBook(
     );
   }
 
-  ProgressSincePrevious? _sumProgressSincePrevious(
-    List<ProgressEvent> events,
-  ) {
+  ProgressSincePrevious? _sumProgressSincePrevious(List<ProgressEvent> events) {
     int percent = 0;
     int units = 0;
     bool? isAudiobook;

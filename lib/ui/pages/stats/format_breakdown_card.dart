@@ -47,7 +47,7 @@ class const FormatBreakdownCard({
           bottom: AppSpacing.md,
           left: AppSpacing.lg,
         ),
-        child: Text('Reading by Format', style: AppTextStyles.h3),
+        child: Text('Reading by format', style: EText.sectionTitle),
       ),
     );
   }

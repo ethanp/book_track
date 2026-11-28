@@ -26,11 +26,11 @@ class const ProgressChartCard({
                 bottom: AppSpacing.md,
                 left: AppSpacing.lg,
               ),
-              child: Text('Reading Progress', style: AppTextStyles.h3),
+              child: Text('Reading progress', style: EText.sectionTitle),
             ),
           ),
           _chartAndCaptionPanel(
-            'Rolling Average',
+            'Rolling average',
             RollingAverageChart(books: books, periodCutoff: period.cutoffDate),
           ),
           _chartAndCaptionPanel(
@@ -58,7 +58,7 @@ class const ProgressChartCard({
       ),
       child: Column(
         children: [
-          Text(label, style: AppTextStyles.h5),
+          Text(label, style: EText.cardTitle),
           const SizedBox(height: AppSpacing.xs),
           SizedBox(
             height: 180,

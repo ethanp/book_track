@@ -45,7 +45,7 @@ class const RecentBooksWidget({
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Books read in this period', style: AppTextStyles.h5),
+        Text('Books read in this period', style: EText.cardTitle),
         const SizedBox(height: AppSpacing.sm),
         Expanded(
           child: ScrollPropagatingListView(

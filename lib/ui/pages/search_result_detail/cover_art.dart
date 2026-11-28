@@ -34,10 +34,7 @@ class _CoverArtState() extends ConsumerState<CoverArt> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: FutureBuilder(
-        future: futureCoverArt,
-        builder: imageOrPlaceholder,
-      ),
+      child: FutureBuilder(future: futureCoverArt, builder: imageOrPlaceholder),
     );
   }
 

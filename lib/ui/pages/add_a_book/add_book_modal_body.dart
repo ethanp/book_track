@@ -2,6 +2,7 @@ import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/services/book_universe_service.dart';
 import 'package:book_track/ui/common/design.dart';
+import 'package:ethan_ui/ethan_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -59,7 +60,7 @@ class _AddBookModalBodyState() extends ConsumerState<AddBookModalBody> {
   Widget bookSearchTitle() {
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: Text('Book Search', style: AppTextStyles.h1),
+      child: Text('Book search', style: EText.sectionTitle),
     );
   }
 

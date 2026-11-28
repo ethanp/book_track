@@ -82,7 +82,7 @@ class const ProgressChart(final LibraryBook initialBook)
       ),
       child: Row(
         children: [
-          Text('Progress', style: AppTextStyles.h3),
+          Text('Progress', style: EText.sectionTitle),
           if (paceDisplay != null) ...[
             const Spacer(),
             Text(

@@ -82,7 +82,7 @@ class _ActivityCalendarCardState() extends State<ActivityCalendarCard> {
       ),
       child: Row(
         children: [
-          Expanded(child: Text('Reading Activity', style: AppTextStyles.h3)),
+          Expanded(child: Text('Reading activity', style: EText.sectionTitle)),
           SegmentedButton<bool>(
             segments: const [
               ButtonSegment(value: false, label: Text('Grid')),

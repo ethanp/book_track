@@ -89,7 +89,9 @@ class _SearchResultDetailPage() extends ConsumerState<SearchResultDetailPage> {
   Future<void> addBookToLibrary(BookFormat bookType, int length) async {
     setState(() => _saving = true);
     try {
-      final libraryRepository = await ref.read(libraryRepositoryProvider.future);
+      final libraryRepository = await ref.read(
+        libraryRepositoryProvider.future,
+      );
       await libraryRepository.addBook(widget.book, bookType, length);
     } catch (error, stack) {
       _log.error('(${error.runtimeType}) $error', error, stack);

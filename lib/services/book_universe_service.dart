@@ -10,7 +10,7 @@ const _log = ELogger('OpenLibraryBookUniverseRepository');
 enum OpenLibraryCoverSize(final String letter) {
   small('S'),
   medium('M'),
-  large('L');
+  large('L'),
 }
 
 class BookUniverseService() {
@@ -32,8 +32,7 @@ class BookUniverseService() {
   static Future<Uint8List?> coverBytes(
     int? coverId,
     OpenLibraryCoverSize size,
-  ) =>
-      _bookUniverseRepo._coverBytes(coverId, size);
+  ) => _bookUniverseRepo._coverBytes(coverId, size);
 }
 
 /// * Open Library has a simple HTTP search endpoint for books and covers:

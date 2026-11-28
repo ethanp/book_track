@@ -38,7 +38,7 @@ class const SummaryStatsCard({
           bottom: AppSpacing.lg,
           left: AppSpacing.lg,
         ),
-        child: Text('Your Reading Stats', style: AppTextStyles.h3),
+        child: Text('Your reading stats', style: EText.sectionTitle),
       ),
     );
   }

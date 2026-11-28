@@ -1,4 +1,3 @@
-import 'package:ethan_utils/ethan_utils.dart';
 import 'package:book_track/data_model.dart';
 import 'package:book_track/riverpods.dart';
 import 'package:book_track/ui/common/design.dart';
@@ -125,7 +124,7 @@ class _StatsCardsListState() extends ConsumerState<_StatsCardsList> {
       4 => FormatBreakdownCard(books: _books, periodCutoff: _periodCutoff),
       5 => ReadingPatternsCard(books: _books, periodCutoff: _periodCutoff),
       _ => ChartCard(
-        title: 'Recent Stats',
+        title: 'Recent stats',
         chart: RecentBooksWidget(books: _books, periodCutoff: _periodCutoff),
       ),
     };

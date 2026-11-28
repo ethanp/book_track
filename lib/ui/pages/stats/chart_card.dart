@@ -21,7 +21,7 @@ class const ChartCard({
                 bottom: AppSpacing.xl,
                 left: AppSpacing.lg,
               ),
-              child: Text(title, style: AppTextStyles.h3),
+              child: Text(title, style: EText.sectionTitle),
             ),
           ),
           SizedBox(

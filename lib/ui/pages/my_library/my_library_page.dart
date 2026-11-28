@@ -199,10 +199,7 @@ class _MyLibraryPageState() extends ConsumerState<MyLibraryPage> {
         vertical: AppSpacing.sm,
         horizontal: AppSpacing.xs,
       ),
-      child: Text(
-        '${name.capitalize} ($count)',
-        style: AppTextStyles.h2.copyWith(color: EColors.accent),
-      ),
+      child: Text('${name.capitalize} ($count)', style: EText.sectionTitle),
     );
   }
 }

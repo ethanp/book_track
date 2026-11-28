@@ -42,11 +42,9 @@ class const DayProgressEntry({
   Widget buildTile(BuildContext context) {
     final status = statusLabel;
     return GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => LibraryBookPage(book.id),
-        ),
-      ),
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => LibraryBookPage(book.id))),
       child: Padding(
         padding: const EdgeInsets.only(bottom: 6),
         child: Row(
@@ -67,9 +65,7 @@ class const DayProgressEntry({
                       status,
                       style: TextStyle(
                         fontSize: 11,
-                        color: abandoned
-                            ? EColors.warning
-                            : EColors.accent,
+                        color: abandoned ? EColors.warning : EColors.accent,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

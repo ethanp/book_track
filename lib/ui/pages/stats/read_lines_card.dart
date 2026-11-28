@@ -28,7 +28,7 @@ class const ReadLinesCard({
           bottom: AppSpacing.xl,
           left: AppSpacing.lg,
         ),
-        child: Text('Read Lines', style: AppTextStyles.h3),
+        child: Text('Read lines', style: EText.sectionTitle),
       ),
     );
   }

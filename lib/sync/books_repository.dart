@@ -11,18 +11,14 @@ class BooksRepository(final PowerSyncDatabase _powerSync) {
   static const _uuid = Uuid();
 
   Future<Book> getBookById(String bookId) async {
-    final bookRow = await _powerSync.get(
-      'SELECT * FROM books WHERE id = ?',
-      [bookId],
-    );
+    final bookRow = await _powerSync.get('SELECT * FROM books WHERE id = ?', [
+      bookId,
+    ]);
     return _mapToBook(bookRow);
   }
 
   Future<String> getOrCreateBookId(OpenLibraryBook book) async {
-    return await _existingBookId(
-          title: book.title,
-          author: book.firstAuthor,
-        ) ??
+    return await _existingBookId(title: book.title, author: book.firstAuthor) ??
         await _insertBook(
           title: book.title,
           author: book.firstAuthor,

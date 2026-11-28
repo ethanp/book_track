@@ -38,11 +38,9 @@ class const BookTile(final LibraryBook book) extends ConsumerWidget {
         constraints.maxWidth,
       ),
       leadingGap: AppSpacing.md,
-      onActivated: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => LibraryBookPage(book.id),
-        ),
-      ),
+      onActivated: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => LibraryBookPage(book.id))),
       leading: _coverArt(),
       child: _copy(),
     );
@@ -118,7 +116,7 @@ class const BookTile(final LibraryBook book) extends ConsumerWidget {
   Widget _title() {
     return Text(
       book.book.title,
-      style: AppTextStyles.h4,
+      style: EText.cardTitle,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
     );

@@ -25,10 +25,10 @@ class const ReadingPatternsCard({
           children: [
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: Text('Reading Patterns', style: AppTextStyles.h3),
+              child: Text('Reading patterns', style: EText.sectionTitle),
             ),
             const SizedBox(height: AppSpacing.lg),
-            Text('Most Active Days (by progress)', style: AppTextStyles.h5),
+            Text('Most active days (by progress)', style: EText.cardTitle),
             const SizedBox(height: AppSpacing.sm),
             if (data.activityByDayOfWeek.isEmpty)
               _emptyState()

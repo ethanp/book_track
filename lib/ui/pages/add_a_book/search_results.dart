@@ -65,9 +65,7 @@ class const SearchResults() extends ConsumerWidget {
           ),
         ),
         onTap: () => Navigator.of(ref.context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => SearchResultDetailPage(book),
-          ),
+          MaterialPageRoute<void>(builder: (_) => SearchResultDetailPage(book)),
         ),
       ),
     );

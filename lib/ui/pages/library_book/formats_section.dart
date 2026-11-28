@@ -65,7 +65,7 @@ class const FormatsSection(final LibraryBook libraryBook)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Formats', style: AppTextStyles.h2),
+              Text('Formats', style: EText.sectionTitle),
               IconButton(
                 tooltip: 'Add format',
                 onPressed: () => showAddFormat(context, ref, libraryBook),

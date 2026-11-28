@@ -12,9 +12,7 @@ extension BookFormatColor on BookFormat {
 }
 
 abstract final class AppTextStyles() {
-  static TextStyle get h1 => EText.headline.medium;
   static TextStyle get h2 => EText.headline.small;
-  static TextStyle get h3 => EText.section;
   static TextStyle get h4 => EText.label.large;
   static TextStyle get h5 => EText.label.medium;
   static TextStyle get body => EText.body.medium;

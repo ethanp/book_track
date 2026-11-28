@@ -85,8 +85,8 @@ class _ManualBookFormState() extends ConsumerState<ManualBookForm> {
         ),
         Expanded(
           child: Text(
-            'Add Book Manually',
-            style: AppTextStyles.h1,
+            'Add book manually',
+            style: EText.sectionTitle,
             textAlign: TextAlign.center,
           ),
         ),
@@ -219,7 +219,9 @@ class _ManualBookFormState() extends ConsumerState<ManualBookForm> {
     setState(() => _saving = true);
     try {
       final year = int.tryParse(_yearController.text);
-      final libraryRepository = await ref.read(libraryRepositoryProvider.future);
+      final libraryRepository = await ref.read(
+        libraryRepositoryProvider.future,
+      );
       await libraryRepository.addManualBook(
         title: _titleController.text.trim(),
         author: _authorController.text.trim().nullIfEmpty,
